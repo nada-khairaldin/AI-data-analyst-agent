@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-500: #aa3bff;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+  
+  body {
+    @apply bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-50 transition-colors duration-300;
+  }
+}
