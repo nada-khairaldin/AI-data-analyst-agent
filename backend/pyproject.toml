@@ -1,0 +1,33 @@
+[tool.pytest.ini_options]
+# Tests run from backend/. `pythonpath = ["."]` puts backend/ on sys.path so
+# the modules can be imported by their real names (validation, tools,
+# agent.validators) without a sys.path hack in conftest.py.
+#
+# These same names move under app/ in step A3; only this line and the imports
+# in tests/ change, never the assertions.
+pythonpath = ["."]
+testpaths = ["tests"]
+# Set explicitly so pytest-asyncio stops warning and so the behaviour does not
+# change under us when its default flips in a future release. Phase B's async
+# DB tests want a fresh loop per test.
+asyncio_default_fixture_loop_scope = "function"
+# -p no:cacheprovider: the .pytest_cache directory only speeds up --lf/--ff,
+# and when the disk is full pytest fails to create it and dies with NO output
+# at all, which is a genuinely baffling way to lose an afternoon.
+addopts = "-q --strict-markers -p no:cacheprovider"
+filterwarnings = [
+    # Surface new deprecations from pandas 3.x / SQLAlchemy 2.x instead of
+    # letting them accumulate silently.
+    "error::DeprecationWarning:validation",
+    "error::DeprecationWarning:tools",
+]
+
+[tool.ruff]
+line-length = 88
+# Matches .python-version. Every dependency in requirements.txt resolved to a
+# cp314 wheel, including asyncpg, numpy, pandas and pyarrow, so 3.14 is a real
+# option rather than an aspiration.
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
