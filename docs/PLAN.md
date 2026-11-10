@@ -607,11 +607,20 @@ impossible to find without listing the bucket.
 
 Two consequences I could not design away, both from Neon's current docs:
 
-- **`DeleteObject` is a soft delete** — it "soft-deletes the object on the
-  current branch." So deleting a dataset does **not** reclaim storage, and the
-  object remains retrievable on the branch. Treat storage as monotonically
-  growing within a branch, and do not present "delete" to the user as a privacy
-  guarantee.
+- **`DeleteObject` is a soft delete** — Neon's docs say it "soft-deletes the
+  object on the current branch", so deleting a dataset does **not** reclaim
+  storage. Treat storage as monotonically growing within a branch.
+
+  *Corrected after testing it (A7).* An earlier draft of this section said the
+  object "remains retrievable on the branch". That is **not** what happens
+  through the S3 API: after `DeleteObject`, `GetObject` on the same key
+  returns `NoSuchKey`, and `dataframe_store.load()` raises `ObjectMissing`.
+  Verified against the live bucket. So the privacy caveat is narrower than
+  first written — a deleted dataset is not readable by key — while the
+  storage-growth caveat stands, because nothing observed here says the bytes
+  were reclaimed. What cannot be determined from the S3 API is whether a
+  branch-level mechanism can still recover them, so "deleted" should still not
+  be sold to a user as *erasure*.
 - **Lifecycle rules are stored but not enforced**, so a TTL cannot be used to
   clean up orphans either.
 
@@ -2098,11 +2107,13 @@ Ordered by how likely each one is to cost you a day.
     ignored, object-lock enforcement is limited. Do not build anything on those
     three. Mitigation is the one you specified: every byte goes through
     `dataframe_store.py`, so the bytea-in-Postgres fallback is a one-file change.
-20. **`DeleteObject` is a soft delete.** Deleting a dataset does not reclaim
-    storage and does not make the object unretrievable on the branch. Two
-    consequences: storage grows monotonically within a branch, and "delete" must
-    not be presented to the user as a privacy guarantee. Lifecycle rules cannot
-    clean up after it either, because they are not enforced.
+20. **`DeleteObject` is a soft delete** — but less visibly than first
+    written. Tested in A7: after a delete, `GetObject` returns `NoSuchKey`, so
+    the object is **not** readable by key and `load()` raises `ObjectMissing`.
+    What the soft delete costs is **storage**: it is not reclaimed, so usage
+    grows monotonically within a branch, and lifecycle rules cannot clean up
+    after it because they are stored but not enforced. Say "removed", not
+    "erased", to the user.
 21. **Orphaned objects.** The Postgres cascade does not reach the bucket, so a
     failed object-delete leaves a file no row points at — invisible to the app.
     The delete ordering in §4 makes the *other* failure (row points at a missing

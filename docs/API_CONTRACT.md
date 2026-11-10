@@ -916,10 +916,12 @@ dead `MoreHorizontal` button. Response `204`.
   the Parquet object first, then the row, so the failure that can happen is the
   recoverable one (a row pointing at a missing object) rather than the invisible
   one (an object no row points at). `PLAN.md` §4 has the ordering argument.
-- **"Deleted" is not "erased."** Neon Object Storage's `DeleteObject` is a *soft*
-  delete on the branch, so the object remains retrievable and the storage is not
-  reclaimed. The UI must not promise erasure — "removed from your workspace" is
-  accurate, "permanently deleted" is not.
+- **"Deleted" is not "erased."** Neon Object Storage's `DeleteObject` is a
+  *soft* delete, so the storage is not reclaimed. Tested in A7: the object is
+  genuinely unreadable by key afterwards (`GetObject` → `NoSuchKey`), so this
+  is weaker than it first looked — but since nothing confirms the bytes are
+  gone, the UI should still say "removed from your workspace" rather than
+  "permanently deleted".
 - Still returns `204` when the object delete failed but the row was removed; the
   failure is logged, not surfaced, because there is nothing the user can do
   about it and the dataset is genuinely gone from their view.
