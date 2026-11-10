@@ -9,7 +9,7 @@ revision 1: a **question-condensation step** before the planner (§6) and
 **real SSE streaming** of the answer (§6B).
 
 Revision 3 — **Q2 changed: dataset storage moved from `bytea` in Postgres to
-Neon Object Storage** (S3-compatible, Beta; private bucket `datasets`). Affects
+Neon Object Storage** (S3-compatible, Beta; private bucket `dataset`). Affects
 §2, §3, §4 `dataset_files`, §7, §8 (region is now constrained), §9 features
 0.5-2, and §10 risks 19-24. Written while implementing Phase A.
 
@@ -294,7 +294,7 @@ list is in §7.
                            ▼
               ┌──────────────────────────────────────────────┐
               │  NEON OBJECT STORAGE (S3-compatible, Beta)   │
-              │  private bucket "datasets", main branch      │
+              │  private bucket "dataset", main branch       │
               │  datasets/{dataset_id}.parquet               │
               │  boto3: endpoint_url + path-style + SigV4    │
               │  reached ONLY via dataframe_store.py         │
@@ -583,7 +583,7 @@ does not orphan every existing object, and a stray object can be matched back to
 its row. The `unique` constraint makes a double-write detectable.
 
 Decision **Q2: Neon Object Storage** (S3-compatible, Beta), private bucket
-`datasets` on the `main` branch, objects at `datasets/{dataset_id}.parquet`.
+`dataset` on the `main` branch, objects at `datasets/{dataset_id}.parquet`.
 With a 5 MB CSV ceiling, Parquet is typically well under the source, so expect
 ~1-3 MB per object. Every read and write goes through `dataframe_store.py` and
 nothing else, so the **bytea fallback stays one file away** if the Beta causes
@@ -1621,7 +1621,7 @@ exception, so the slot is ready.
 | Frontend | **Vercel** | A static Vite build. Git-push deploys, per-branch previews, and a free tier that genuinely covers this. |
 | Backend | **Render Web Service** | Needs a long-lived process: multi-second requests, an open SSE connection per turn, pandas in memory, an LRU DataFrame cache. **Not a serverless function** — a cold start with a pandas + pyarrow import, a platform response timeout, and a per-invocation sandbox that destroys the cache are each individually fatal to this workload, and SSE is the final nail. |
 | Database | **Neon** | Serverless Postgres, branchable, generous free tier. |
-| Dataset files | **Neon Object Storage**, private bucket `datasets`, behind `dataframe_store.py` | Same project as the database, so no extra vendor and no egress between them. **Beta**, and only in `aws-us-east-2` / `aws-eu-central-1` — which constrains the region choice below. |
+| Dataset files | **Neon Object Storage**, private bucket `dataset`, behind `dataframe_store.py` | Same project as the database, so no extra vendor and no egress between them. **Beta**, and only in `aws-us-east-2` / `aws-eu-central-1` — which constrains the region choice below. |
 
 **Region is now constrained, not free.** Neon Object Storage is available only
 in **`aws-us-east-2` (Ohio)** and **`aws-eu-central-1` (Frankfurt)**. Since the
@@ -2141,7 +2141,7 @@ this document guesses at any of them.
 | | Question | Decision |
 |---|---|---|
 | **Q1** | Authentication | **(d) Anonymous sessions.** The frontend generates a `crypto.randomUUID()`, keeps it in `localStorage`, and sends it as `X-Session-Id`. Ownership hangs off `sessions`; `sessions.user_id` (nullable, FK to an empty `users` table created in migration 1) is the upgrade path, so linking to a real account later is one `UPDATE` and no table is rewritten. §4. |
-| **Q2** | Dataset storage | **CHANGED after revision 2: Neon Object Storage** (S3-compatible, Beta). Private bucket `datasets` on the `main` branch, objects at `datasets/{dataset_id}.parquet`, boto3 with `endpoint_url` + path-style. `dataset_files` stores the key, not bytes. All access through `dataframe_store.py`, so the **bytea-in-Postgres fallback is one file away**. Max CSV **5 MB**. §4. |
+| **Q2** | Dataset storage | **CHANGED after revision 2: Neon Object Storage** (S3-compatible, Beta). Private bucket `dataset` on the `main` branch, objects at `datasets/{dataset_id}.parquet`, boto3 with `endpoint_url` + path-style. `dataset_files` stores the key, not bytes. All access through `dataframe_store.py`, so the **bytea-in-Postgres fallback is one file away**. Max CSV **5 MB**. §4. |
 | **Q3** | Hosting | **(a) Vercel + Render Web Service + Neon, same region.** §8. |
 | **Q4** | Limits | **5 MB**, **100,000 rows**, **LRU of 3** DataFrames, **20 datasets** per session. §4, §7. |
 | **Q5** | LLM provider | **(a) Model, base URL and key from env vars** — done in `app/config.py`, and `app/agent/llm.py` is the only place a client is built. Budget **free only**, which is why §6.5 exists. Checked in A4: the previously hardcoded model id **does not exist** (corrected to `Qwen/Qwen3.8-Flash-Next-FP8`), and the account returns **402, no inference credits**, so streaming is still unverified. Risk 1. |

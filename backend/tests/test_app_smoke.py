@@ -32,18 +32,20 @@ def test_root_responds(client):
 
 
 def test_health_reports_its_dependencies(client):
-    """A5 turns "unchecked" into a real probe; the keys exist from A3.
+    """Shape only. The status depends on whether Neon is reachable right now.
 
-    The fields deliberately do NOT say "ok" yet: reporting a dependency as
-    healthy without having touched it is worse than admitting it is untested.
+    Asserting "ok" here would make the suite fail offline for a reason that
+    has nothing to do with the code. tests/test_health.py stubs the probes and
+    asserts both outcomes properly.
     """
     response = client.get("/health")
     body = response.json()
 
-    assert response.status_code == 200
-    assert body["status"] == "ok"
-    assert "database" in body
-    assert "storage" in body
+    assert response.status_code in (200, 503)
+    assert body["status"] in ("ok", "degraded")
+    assert body["database"] in ("ok", "unreachable")
+    assert body["storage"] in ("ok", "unreachable")
+    assert body["version"]
 
 
 def test_routers_are_registered(client):

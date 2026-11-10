@@ -46,7 +46,10 @@ class Settings(BaseSettings):
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
     aws_region: str = "us-east-2"
-    neon_storage_bucket: str = "datasets"
+    # The real bucket on this Neon project is "dataset", SINGULAR. A5 found
+    # this by listing buckets after HeadBucket returned 404 for "datasets".
+    # Neon does not inject the bucket name, so nothing would have caught it.
+    neon_storage_bucket: str = "dataset"
 
     # ---- LLM -------------------------------------------------------------
     # Preferred name. Falls back to HUGGINGFACE_API_KEY, which is what the

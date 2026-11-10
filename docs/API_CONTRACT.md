@@ -99,22 +99,45 @@ both.
 
 ## 1. `GET /health`
 
-Liveness + DB reachability. Not used by the UI; used by the host's health check
-and by you to confirm the Neon connection.
+Liveness plus the reachability of both dependencies. Not used by the UI; used by
+the host's health check and by you to confirm the Neon connection.
 
 Response `200`:
 
 ```json
-{ "status": "ok", "database": "ok", "version": "0.1.0" }
+{ "status": "ok", "database": "ok", "storage": "ok", "version": "0.1.0" }
 ```
 
-If the DB is unreachable: `503` with `"database": "unreachable"`.
+`503` when **either** dependency fails, with the healthy one still reported as
+`ok` so the response says *which* one broke:
+
+```json
+{
+  "status": "degraded",
+  "database": "unreachable",
+  "storage": "ok",
+  "version": "0.1.0"
+}
+```
+
+A storage failure adds `storageDetail` with the botocore error code (for
+example `"HeadBucket failed: 404"`). It never contains a credential or a
+connection string. There is no `databaseDetail`: a database error message can
+embed the connection string, so it goes to the log instead.
 
 **Called by:** nothing in the frontend (deployment/platform only).
 
-**Notes:** the **only** endpoint that does not require `X-Session-Id`. Keep it
-cheap (`SELECT 1`), because Neon autosuspends and a heavy health check keeps the
-compute awake and burns quota.
+**Notes:**
+- The **only** endpoint that does not require `X-Session-Id`.
+- `database` is `SELECT 1`; `storage` is `HeadBucket`. Both results are
+  **cached for 30 seconds**, because Neon autosuspends and an uptime monitor
+  polling every few seconds would otherwise keep the compute permanently awake
+  and bill an S3 request each time. `?force=true` bypasses the cache for
+  debugging a live deployment.
+- The database probe has a **15 second** timeout. Measured on this project, a
+  cold connection to an autosuspended compute took **4.9s** against 1.6s warm,
+  so a tighter limit reports a healthy database as unreachable. Set the
+  platform's own health-check timeout above this.
 
 ---
 
