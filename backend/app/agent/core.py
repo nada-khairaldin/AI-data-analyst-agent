@@ -1,7 +1,4 @@
-import os
-
-from dotenv import load_dotenv
-from openai import OpenAI
+from .llm import complete
 
 from .prompts import (
     build_agent_prompt,
@@ -18,11 +15,6 @@ from .validators import (
 )
 
 
-load_dotenv()
-
-API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-
-
 def build_agent_input(state):
     return {
         "question": state["question"],
@@ -35,27 +27,13 @@ def build_agent_input(state):
 
 
 def call_llm(prompt):
-    if not API_KEY:
-        raise RuntimeError(
-            "HUGGINGFACE_API_KEY is not configured."
-        )
+    """Kept as a named function so run_agent below is untouched.
 
-    client = OpenAI(
-        base_url="https://router.huggingface.co/v1",
-        api_key=API_KEY,
-    )
-
-    completion = client.chat.completions.create(
-        model="Qwen/Qwen3.8-Flash-Next:featherless-ai",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    return completion.choices[0].message.content
+    The client, base URL, model, timeout and retries now come from
+    app/agent/llm.py, which reads app/config.py. Behaviour is unchanged: one
+    user-role message, reply returned as a string.
+    """
+    return complete(prompt)
 
 
 def run_agent(

@@ -9,8 +9,8 @@ import json
 
 import pytest
 
-from agent.schemas import STATUSES
-from agent.validators import (
+from app.agent.schemas import STATUSES
+from app.agent.validators import (
     get_final_result_columns,
     validate_agent_output,
     validate_analysis_plan,

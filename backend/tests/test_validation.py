@@ -8,7 +8,7 @@ user is told about their data.
 import pandas as pd
 import pytest
 
-from validation import (
+from app.data.validation import (
     DUPLICATE_REJECT_THRESHOLD,
     DUPLICATE_WARNING_THRESHOLD,
     MISSING_COLUMN_THRESHOLD,
@@ -357,7 +357,7 @@ def test_pandas_3_reports_text_columns_as_str_not_object():
 
 
 def test_get_schema_stringifies_every_column():
-    from data_utils import get_schema
+    from app.data.data_utils import get_schema
 
     df = pd.DataFrame(
         {

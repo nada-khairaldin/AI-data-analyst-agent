@@ -1,16 +1,9 @@
 import json
-import os
 
 import pandas as pd
-from dotenv import load_dotenv
-from openai import OpenAI
 
-from agent.validators import validate_explainer_output
-
-
-load_dotenv()
-
-API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+from .llm import complete
+from .validators import validate_explainer_output
 
 
 def serialize_result(result):
@@ -68,27 +61,14 @@ Rules:
 """
 
 def call_explainer_llm(prompt):
-    if not API_KEY:
-        raise RuntimeError(
-            "HUGGINGFACE_API_KEY is not configured."
-        )
+    """Client construction moved to app/agent/llm.py; logic unchanged.
 
-    client = OpenAI(
-        base_url="https://router.huggingface.co/v1",
-        api_key=API_KEY
-    )
-
-    completion = client.chat.completions.create(
-        model="Qwen/Qwen3.8-Flash-Next:featherless-ai",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    raw_output = completion.choices[0].message.content
+    Note for feature 5.5: this still asks for and validates JSON. Streaming
+    the answer requires plain text, because a half-written JSON object cannot
+    be shown to anyone — see docs/PLAN.md §6B. That change belongs with the
+    streaming work, not with this move.
+    """
+    raw_output = complete(prompt)
 
     is_valid, summary, error = validate_explainer_output(
     raw_output

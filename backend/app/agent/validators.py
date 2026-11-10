@@ -1,5 +1,4 @@
 import json
-from agent.state import STATUSES
 
 from .schemas import (
     ALLOWED_AGENT_STATUSES,

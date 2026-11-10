@@ -9,7 +9,7 @@ AI-generated Python ran.
 import pandas as pd
 import pytest
 
-from tools import (
+from app.agent.tools import (
     TOOL_REGISTRY,
     aggregate_data,
     execute_plan,
