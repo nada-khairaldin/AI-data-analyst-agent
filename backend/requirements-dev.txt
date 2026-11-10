@@ -1,0 +1,14 @@
+# Development and test dependencies. Includes everything in requirements.txt.
+#
+# Install:  pip install -r requirements-dev.txt
+# Run:      python -m pytest        (from backend/)
+
+-r requirements.txt
+
+pytest==9.2.0
+pytest-asyncio==1.4.1.post1       # for the async DB/API tests in phase B
+
+# Plain httpx, for Starlette's test client and ASGI transport. This is a
+# DIFFERENT distribution from the `httpx2` that openai 3.x depends on; both are
+# installed side by side and neither shadows the other.
+httpx==0.28.1

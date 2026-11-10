@@ -1,6 +1,43 @@
+# ---- Secrets ----
+# backend/.env holds the Neon database URLs and the object-storage credentials.
 .env
 .env.*
 !.env.example
 
-node_modules
-venv
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual environments. `.venv` is normally self-ignoring (python -m venv writes
+# a .gitignore inside it), but that only holds for venvs created that way, so
+# the names are listed explicitly here too.
+.venv/
+venv/
+env/
+ENV/
+
+# ---- Node / frontend ----
+node_modules/
+
+# ---- Local scratch ----
+# Throwaway verification scripts live in backend/scratch/ and ARE committed;
+# anything ending in .local is personal and is not.
+*.local
+
+# ---- Editors / OS ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

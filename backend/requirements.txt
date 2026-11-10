@@ -1,4 +1,41 @@
-fastapi
-uvicorn
-python-multipart
-pandas
+# Runtime dependencies — pinned to the versions this project is developed and
+# tested against. Test-only packages live in requirements-dev.txt.
+#
+# Every version below was resolved and installed successfully on CPython 3.14.5
+# (Windows, amd64). See .python-version for the deployment pin.
+#
+# Install:  pip install -r requirements.txt
+# Dev:      pip install -r requirements-dev.txt
+
+# ---- Web framework -------------------------------------------------------
+fastapi==0.142.2
+uvicorn[standard]==0.53.0
+python-multipart==0.0.32          # required for multipart CSV upload
+
+# ---- Configuration -------------------------------------------------------
+pydantic==2.13.5
+pydantic-settings==2.16.2         # app/config.py — the only reader of env vars
+python-dotenv==1.2.3              # loads backend/.env
+
+# ---- Data ----------------------------------------------------------------
+pandas==3.0.6
+pyarrow==25.0.1                   # Parquet read/write for dataframe_store.py
+
+# ---- Database ------------------------------------------------------------
+sqlalchemy[asyncio]==2.1.8
+asyncpg==0.32.0                   # async driver; needs statement_cache_size=0
+                                  # behind Neon's pooler (docs/PLAN.md §8)
+greenlet==3.5.6                   # required by SQLAlchemy's async bridge
+alembic==1.20.1                   # migrations; reads DATABASE_URL_DIRECT only
+
+# ---- Object storage ------------------------------------------------------
+boto3==1.43.127                   # Neon Object Storage (S3-compatible).
+                                  # Imported ONLY by dataframe_store.py.
+
+# ---- LLM -----------------------------------------------------------------
+openai==3.20.0                    # used as an OpenAI-compatible client against
+                                  # LLM_BASE_URL, not necessarily OpenAI itself.
+                                  # NOTE: openai 3.x requires `httpx2`, not
+                                  # `httpx`. Both end up installed because the
+                                  # test client needs plain httpx; see
+                                  # requirements-dev.txt.
