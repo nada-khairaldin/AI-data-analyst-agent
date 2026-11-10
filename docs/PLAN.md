@@ -1573,7 +1573,7 @@ stream like any other response.
 | `NEON_STORAGE_BUCKET` | **not injected by Neon** — the bucket name must be set by hand | `datasets` |
 | `LLM_API_KEY` | provider key. Keep `HUGGINGFACE_API_KEY` as a fallback name during the refactor so nothing breaks mid-move | |
 | `LLM_BASE_URL` | `https://router.huggingface.co/v1` today; an env var so the provider is a config change | |
-| `LLM_MODEL` | currently hardcoded twice (`agent/core.py:49`, `agent/explainer.py:82`) | |
+| `LLM_MODEL` | was hardcoded twice and **the hardcoded id was not a real model**; default is now `Qwen/Qwen3.8-Flash-Next-FP8` in `app/config.py` | `Qwen/Qwen3.8-Flash-Next-FP8` |
 | `LLM_STREAMING` | must be `true`; feature 1 verifies the model actually supports it | `true` |
 | `LLM_TIMEOUT_SECONDS` | there is no timeout today; a hung provider hangs the request forever | |
 | `LLM_MAX_RETRIES` | the `max_attempts=2` baked into `run_agent` | `2` |
@@ -1990,13 +1990,32 @@ still there.
 
 Ordered by how likely each one is to cost you a day.
 
-1. **The LLM model string, and whether it streams.**
-   `"Qwen/Qwen3.8-Flash-Next:featherless-ai"` is hardcoded in two files and I
-   could not verify it resolves on the Hugging Face router. If it is wrong,
-   **nothing works**, and the failure surfaces as a validator error rather than
-   a clear 404. On top of that, **feature 5.5 is impossible if the free tier
-   does not stream** — and that is not something you can work around. Both are
-   the first check in feature 1 for exactly this reason.
+1. **The LLM model string, and whether it streams. — CHECKED in step A4;
+   two separate faults found, one fixed, one needs your account.**
+
+   *Fault 1, fixed.* `"Qwen/Qwen3.8-Flash-Next:featherless-ai"` — hardcoded in
+   `agent/core.py` and `agent/explainer.py` — **is not a real model.** The
+   router lists 127 models; that id is not among them, and neither is its base
+   `Qwen/Qwen3.8-Flash-Next`. The real id in that family is
+   **`Qwen/Qwen3.8-Flash-Next-FP8`**, which is now the default in
+   `app/config.py` and overridable via `LLM_MODEL`. So `/api/analyze` could
+   never have answered a question, independently of anything else — and the
+   symptom would have been a confusing agent failure, not a clear 404, exactly
+   as predicted.
+
+   *Fault 2, blocked on you.* With the corrected id the router returns
+   **HTTP 402: "Purchase pre-paid credits to continue using Inference
+   Providers."** The key authenticates (402, not 401) and the model resolves,
+   so this is purely billing. Until it is resolved, **features 5 and 5.5
+   cannot be built or verified**, because there is no way to see a single
+   completion. Three ways out: add pre-paid credits, subscribe to PRO, or
+   point `LLM_BASE_URL` at a provider with a genuinely free tier.
+
+   *Still unknown: streaming.* It cannot be tested behind a 402, so **the one
+   assumption §6B rests on is still unverified.** Re-run
+   `backend/scratch/check_model.py` the moment credits exist; it checks the
+   model id, a completion, and whether chunks arrive separately rather than in
+   one buffered lump. Do that **before** building feature 5.5, not during.
 2. **The free-tier call budget.** Condensation plus summarisation takes a turn
    from 2 calls to ~3.5, a **+75 %** increase, on a budget you have stated is
    free-only. A quota wall mid-demo is the failure mode. Mitigations are in
@@ -2125,7 +2144,7 @@ this document guesses at any of them.
 | **Q2** | Dataset storage | **CHANGED after revision 2: Neon Object Storage** (S3-compatible, Beta). Private bucket `datasets` on the `main` branch, objects at `datasets/{dataset_id}.parquet`, boto3 with `endpoint_url` + path-style. `dataset_files` stores the key, not bytes. All access through `dataframe_store.py`, so the **bytea-in-Postgres fallback is one file away**. Max CSV **5 MB**. §4. |
 | **Q3** | Hosting | **(a) Vercel + Render Web Service + Neon, same region.** §8. |
 | **Q4** | Limits | **5 MB**, **100,000 rows**, **LRU of 3** DataFrames, **20 datasets** per session. §4, §7. |
-| **Q5** | LLM provider | **(a) Model, base URL and key from env vars.** Budget **free only** — every call counts, which is why §6.5 exists. Verifying that the model id resolves **and that it streams** is the first check in feature 1. |
+| **Q5** | LLM provider | **(a) Model, base URL and key from env vars** — done in `app/config.py`, and `app/agent/llm.py` is the only place a client is built. Budget **free only**, which is why §6.5 exists. Checked in A4: the previously hardcoded model id **does not exist** (corrected to `Qwen/Qwen3.8-Flash-Next-FP8`), and the account returns **402, no inference credits**, so streaming is still unverified. Risk 1. |
 | **Q6** | Dataset sharing | **Private.** Nothing in the UI hints at sharing; not built. |
 | **Q7** | Retention | **Keep everything, cascade deletes, cap 20 datasets per session.** §4. |
 | **Q8** | Progress indicator | **Changed to (b): real streaming.** Full design in §6B, contract in `API_CONTRACT.md`, built in feature 5.5. |

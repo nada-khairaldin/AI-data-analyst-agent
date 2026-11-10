@@ -57,12 +57,15 @@ class Settings(BaseSettings):
 
     llm_base_url: str = "https://router.huggingface.co/v1"
 
-    # Default is the id that agent/core.py and agent/explainer.py previously
-    # hardcoded, so removing those literals does not change behaviour for an
-    # .env that has no LLM_MODEL. It is a default, not a recommendation: step
-    # A4 checks whether it actually resolves on LLM_BASE_URL, and
-    # docs/PLAN.md risk 1 is about exactly this string.
-    llm_model: str = "Qwen/Qwen3.8-Flash-Next:featherless-ai"
+    # agent/core.py and agent/explainer.py both hardcoded
+    # "Qwen/Qwen3.8-Flash-Next:featherless-ai". The A4 check proved that id
+    # does NOT exist on the router: its 127 models include
+    # "Qwen/Qwen3.8-Flash-Next-FP8" but nothing called "Qwen3.8-Flash-Next",
+    # so every /api/analyze call was going to fail on the model id alone.
+    # Corrected to the real id in the same family. Still unverified
+    # end-to-end, because the account returns 402 (no inference credits) --
+    # re-run scratch/check_model.py once credits exist.
+    llm_model: str = "Qwen/Qwen3.8-Flash-Next-FP8"
     llm_streaming: bool = True
     llm_timeout_seconds: float = 60.0
     llm_max_retries: int = 2
