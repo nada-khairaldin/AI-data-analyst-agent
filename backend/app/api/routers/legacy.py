@@ -35,6 +35,7 @@ from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel
 
 from app.agent import STATUSES, create_agent_state, run_agent
+from app.agent.llm import LLMError
 from app.agent.explainer import explain_result
 from app.agent.tools import execute_plan
 from app.data.data_utils import get_schema
@@ -142,6 +143,11 @@ def analyze_query(request: QueryRequest):
             state["answer"] = explain_result(
                 question, state["analysis_plan"], result
             )
+        except LLMError:
+            # Mapped to a real status code by app/api/errors.py. Swallowing it
+            # here would turn a 429 into an HTTP 200 the frontend reads as a
+            # normal failure.
+            raise
         except Exception as error:
             return {
                 "status": "error",

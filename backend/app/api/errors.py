@@ -100,6 +100,35 @@ def envelope(code, message, details=None):
 
 
 def register_exception_handlers(app: FastAPI) -> None:
+    # Imported here rather than at module scope so that importing the error
+    # envelope does not drag in the LLM integration (and its provider SDK)
+    # for a request that never touches a model.
+    from app.agent.llm import LLMError, LLMRateLimited
+
+    @app.exception_handler(LLMError)
+    async def _llm_error(request: Request, exc: LLMError):
+        """Maps provider failures to real status codes.
+
+        Without this a rate-limited free tier surfaces as a generic 500, which
+        tells the user nothing and tells the frontend to show a crash. Each
+        LLMError subclass carries its own status_code and code, so a 429 is a
+        429 and a missing key is a 503.
+        """
+        headers = {}
+        if isinstance(exc, LLMRateLimited):
+            # Standard header, so a client or proxy can back off correctly
+            # instead of hammering a quota that is already exhausted.
+            headers["Retry-After"] = str(int(exc.retry_after or 60))
+
+        logger.warning(
+            "%s on %s %s", type(exc).__name__, request.method, request.url.path
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=envelope(exc.code, exc.message),
+            headers=headers or None,
+        )
+
     @app.exception_handler(ApiError)
     async def _api_error(request: Request, exc: ApiError):
         # 5xx is ours to explain, so log it with the traceback; 4xx is the

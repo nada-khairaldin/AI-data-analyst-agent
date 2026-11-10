@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from .llm import complete
+from .llm import FAST, complete
 from .validators import validate_explainer_output
 
 
@@ -68,7 +68,7 @@ def call_explainer_llm(prompt):
     be shown to anyone — see docs/PLAN.md §6B. That change belongs with the
     streaming work, not with this move.
     """
-    raw_output = complete(prompt)
+    raw_output = complete(prompt, role=FAST)
 
     is_valid, summary, error = validate_explainer_output(
     raw_output

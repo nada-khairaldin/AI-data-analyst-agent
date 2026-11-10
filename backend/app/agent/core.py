@@ -1,4 +1,4 @@
-from .llm import complete
+from .llm import PLANNER, LLMError, complete
 
 from .prompts import (
     build_agent_prompt,
@@ -29,11 +29,12 @@ def build_agent_input(state):
 def call_llm(prompt):
     """Kept as a named function so run_agent below is untouched.
 
-    The client, base URL, model, timeout and retries now come from
-    app/agent/llm.py, which reads app/config.py. Behaviour is unchanged: one
-    user-role message, reply returned as a string.
+    Uses the PLANNER model: this call has to produce a tool plan that survives
+    validators.py, which is the one job worth the stronger model. Everything
+    about the client — model, key, timeout, 429 backoff — lives in
+    app/agent/llm.py.
     """
-    return complete(prompt)
+    return complete(prompt, role=PLANNER)
 
 
 def run_agent(
@@ -51,6 +52,15 @@ def run_agent(
     for attempt in range(max_attempts):
         try:
             raw_output = call_llm(prompt)
+
+        except LLMError:
+            # Deliberately NOT swallowed into status=FAILED. A rate limit or
+            # an unreachable provider is an infrastructure failure with its
+            # own HTTP status and its own user action ("wait and retry"),
+            # whereas FAILED means "the model answered and the answer was
+            # unusable". Collapsing the two would report a 429 as a 200 with
+            # an agent error, which the frontend cannot act on.
+            raise
 
         except Exception as error:
             state["status"] = STATUSES["FAILED"]

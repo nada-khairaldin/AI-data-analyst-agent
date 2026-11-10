@@ -33,9 +33,14 @@ boto3==1.43.127                   # Neon Object Storage (S3-compatible).
                                   # Imported ONLY by dataframe_store.py.
 
 # ---- LLM -----------------------------------------------------------------
-openai==3.20.0                    # used as an OpenAI-compatible client against
-                                  # LLM_BASE_URL, not necessarily OpenAI itself.
-                                  # NOTE: openai 3.x requires `httpx2`, not
-                                  # `httpx`. Both end up installed because the
-                                  # test client needs plain httpx; see
-                                  # requirements-dev.txt.
+# Google Gemini through LangChain. Imported ONLY by app/agent/llm.py, which a
+# test enforces, so changing provider again stays a one-file job.
+#
+# Replaced openai==3.20.0 (an OpenAI-compatible client pointed at the Hugging
+# Face router) in step A8. The HF account had no inference credits, and its
+# free tier could not be used at all.
+langchain-google-genai==4.4.3
+langchain-core==1.7.7             # pinned explicitly: the content-blocks API
+                                  # is a 1.x behaviour this code depends on
+                                  # (a reply is a list of blocks, and .text is
+                                  # what returns a plain string)

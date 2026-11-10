@@ -51,26 +51,39 @@ class Settings(BaseSettings):
     # Neon does not inject the bucket name, so nothing would have caught it.
     neon_storage_bucket: str = "dataset"
 
-    # ---- LLM -------------------------------------------------------------
-    # Preferred name. Falls back to HUGGINGFACE_API_KEY, which is what the
-    # original agent/core.py and agent/explainer.py read directly, so an
-    # existing .env keeps working through the transition.
-    llm_api_key: str = ""
-    huggingface_api_key: str = ""
+    # ---- LLM (Google Gemini, free tier) ----------------------------------
+    # Google's own SDK reads GOOGLE_API_KEY first and GEMINI_API_KEY second,
+    # and there is a known failure when only GEMINI_API_KEY is set while
+    # Application Default Credentials also exist. app/agent/llm.py therefore
+    # passes this value EXPLICITLY rather than relying on either lookup.
+    gemini_api_key: str = ""
 
-    llm_base_url: str = "https://router.huggingface.co/v1"
+    # Two models, because the work is two different jobs. The planner has to
+    # emit a valid tool plan and is worth the stronger model; condensing,
+    # explaining and summarising are cheap rewriting tasks that run more often
+    # and would burn the free-tier quota on the big model for no gain.
+    # Both ids were verified against the live models.list endpoint.
+    #
+    # NOT gemini-3.8-flash. It exists and answers correctly, but on the free
+    # tier it took 548s to return a single token (with thinking disabled, so
+    # this is throttling, not reasoning) and 504s at any sane timeout.
+    # gemini-3.7-flash measured 154s. The 3.5/3.6 generation returns in ~1.5s.
+    # Measurements in docs/PLAN.md §10 risk 1.
+    llm_planner_model: str = "gemini-3.6-flash"
+    llm_fast_model: str = "gemini-3.5-flash-lite"
 
-    # agent/core.py and agent/explainer.py both hardcoded
-    # "Qwen/Qwen3.8-Flash-Next:featherless-ai". The A4 check proved that id
-    # does NOT exist on the router: its 127 models include
-    # "Qwen/Qwen3.8-Flash-Next-FP8" but nothing called "Qwen3.8-Flash-Next",
-    # so every /api/analyze call was going to fail on the model id alone.
-    # Corrected to the real id in the same family. Still unverified
-    # end-to-end, because the account returns 402 (no inference credits) --
-    # re-run scratch/check_model.py once credits exist.
-    llm_model: str = "Qwen/Qwen3.8-Flash-Next-FP8"
+    # Kept because the planner model is still a thinking-capable model and the
+    # default budget is what made gemini-3.8-flash unusable. 0 disables
+    # thinking; None uses the model default. Verified honoured: a call with 0
+    # reports reasoning=0 in its usage metadata.
+    llm_planner_thinking_budget: int | None = 0
+
     llm_streaming: bool = True
     llm_timeout_seconds: float = 60.0
+
+    # Attempts for a 429 specifically. The free tier rate-limits per minute,
+    # so a short backoff genuinely recovers; anything longer just makes the
+    # user wait for a failure.
     llm_max_retries: int = 2
 
     # ---- Conversation memory (phase B) -----------------------------------
@@ -104,12 +117,6 @@ class Settings(BaseSettings):
         if value not in allowed:
             raise ValueError(f"environment must be one of {sorted(allowed)}")
         return value
-
-    @computed_field
-    @property
-    def resolved_llm_api_key(self) -> str:
-        """LLM_API_KEY if set, else the legacy HUGGINGFACE_API_KEY."""
-        return self.llm_api_key or self.huggingface_api_key
 
     @computed_field
     @property

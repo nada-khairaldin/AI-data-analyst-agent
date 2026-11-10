@@ -151,15 +151,18 @@ def test_legacy_analyze_rejects_a_blank_question(client):
 
 
 def test_config_is_the_only_env_reader():
-    """The hardcoded model ids are gone and the two DB URLs stay distinct.
+    """Both model roles resolve and the two DB URLs stay distinct.
 
     Asserted on the loaded settings rather than by grepping, so it keeps
     holding as the code moves.
     """
     from app.config import settings
 
-    assert settings.llm_model, "LLM_MODEL must always resolve to something"
-    assert settings.llm_base_url.startswith("http")
+    assert settings.llm_planner_model, "LLM_PLANNER_MODEL must resolve"
+    assert settings.llm_fast_model, "LLM_FAST_MODEL must resolve"
+    # The two roles exist precisely so they can differ; if they are ever equal
+    # the cheap model is doing the planner's job or vice versa.
+    assert settings.llm_planner_model != settings.llm_fast_model
     assert settings.cors_origins, "CORS origins must never be empty"
     # Pooled for the app, direct for Alembic. If these are ever equal, one of
     # them is wrong and migrations will fail in confusing ways.
@@ -170,9 +173,9 @@ def test_config_is_the_only_env_reader():
 def test_no_module_outside_config_reads_the_environment():
     """os.getenv must not reappear in the moved agent modules.
 
-    core.py and explainer.py each used to read HUGGINGFACE_API_KEY directly.
-    That is how one key ended up read in two places and one model id hardcoded
-    in two files.
+    core.py and explainer.py each used to read the provider key directly from
+    the environment. That is how one key ended up read in two places and one
+    model id hardcoded in two files.
     """
     import pathlib
 

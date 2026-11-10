@@ -13,6 +13,16 @@ Neon Object Storage** (S3-compatible, Beta; private bucket `dataset`). Affects
 §2, §3, §4 `dataset_files`, §7, §8 (region is now constrained), §9 features
 0.5-2, and §10 risks 19-24. Written while implementing Phase A.
 
+Revision 4 — **Q5 changed: the LLM provider is now Google Gemini**, via
+`langchain-google-genai`, with **two models** (`gemini-3.6-flash` to plan,
+`gemini-3.5-flash-lite` for everything else). The Hugging Face account had no
+inference credits, so nothing could be verified there at all. Affects §2, §6,
+§7 and §10 risks 1-3b. Streaming is now **confirmed working**, which closes the
+one assumption §6B depended on. The new headline constraint is the free tier's
+**20 requests per day per model** — see risk 2, because it changes what a demo
+can be. §1 is left as the original audit of the starting codebase and is
+deliberately not rewritten.
+
 ---
 
 ## 1. Current state
@@ -108,7 +118,7 @@ materially changes the roadmap (see §9).
 | Language | Python (`.pyc` files are `cpython-314`, so Python 3.14) |
 | Framework | **FastAPI already present** in `backend/main.py` (143 lines) |
 | Run today | `cd backend && uvicorn main:app --reload` — imports are flat (`from validation import ...`, `from tools import ...`), so it only runs with `backend/` as the working directory |
-| LLM provider | **Hugging Face router** via the OpenAI SDK: `OpenAI(base_url="https://router.huggingface.co/v1", api_key=HUGGINGFACE_API_KEY)` |
+| LLM provider | **Google Gemini** via `langchain-google-genai` (`ChatGoogleGenerativeAI`), two models: `gemini-3.8-flash` for the planner and `gemini-3.5-flash-lite` for everything else. Replaced the Hugging Face router in A8, whose account had no inference credits. Only `app/agent/llm.py` talks to a provider |
 | Model | `"Qwen/Qwen3.8-Flash-Next:featherless-ai"`, hardcoded twice (`agent/core.py:49`, `agent/explainer.py:82`) |
 | Declared deps | `backend/requirements.txt`: `fastapi`, `uvicorn`, `python-multipart`, `pandas` |
 | Actual deps | also `openai` and `python-dotenv` (imported in `agent/core.py` and `agent/explainer.py`) — **`requirements.txt` is incomplete and a fresh install will crash on import** |
@@ -1171,7 +1181,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 | Class / function | Used for | Where |
 |---|---|---|
-| `init_chat_model(...)` | one chat model, built once, with timeout + max-retries from env. Pointed at `LLM_BASE_URL`, so swapping provider is config | `app/agent/llm.py` |
+| `ChatGoogleGenerativeAI(...)` | **two** chat models, built once each and cached by role, with timeout and 429 backoff. Only this module imports a provider SDK, enforced by a test | `app/agent/llm.py` |
 | `ChatPromptTemplate` + `MessagesPlaceholder("window")` | the condenser prompt: fixed system rules, window injected per turn | `services/condenser.py` |
 | `SystemMessage` / `HumanMessage` / `AIMessage` | mapping `messages.role` → LangChain messages; one function | `services/conversation_service.py` |
 | `trim_messages(strategy="last", token_counter=model, include_system=True)` | hard token backstop behind the 3-exchange window | `services/conversation_service.py` |
@@ -1580,12 +1590,13 @@ stream like any other response.
 | `AWS_SECRET_ACCESS_KEY` | Neon storage credential | |
 | `AWS_REGION` | storage region | |
 | `NEON_STORAGE_BUCKET` | **not injected by Neon** — the bucket name must be set by hand | `datasets` |
-| `LLM_API_KEY` | provider key. Keep `HUGGINGFACE_API_KEY` as a fallback name during the refactor so nothing breaks mid-move | |
-| `LLM_BASE_URL` | `https://router.huggingface.co/v1` today; an env var so the provider is a config change | |
-| `LLM_MODEL` | was hardcoded twice and **the hardcoded id was not a real model**; default is now `Qwen/Qwen3.8-Flash-Next-FP8` in `app/config.py` | `Qwen/Qwen3.8-Flash-Next-FP8` |
-| `LLM_STREAMING` | must be `true`; feature 1 verifies the model actually supports it | `true` |
-| `LLM_TIMEOUT_SECONDS` | there is no timeout today; a hung provider hangs the request forever | |
-| `LLM_MAX_RETRIES` | the `max_attempts=2` baked into `run_agent` | `2` |
+| `GEMINI_API_KEY` | Google AI Studio key. **Passed explicitly** by `app/agent/llm.py`: the SDK checks `GOOGLE_API_KEY` then `GEMINI_API_KEY`, and there is a known auth failure when only the latter is set alongside Application Default Credentials | |
+| `LLM_PLANNER_MODEL` | the planner (`core.py`) — must emit a plan that survives `validators.py` | `gemini-3.8-flash` |
+| `LLM_FAST_MODEL` | explainer, and later the condenser and summariser — cheap, frequent rewriting | `gemini-3.5-flash-lite` |
+| `LLM_PLANNER_THINKING_BUDGET` | `gemini-3.8-flash` is a **reasoning** model; left alone it spends its whole output budget on hidden thinking. `0` disables it, blank uses the model default. See risk 1 | `0` |
+| `LLM_STREAMING` | verified `true` for the fast model in A8 | `true` |
+| `LLM_TIMEOUT_SECONDS` | there was no timeout before A3; a hung provider hung the request forever | `60` |
+| `LLM_MAX_RETRIES` | retries for a **429 only**, with exponential backoff and jitter. Nothing else is retried: a malformed request fails identically the second time | `2` |
 | `CONDENSER_ENABLED` | kill switch (§6.5). Off = no follow-up understanding, but the app still works | `true` |
 | `HISTORY_WINDOW_EXCHANGES` | the window, in user+agent pairs | `3` |
 | `HISTORY_TOKEN_BUDGET` | `trim_messages` backstop behind the window | |
@@ -1776,12 +1787,15 @@ missing `else` branch** so no status can return `null`. Keep the old
 regresses.
 
 **First check of the whole project — the model.** Before anything else, a
-throwaway script that (a) confirms `LLM_MODEL` resolves on `LLM_BASE_URL` and
-returns a completion, and (b) confirms **streaming works** — iterate the chunks
-and print them as they arrive. Both matter: a model id that does not resolve
-blocks everything, and a model that cannot stream makes feature 5.5 impossible.
-If streaming is unavailable on the free tier, say so now, while §6B is still
-only a document.
+throwaway script (`backend/scratch/check_model.py`) that, for **both** model
+roles, confirms (a) the id is in the live `models.list` output, (b) a
+completion returns, with its latency and token usage, and (c) **streaming
+works** — iterating the chunks and timing them. All three matter: an id that
+does not resolve blocks everything, a model that cannot stream makes feature
+5.5 impossible, and — as A8 found — an id can resolve and answer correctly
+while still being too slow or too rate-limited to use. **Done:** both models
+pass all three. Add latency and quota to whatever you check next time; neither
+is visible from a model list.
 
 **Done when:** `uvicorn app.main:app` starts **from `backend/`**, `/health`
 reports `database: ok` **and `storage: ok`** against real Neon, `/docs` lists
@@ -1873,7 +1887,7 @@ conversation, and post four cases through `/docs` —
 is Suggested change S4), "Show me the best" (clarification),
 "Predict next year's sales" (cannot_answer). Then `GET` the messages and
 confirm the full exchange is stored, with `analysis_plan` and `result_data`
-populated. Then set `LLM_API_KEY` to a wrong value and confirm you get a 502
+populated. Then set `GEMINI_API_KEY` to a wrong value and confirm you get a 502
 **and** a `failed` agent message rather than a user message on its own.
 
 ---
@@ -1999,42 +2013,122 @@ still there.
 
 Ordered by how likely each one is to cost you a day.
 
-1. **The LLM model string, and whether it streams. — CHECKED in step A4;
-   two separate faults found, one fixed, one needs your account.**
+1. **The model choice itself — resolved, after two dead ends.**
+   Streaming is **no longer an unknown**: both configured models stream
+   incrementally, verified in A8 (2 chunks, time-to-first ~1.3-1.5s). The
+   assumption all of §6B rests on is confirmed, so feature 5.5 is safe to
+   build on that count.
 
-   *Fault 1, fixed.* `"Qwen/Qwen3.8-Flash-Next:featherless-ai"` — hardcoded in
-   `agent/core.py` and `agent/explainer.py` — **is not a real model.** The
-   router lists 127 models; that id is not among them, and neither is its base
-   `Qwen/Qwen3.8-Flash-Next`. The real id in that family is
-   **`Qwen/Qwen3.8-Flash-Next-FP8`**, which is now the default in
-   `app/config.py` and overridable via `LLM_MODEL`. So `/api/analyze` could
-   never have answered a question, independently of anything else — and the
-   symptom would have been a confusing agent failure, not a clear 404, exactly
-   as predicted.
+   Getting there cost two wrong model choices, both worth recording because
+   neither was visible from a model list:
 
-   *Fault 2, blocked on you.* With the corrected id the router returns
-   **HTTP 402: "Purchase pre-paid credits to continue using Inference
-   Providers."** The key authenticates (402, not 401) and the model resolves,
-   so this is purely billing. Until it is resolved, **features 5 and 5.5
-   cannot be built or verified**, because there is no way to see a single
-   completion. Three ways out: add pre-paid credits, subscribe to PRO, or
-   point `LLM_BASE_URL` at a provider with a genuinely free tier.
+   - *Hugging Face / Qwen (A4).* The hardcoded id
+     `Qwen/Qwen3.8-Flash-Next:featherless-ai` was not a real model, and the
+     account had no inference credits (HTTP 402). Nothing could be verified
+     at all. This is why the provider was replaced in A8.
+   - *`gemini-3.8-flash` (A8).* The id is real and answers correctly, but on
+     the free tier it is throttled to the point of uselessness: **548s for a
+     single output token**, and 504 `DEADLINE_EXCEEDED` at any sane timeout.
+     `thinking_budget=0` is honoured (usage reports `reasoning=0`), so this is
+     *not* reasoning overhead — the newest generation is simply queued behind
+     paid traffic. `gemini-3.7-flash` measured 154s. Measurements:
 
-   *Still unknown: streaming.* It cannot be tested behind a 402, so **the one
-   assumption §6B rests on is still unverified.** Re-run
-   `backend/scratch/check_model.py` the moment credits exist; it checks the
-   model id, a completion, and whether chunks arrive separately rather than in
-   one buffered lump. Do that **before** building feature 5.5, not during.
-2. **The free-tier call budget.** Condensation plus summarisation takes a turn
-   from 2 calls to ~3.5, a **+75 %** increase, on a budget you have stated is
-   free-only. A quota wall mid-demo is the failure mode. Mitigations are in
-   §6.5; `CONDENSER_ENABLED=false` is the switch that degrades the app instead
-   of breaking it.
+     | model | time for a 1-token reply |
+     |---|---|
+     | `gemini-3.8-flash` (budget 0) | 548.6s |
+     | `gemini-3.8-flash` (effort low) | 143.8s |
+     | `gemini-3.7-flash` (budget 0) | 153.6s |
+     | **`gemini-3.6-flash`** (budget 0) | **1.4s** |
+     | `gemini-3.5-flash` (budget 0) | 1.5s |
+
+   Settled on **`gemini-3.6-flash`** for the planner and
+   **`gemini-3.5-flash-lite`** for everything else. The lesson for next time
+   is that a model id existing in `models.list` says nothing about whether it
+   is *usable* on a free tier — latency and daily quota both have to be
+   measured, which is what `backend/scratch/check_model.py` now does.
+
+2. **The Gemini free tier: quota, privacy, and what you may demo with.**
+   Three separate constraints, all of them consequences of "free only".
+
+   *Call budget — measured, and much tighter than expected.* Gemini's free
+   tier limits `generateContent` to **20 requests per DAY, per model, per
+   project**. Not per minute. The quota error is explicit:
+
+   > Quota exceeded for metric: `generate_content_free_tier_requests`,
+   > limit: **20**, model: `gemini-3.6-flash` … Please retry in 9h38m
+
+   Measured in A8, a single question costs **2 planner calls + 1 explainer
+   call** (see the markdown-fence finding below). The planner and the
+   explainer draw on *separate* per-model quotas, so the binding constraint is
+   the planner's 20/day:
+
+   | | per question | daily ceiling |
+   |---|---|---|
+   | planner (`gemini-3.6-flash`) | 2 | **~10 questions/day** |
+   | explainer (`gemini-3.5-flash-lite`) | 1 | much higher; `-lite` models get a far larger allowance |
+
+   **~10 questions per day** is the real budget for the whole project, and
+   that is before §6 adds condensation and summarisation, which would take a
+   turn to ~3.5 calls and roughly halve it again. This is not a theoretical
+   risk: the A8 verification run exhausted the planner's daily quota and two
+   of six questions came back 429 on the first attempt at the run.
+
+   Consequences to plan around:
+   - **Development burns the same quota as demos.** Two verification runs were
+     enough to use up a day.
+   - `CONDENSER_ENABLED=false` (§6.5) stops being a nice-to-have and becomes
+     the default for any day you intend to demo.
+   - A `-lite` model is the only free model with usable volume. If the planner
+     has to run many times, it belongs on `-lite` too — but note that
+     `-lite` models **reject a thinking budget**, so
+     `LLM_PLANNER_THINKING_BUDGET` must be left blank for them or every call
+     fails with a bare `INVALID_ARGUMENT`.
+   - Rate-limit handling works and was observed working: a 429 retries twice
+     with exponential backoff **and jitter** and then surfaces as a real
+     **HTTP 429 with `Retry-After`**, never a 500. The jitter matters because
+     the condenser, planner and explainer of one turn are rate-limited within
+     milliseconds of each other and would otherwise retry in lockstep. What
+     retrying cannot do is conjure quota: against a *daily* limit the backoff
+     is futile by construction, and the honest response is the 429.
+
+   *Privacy — the one that constrains what you can show.* On the free tier
+   **Google may use prompts and responses to improve their products.** Every
+   uploaded CSV becomes part of a prompt, so every upload is a disclosure to
+   Google. Two consequences, and they are product decisions, not technical
+   ones:
+
+   - **Demo with sample data only.** `samples/orders.csv` and
+     `samples/customers.csv` exist for this. Do not upload personal,
+     confidential or client data while the app runs on a free tier.
+   - The UI must **say so next to the upload box** before anyone uploads
+     anything, in the same place it already has to admit that clearing browser
+     storage orphans their data (§4). A privacy note that appears only in a
+     README is not consent.
+
+   Moving to a paid tier changes the data-use terms and is the only real fix;
+   until then this limitation belongs on screen.
 3. **A mis-condensed question produces a confidently wrong answer.** This is the
    failure mode condensation *introduces*: the planner plans the wrong question
    perfectly, nothing errors, and the user is misled. T-C3 is the guard, and
    *"Understood as: …"* in the UI is the user's only visibility. Do not ship
    condensation without displaying it.
+3b. **The planner wraps its JSON in a markdown fence, and it costs double.**
+   Measured in A8 over six questions: `gemini-3.6-flash` returned
+   ```` ```json … ``` ```` on **attempt 1 of every single question**.
+   `json.loads` fails, `validate_agent_output` reports "invalid JSON", the
+   retry prompt fires, and attempt 2 returns clean JSON and passes. So the
+   pipeline is *correct* — the retry exists for exactly this — but it is
+   paying **2 planner calls for every question**, which on a 20/day quota is
+   the difference between ~20 and ~10 questions a day.
+
+   Notably `gemini-3.5-flash-lite` returned clean JSON with no fence and
+   passed on attempt 1, so this is model-specific rather than inherent.
+
+   The fix is one line in the planner prompt (forbid code fences, or strip
+   them before parsing) and was deliberately **not** made in A8, which was
+   scoped to the provider swap. It is the single highest-value change
+   available: it halves LLM usage for no behavioural change.
+
 4. **JSON reliability at the planner.** It asks for JSON in prose and parses it
    by hand, with one retry. Small free models emit prose preambles, markdown
    fences and trailing commas. Every failure is a user-visible 502 after two
