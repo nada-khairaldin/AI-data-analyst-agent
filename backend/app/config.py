@@ -21,6 +21,21 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BACKEND_DIR / ".env"
 
 
+def _split_models(value: str) -> list[str]:
+    """Parse a comma-separated model chain, preserving order.
+
+    Duplicates are dropped rather than tolerated: the same model twice in a
+    chain means the second attempt burns a call against a quota that has
+    already been refused.
+    """
+    seen = []
+    for part in (value or "").split(","):
+        name = part.strip()
+        if name and name not in seen:
+            seen.append(name)
+    return seen
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -58,25 +73,46 @@ class Settings(BaseSettings):
     # passes this value EXPLICITLY rather than relying on either lookup.
     gemini_api_key: str = ""
 
-    # Two models, because the work is two different jobs. The planner has to
-    # emit a valid tool plan and is worth the stronger model; condensing,
-    # explaining and summarising are cheap rewriting tasks that run more often
-    # and would burn the free-tier quota on the big model for no gain.
-    # Both ids were verified against the live models.list endpoint.
+    # FALLBACK CHAINS, not single models. The free tier's 20-requests-per-day
+    # quota is per MODEL, so a chain of three is three times the daily
+    # capacity; on a 429 the next model is tried immediately, because a daily
+    # quota will not recover from a backoff no matter how long it waits.
     #
-    # NOT gemini-3.8-flash. It exists and answers correctly, but on the free
-    # tier it took 548s to return a single token (with thinking disabled, so
-    # this is throttling, not reasoning) and 504s at any sane timeout.
-    # gemini-3.7-flash measured 154s. The 3.5/3.6 generation returns in ~1.5s.
-    # Measurements in docs/PLAN.md §10 risk 1.
-    llm_planner_model: str = "gemini-3.6-flash"
-    llm_fast_model: str = "gemini-3.5-flash-lite"
+    # Comma-separated, highest preference first.
+    #
+    # Dropped from the planner chain: gemini-3-flash-preview. It exists in
+    # v1beta but NOT in v1, and langchain-google-genai 4.4.3 calls v1
+    # (observed: POST /v1/models/<id>:generateContent), so it would 404.
+    # gemini-3.5-flash is a verified v1 alternative if a third is wanted.
+    llm_planner_models: str = "gemini-3.6-flash,gemini-2.5-flash"
+    llm_fast_models: str = (
+        "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite"
+    )
 
-    # Kept because the planner model is still a thinking-capable model and the
-    # default budget is what made gemini-3.8-flash unusable. 0 disables
-    # thinking; None uses the model default. Verified honoured: a call with 0
-    # reports reasoning=0 in its usage metadata.
-    llm_planner_thinking_budget: int | None = 0
+    # Thinking is configured per MODEL, never per role: capability belongs to
+    # the model. 0 disables thinking where that is allowed; blank uses each
+    # model's default.
+    #
+    # Note that "supports thinking" and "can have thinking turned off" are
+    # different things and the API does not expose the second one. models.list
+    # reports thinking=True for every model in both chains, yet
+    # gemini-3.5-flash-lite accepts a budget of 512 or -1 and REJECTS 0 with a
+    # bare INVALID_ARGUMENT. So llm.py probes it: a model that rejects the
+    # budget is remembered and retried without it.
+    llm_thinking_budget: int | None = 0
+
+    # Ask Gemini for JSON directly (response_mime_type) for the planner. The
+    # planner used to wrap its JSON in a ```json fence on attempt 1 of every
+    # question, which failed json.loads and burned a second planner call on
+    # the retry — doubling consumption against a 20/day quota.
+    llm_planner_json_mode: bool = True
+
+    # Cache LLM responses on disk, keyed by (model, full prompt). A
+    # DEVELOPMENT tool: it makes repeated verification runs free, which
+    # matters when the daily quota is 20. Refused in production by
+    # app/agent/llm.py regardless of this value.
+    llm_dev_cache: bool = False
+    llm_dev_cache_dir: str = ".llm_cache"
 
     llm_streaming: bool = True
     llm_timeout_seconds: float = 60.0
@@ -117,6 +153,28 @@ class Settings(BaseSettings):
         if value not in allowed:
             raise ValueError(f"environment must be one of {sorted(allowed)}")
         return value
+
+    @computed_field
+    @property
+    def planner_models(self) -> list[str]:
+        return _split_models(self.llm_planner_models)
+
+    @computed_field
+    @property
+    def fast_models(self) -> list[str]:
+        return _split_models(self.llm_fast_models)
+
+    @computed_field
+    @property
+    def dev_cache_enabled(self) -> bool:
+        """The cache is never on in production, whatever the env file says.
+
+        Serving a cached answer to a real user would be wrong in a way that is
+        very hard to notice: the answer looks fine, it is just stale and was
+        computed for a different dataset. So the environment wins over the
+        flag, rather than the other way round.
+        """
+        return self.llm_dev_cache and not self.is_production
 
     @computed_field
     @property

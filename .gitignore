@@ -30,6 +30,12 @@ ENV/
 # ---- Node / frontend ----
 node_modules/
 
+# ---- LLM development cache ----
+# Stores raw prompts, which embed the dataset's column names and the user's
+# question. Never commit it. Deleting the directory is the eviction policy.
+.llm_cache/
+backend/.llm_cache/
+
 # ---- Local scratch ----
 # Throwaway verification scripts live in backend/scratch/ and ARE committed;
 # anything ending in .local is personal and is not.

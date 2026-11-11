@@ -37,6 +37,9 @@ SAMPLES = "../samples"
 # Seconds to wait between questions; see the note in main().
 PAUSE = float(os.environ.get("PAUSE", "30"))
 
+# "1,2,3" runs only the first three. Default: all of them.
+ONLY = [int(x) for x in os.environ.get("ONLY", "").split(",") if x.strip()]
+
 QUESTIONS = [
     ("orders.csv", "Which product has the highest total quantity sold?", "ready"),
     ("orders.csv", "What is the average price?", "ready (scalar)"),
@@ -54,17 +57,27 @@ QUESTIONS = [
 calls = []
 # Raw planner outputs for the question currently running.
 planner_outputs = []
+# Real provider attempts (one per model tried) and dev-cache hits.
+counters = {"provider_attempts": 0, "cache_hits": 0, "models_used": []}
 
 
 def instrument():
-    """Wrap the two call sites.
+    """Wrap the two call sites, the provider attempt, and the cache.
 
     core.py and explainer.py each imported `complete` into their own
     namespace, so patching app.agent.llm.complete would not be seen by
     either. The names have to be replaced where they are used.
+
+    `_attempt` is wrapped separately because it is the only place a request
+    actually leaves the process — counting `complete` calls would count cache
+    hits as provider traffic, which is exactly the number under test.
     """
+    from app.agent import dev_cache, llm
+
     real_core = core.complete
     real_explainer = explainer.complete
+    real_attempt = llm._attempt
+    real_cache_get = dev_cache.get
 
     def core_complete(prompt, *, role=PLANNER):
         out = real_core(prompt, role=role)
@@ -77,8 +90,29 @@ def instrument():
         calls.append((role, len(prompt), len(out or "")))
         return out
 
+    def counting_attempt(model, role, operation, what):
+        counters["provider_attempts"] += 1
+        counters["models_used"].append(model)
+        return real_attempt(model, role, operation, what)
+
+    def counting_cache_get(model, prompt):
+        out = real_cache_get(model, prompt)
+        if out is not None:
+            counters["cache_hits"] += 1
+        return out
+
     core.complete = core_complete
     explainer.complete = explainer_complete
+    llm._attempt = counting_attempt
+    dev_cache.get = counting_cache_get
+    llm.dev_cache.get = counting_cache_get
+
+
+def dev_cache_stats():
+    from app.agent import dev_cache
+
+    s = dev_cache.stats()
+    return f"enabled={s['enabled']} entries={s['entries']}"
 
 
 def upload(client, filename):
@@ -106,7 +140,11 @@ def main():
     sessions = {}
     results = []
 
-    for filename, question, expected in QUESTIONS:
+    selected = [
+        q for n, q in enumerate(QUESTIONS, 1) if not ONLY or n in ONLY
+    ]
+
+    for filename, question, expected in selected:
         if filename not in sessions:
             sessions[filename] = upload(client, filename)
 
@@ -177,10 +215,20 @@ def main():
     print()
     planner_total = sum(1 for role, _, _ in calls if role == PLANNER)
     fast_total = sum(1 for role, _, _ in calls if role == FAST)
-    print(f"  TOTAL LLM CALLS : {len(calls)}  "
+    n = len(selected)
+    from collections import Counter
+
+    print(f"  questions            : {n}")
+    print(f"  logical LLM calls    : {len(calls)}  "
           f"(planner {planner_total}, fast {fast_total})")
-    print(f"  questions       : {len(QUESTIONS)}")
-    print(f"  calls/question  : {len(calls) / len(QUESTIONS):.2f}")
+    print(f"  REAL provider calls  : {counters['provider_attempts']}")
+    print(f"  dev-cache hits       : {counters['cache_hits']}")
+    print(f"  real calls/question  : {counters['provider_attempts'] / n:.2f}")
+    if counters["models_used"]:
+        print("  models that answered :")
+        for model, count in Counter(counters["models_used"]).most_common():
+            print(f"      {model:28} {count}")
+    print(f"  dev cache            : {dev_cache_stats()}")
 
 
 if __name__ == "__main__":

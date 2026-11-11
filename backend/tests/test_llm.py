@@ -1,12 +1,13 @@
-"""Tests for app/agent/llm.py (phase A8).
+"""Tests for app/agent/llm.py (phases A8 and A9).
 
 No network: every model is a stub. The live checks belong to
-scratch/check_model.py, which talks to the real API and reports latency,
-token usage and whether streaming is incremental.
+scratch/check_model.py.
 
-What these cover is the logic that is easy to get wrong and invisible when it
-is: reading a reply out of the content-blocks format, retrying a 429 and only
-a 429, and keeping the API key out of anything a user or a log can see.
+The behaviour under test exists because of one measured number — the Gemini
+free tier allows 20 generateContent requests per day, per model. So what
+matters here is the arithmetic of calls: that a 429 moves to the next model
+rather than sleeping, that a non-429 does not burn the whole chain, and that
+one question costs one planner call rather than two.
 """
 
 import pytest
@@ -18,9 +19,9 @@ class FakeReply:
     """Stands in for an AIMessage.
 
     ``content`` is a LIST of blocks, as langchain-core 1.x returns, and
-    ``text`` is the accessor that flattens it. Shaped this way deliberately:
-    code that reaches for ``.content`` would pass a naive stub and fail
-    against the real provider with "expected str instance, list found".
+    ``text`` flattens it. Shaped this way deliberately: code that reached for
+    ``.content`` would pass a naive stub and fail against the real provider
+    with "expected str instance, list found".
     """
 
     def __init__(self, text="OK"):
@@ -33,27 +34,25 @@ class FakeReply:
         return self._text
 
 
-class FakeModel:
-    def __init__(self, reply="OK", raises=None, fail_times=0):
+class FakeClient:
+    def __init__(self, name, reply="OK", error=None, fail_times=0):
+        self.name = name
         self.reply = reply
-        self.raises = raises
+        self.error = error
         self.fail_times = fail_times
         self.calls = 0
 
-    def invoke(self, prompt):
+    def _maybe_raise(self):
         self.calls += 1
-        if self.raises and self.calls <= self.fail_times:
-            raise self.raises
-        if self.raises and self.fail_times == 0:
-            raise self.raises
+        if self.error and self.calls <= self.fail_times:
+            raise self.error
+
+    def invoke(self, prompt):
+        self._maybe_raise()
         return FakeReply(self.reply)
 
     def stream(self, prompt):
-        self.calls += 1
-        if self.raises and self.calls <= self.fail_times:
-            raise self.raises
-        if self.raises and self.fail_times == 0:
-            raise self.raises
+        self._maybe_raise()
         for piece in ("1 ", "2 ", "3"):
             yield FakeReply(piece)
 
@@ -62,146 +61,208 @@ class ResourceExhausted(Exception):
     """Mimics google-api-core's 429 by class name, as the real one arrives."""
 
 
+ALWAYS = 10_000
+
+
+@pytest.fixture(autouse=True)
+def isolate(monkeypatch, tmp_path):
+    """Clean client cache, no sleeping, and no cache leaking between tests."""
+    llm.reset_models()
+    monkeypatch.setattr(llm.settings, "llm_dev_cache", False, raising=False)
+    monkeypatch.setattr(
+        llm.settings, "llm_dev_cache_dir", str(tmp_path / "cache"), raising=False
+    )
+    yield
+    llm.reset_models()
+
+
 @pytest.fixture(autouse=True)
 def no_sleep(monkeypatch):
-    """Backoff is asserted by call count, not by making the suite wait."""
     slept = []
     monkeypatch.setattr(llm.time, "sleep", lambda s: slept.append(s))
     return slept
 
 
 @pytest.fixture
-def stub(monkeypatch):
-    def install(model, role=None):
-        monkeypatch.setattr(llm, "get_model", lambda r=llm.PLANNER: model)
-        return model
+def clients(monkeypatch):
+    """Install a per-model fake client registry."""
+    registry = {}
+
+    def install(**per_model):
+        registry.update(per_model)
+
+        def fake_get_model(model, *, role=llm.FAST):
+            if model not in registry:
+                registry[model] = FakeClient(model)
+            return registry[model]
+
+        monkeypatch.setattr(llm, "get_model", fake_get_model)
+        return registry
 
     return install
 
 
 # ---------------------------------------------------------------------------
-# Roles
+# Chains
 # ---------------------------------------------------------------------------
 
 
-def test_the_two_roles_use_different_models():
-    """The whole point of two roles: the planner gets the stronger model and
-    the frequent cheap work does not."""
-    assert llm.model_name(llm.PLANNER) == llm.settings.llm_planner_model
-    assert llm.model_name(llm.FAST) == llm.settings.llm_fast_model
+def test_each_role_has_its_own_chain():
+    assert llm.chain_for(llm.PLANNER) == llm.settings.planner_models
+    assert llm.chain_for(llm.FAST) == llm.settings.fast_models
+
+
+def test_chains_are_not_empty_and_do_not_overlap_at_the_head():
+    """The two roles exist to use different models; if the heads matched, the
+    cheap model would be planning or vice versa."""
+    planner = llm.chain_for(llm.PLANNER)
+    fast = llm.chain_for(llm.FAST)
+
+    assert planner and fast
+    assert planner[0] != fast[0]
+
+
+def test_model_name_is_the_head_of_the_chain():
+    assert llm.model_name(llm.PLANNER) == llm.chain_for(llm.PLANNER)[0]
 
 
 def test_an_unknown_role_is_rejected():
-    llm.reset_models()
     with pytest.raises(ValueError, match="Unknown model role"):
-        llm.get_model("supervisor")
+        llm.chain_for("supervisor")
 
 
-def test_models_are_built_once_per_role(monkeypatch):
-    """Rebuilding a client per call would discard its connection pool."""
-    llm.reset_models()
-    built = []
+def test_an_empty_chain_is_a_configuration_error(monkeypatch):
+    monkeypatch.setattr(llm.settings, "llm_planner_models", "", raising=False)
+    monkeypatch.setattr(
+        type(llm.settings), "planner_models", property(lambda self: []), raising=False
+    )
 
-    class Recorder:
-        def __init__(self, **kwargs):
-            built.append(kwargs["model"])
-
-    monkeypatch.setattr(llm, "ChatGoogleGenerativeAI", Recorder)
-    monkeypatch.setattr(llm.settings, "gemini_api_key", "x", raising=False)
-
-    llm.get_model(llm.PLANNER)
-    llm.get_model(llm.PLANNER)
-    llm.get_model(llm.FAST)
-
-    assert len(built) == 2, "each role should be constructed exactly once"
-    llm.reset_models()
+    with pytest.raises(llm.LLMNotConfigured, match="LLM_PLANNER_MODELS"):
+        llm.chain_for(llm.PLANNER)
 
 
-def test_the_planner_gets_a_thinking_budget_and_the_fast_model_does_not(monkeypatch):
-    """gemini-3.8-flash is a reasoning model; the lite model is not and warns
-    that it ignores sampling parameters."""
-    llm.reset_models()
-    captured = {}
+def test_a_chain_drops_duplicates():
+    """The same model twice would burn a second call on a refused quota."""
+    from app.config import _split_models
 
-    class Recorder:
-        def __init__(self, **kwargs):
-            captured[kwargs["model"]] = kwargs
-
-    monkeypatch.setattr(llm, "ChatGoogleGenerativeAI", Recorder)
-    monkeypatch.setattr(llm.settings, "gemini_api_key", "x", raising=False)
-    monkeypatch.setattr(llm.settings, "llm_planner_thinking_budget", 0, raising=False)
-
-    llm.get_model(llm.PLANNER)
-    llm.get_model(llm.FAST)
-
-    planner = captured[llm.settings.llm_planner_model]
-    fast = captured[llm.settings.llm_fast_model]
-    assert planner["thinking_budget"] == 0
-    assert "thinking_budget" not in fast
-    llm.reset_models()
+    assert _split_models("a, b , a,,b , c") == ["a", "b", "c"]
 
 
-def test_the_api_key_is_passed_explicitly(monkeypatch):
-    """Not left to the SDK's GOOGLE_API_KEY / GEMINI_API_KEY lookup, which
-    fails outright when only the latter is set and ADC is also present."""
-    llm.reset_models()
-    captured = {}
+def test_a_chain_preserves_preference_order():
+    from app.config import _split_models
 
-    class Recorder:
-        def __init__(self, **kwargs):
-            captured.update(kwargs)
-
-    monkeypatch.setattr(llm, "ChatGoogleGenerativeAI", Recorder)
-    monkeypatch.setattr(llm.settings, "gemini_api_key", "a-key", raising=False)
-
-    llm.get_model(llm.FAST)
-
-    assert captured["google_api_key"] == "a-key"
-    llm.reset_models()
-
-
-def test_a_missing_key_is_its_own_error(monkeypatch):
-    llm.reset_models()
-    monkeypatch.setattr(llm.settings, "gemini_api_key", "", raising=False)
-
-    with pytest.raises(llm.LLMNotConfigured) as caught:
-        llm.get_model(llm.FAST)
-
-    assert "GEMINI_API_KEY" in str(caught.value)
-    llm.reset_models()
+    assert _split_models("first,second,third") == ["first", "second", "third"]
 
 
 # ---------------------------------------------------------------------------
-# Reading the reply
+# Failover: the point of the whole exercise
 # ---------------------------------------------------------------------------
 
 
-def test_complete_returns_a_plain_string(stub):
-    """Guards the content-blocks trap.
+def test_the_first_model_answers_when_it_can(clients):
+    chain = llm.chain_for(llm.PLANNER)
+    registry = clients(**{chain[0]: FakeClient(chain[0], reply="from-first")})
 
-    Under langchain-core 1.x a reply is a list of block dicts. Anything
-    downstream — json.loads in validators.py above all — needs a str.
-    """
-    stub(FakeModel(reply="the answer"))
-
-    result = llm.complete("hi")
-
-    assert result == "the answer"
-    assert isinstance(result, str)
+    assert llm.complete("hi", role=llm.PLANNER) == "from-first"
+    assert registry[chain[0]].calls == 1
 
 
-def test_stream_yields_strings(stub):
-    stub(FakeModel())
+def test_a_429_falls_through_to_the_next_model_immediately(clients, no_sleep):
+    """The quota is per model, so another model may well answer — and a DAILY
+    limit will not clear by waiting, which is why there is no sleep here."""
+    chain = llm.chain_for(llm.PLANNER)
+    registry = clients(
+        **{
+            chain[0]: FakeClient(
+                chain[0], error=ResourceExhausted("429 quota"), fail_times=ALWAYS
+            ),
+            chain[1]: FakeClient(chain[1], reply="from-fallback"),
+        }
+    )
 
-    pieces = list(llm.stream("hi"))
+    result = llm.complete("hi", role=llm.PLANNER)
 
-    assert pieces == ["1 ", "2 ", "3"]
-    assert all(isinstance(p, str) for p in pieces)
+    assert result == "from-fallback"
+    assert registry[chain[1]].calls == 1
+    assert no_sleep == [], "falling through to another model must not sleep"
 
 
-# ---------------------------------------------------------------------------
-# Rate limiting
-# ---------------------------------------------------------------------------
+def test_it_walks_the_whole_fast_chain(clients):
+    chain = llm.chain_for(llm.FAST)
+    assert len(chain) >= 3, "this test needs a chain of at least three"
+
+    registry = clients(
+        **{
+            chain[0]: FakeClient(chain[0], error=ResourceExhausted("429"), fail_times=ALWAYS),
+            chain[1]: FakeClient(chain[1], error=ResourceExhausted("429"), fail_times=ALWAYS),
+            chain[2]: FakeClient(chain[2], reply="third"),
+        }
+    )
+
+    assert llm.complete("hi", role=llm.FAST) == "third"
+    assert registry[chain[2]].calls == 1
+
+
+def test_the_readable_429_is_raised_only_when_every_model_is_exhausted(
+    clients, monkeypatch
+):
+    monkeypatch.setattr(llm.settings, "llm_max_retries", 0, raising=False)
+    chain = llm.chain_for(llm.FAST)
+    registry = clients(
+        **{
+            name: FakeClient(name, error=ResourceExhausted("429"), fail_times=ALWAYS)
+            for name in chain
+        }
+    )
+
+    with pytest.raises(llm.LLMRateLimited) as caught:
+        llm.complete("hi", role=llm.FAST)
+
+    assert all(registry[name].calls == 1 for name in chain), "every model is tried"
+    message = str(caught.value)
+    assert "every available model" in message
+    assert "429" not in message, "an HTTP code is not an explanation"
+
+
+def test_after_the_chain_is_exhausted_it_backs_off_and_retries_the_chain(
+    clients, monkeypatch, no_sleep
+):
+    """A per-minute limit does recover, so one wait-and-retry is worthwhile
+    once failover has been tried."""
+    monkeypatch.setattr(llm.settings, "llm_max_retries", 1, raising=False)
+    chain = llm.chain_for(llm.FAST)
+    clients(
+        **{
+            name: FakeClient(name, error=ResourceExhausted("429"), fail_times=ALWAYS)
+            for name in chain
+        }
+    )
+
+    with pytest.raises(llm.LLMRateLimited):
+        llm.complete("hi", role=llm.FAST)
+
+    assert len(no_sleep) == 1, "one backoff between the two rounds"
+
+
+def test_a_non_rate_limit_error_does_not_burn_the_chain(clients, no_sleep):
+    """A malformed request fails identically on every model, so trying them
+    all would spend three days' quota on one bad prompt."""
+    chain = llm.chain_for(llm.PLANNER)
+    registry = clients(
+        **{
+            chain[0]: FakeClient(
+                chain[0], error=Exception("400 invalid argument"), fail_times=ALWAYS
+            ),
+            chain[1]: FakeClient(chain[1], reply="should-not-be-reached"),
+        }
+    )
+
+    with pytest.raises(llm.LLMError) as caught:
+        llm.complete("hi", role=llm.PLANNER)
+
+    assert registry[chain[1]].calls == 0, "the second model must not be tried"
+    assert not isinstance(caught.value, llm.LLMRateLimited)
+    assert no_sleep == []
 
 
 @pytest.mark.parametrize(
@@ -214,8 +275,6 @@ def test_stream_yields_strings(stub):
     ],
 )
 def test_a_429_is_recognised_in_its_several_shapes(error):
-    """google-api-core, the REST transport and LangChain each word it
-    differently; the only thing they share is the text."""
     assert llm._is_rate_limit(error) is True
 
 
@@ -223,112 +282,243 @@ def test_an_ordinary_error_is_not_mistaken_for_a_429():
     assert llm._is_rate_limit(Exception("invalid argument: bad schema")) is False
 
 
-def test_a_429_is_retried_and_can_succeed(stub, monkeypatch, no_sleep):
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 2, raising=False)
-    model = stub(FakeModel(raises=ResourceExhausted("429"), fail_times=1))
+def test_a_nine_hour_retry_after_is_ignored():
+    """Against a DAILY quota Gemini returns retryDelay=34705s. Sleeping that
+    long is not something a request can do, so the cap turns it into a 429."""
 
-    result = llm.complete("hi")
+    class DailyQuota(Exception):
+        retry_after = 34705
+
+    assert llm._retry_after(DailyQuota()) is None
+
+
+def test_a_short_retry_after_is_honoured():
+    class PerMinute(Exception):
+        retry_after = 7
+
+    assert llm._retry_after(PerMinute()) == 7.0
+
+
+# ---------------------------------------------------------------------------
+# Thinking capability follows the MODEL, not the role
+# ---------------------------------------------------------------------------
+
+
+def test_a_model_that_rejects_the_budget_is_retried_without_it(clients, monkeypatch):
+    """models.list reports thinking=True for every model in both chains, yet
+    gemini-3.5-flash-lite accepts 512 or -1 and REJECTS 0. The capability is
+    not discoverable, so it is learned."""
+    monkeypatch.setattr(llm.settings, "llm_thinking_budget", 0, raising=False)
+    chain = llm.chain_for(llm.PLANNER)
+    registry = clients(
+        **{
+            chain[0]: FakeClient(
+                chain[0],
+                error=Exception("400 INVALID_ARGUMENT"),
+                fail_times=1,
+            )
+        }
+    )
+
+    result = llm.complete("hi", role=llm.PLANNER)
 
     assert result == "OK"
-    assert model.calls == 2
-    assert len(no_sleep) == 1, "it should have backed off once"
+    assert registry[chain[0]].calls == 2, "one rejection, one retry"
+    assert chain[0] in llm._rejects_thinking_budget
 
 
-def test_backoff_grows_between_attempts(stub, monkeypatch, no_sleep):
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 3, raising=False)
-    stub(FakeModel(raises=ResourceExhausted("429"), fail_times=99))
+def test_the_rejection_is_remembered_so_it_happens_once(clients, monkeypatch):
+    monkeypatch.setattr(llm.settings, "llm_thinking_budget", 0, raising=False)
+    chain = llm.chain_for(llm.PLANNER)
+    clients(
+        **{
+            chain[0]: FakeClient(
+                chain[0], error=Exception("400 INVALID_ARGUMENT"), fail_times=1
+            )
+        }
+    )
 
-    with pytest.raises(llm.LLMRateLimited):
-        llm.complete("hi")
-
-    assert len(no_sleep) == 3
-    assert no_sleep[1] > no_sleep[0], "the delay should increase"
-
-
-def test_retries_are_bounded_and_then_it_gives_up(stub, monkeypatch):
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 2, raising=False)
-    model = stub(FakeModel(raises=ResourceExhausted("429"), fail_times=99))
-
-    with pytest.raises(llm.LLMRateLimited):
-        llm.complete("hi")
-
-    assert model.calls == 3, "max_retries=2 means three attempts in total"
+    llm.complete("hi", role=llm.PLANNER)
+    assert llm._thinking_kwargs(chain[0]) == {}
 
 
-def test_the_rate_limit_message_is_readable(stub, monkeypatch):
-    """It reaches the user, so it has to say what to do and nothing else."""
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 0, raising=False)
-    stub(FakeModel(raises=ResourceExhausted("429 quota"), fail_times=99))
+def test_no_budget_is_sent_when_none_is_configured(monkeypatch):
+    monkeypatch.setattr(llm.settings, "llm_thinking_budget", None, raising=False)
 
-    with pytest.raises(llm.LLMRateLimited) as caught:
-        llm.complete("hi")
-
-    message = str(caught.value)
-    assert "rate limit" in message.lower()
-    assert "429" not in message, "an HTTP code is not an explanation"
-    assert "Traceback" not in message
+    assert llm._thinking_kwargs("any-model") == {}
 
 
-def test_a_rate_limit_maps_to_http_429():
-    assert llm.LLMRateLimited.status_code == 429
-    assert llm.LLMRateLimited.code == "LLM_RATE_LIMITED"
+def test_the_budget_is_sent_when_configured(monkeypatch):
+    monkeypatch.setattr(llm.settings, "llm_thinking_budget", 0, raising=False)
+
+    assert llm._thinking_kwargs("some-model") == {"thinking_budget": 0}
 
 
-def test_a_missing_key_maps_to_503_not_429():
-    assert llm.LLMNotConfigured.status_code == 503
+def test_thinking_is_not_decided_by_role(monkeypatch):
+    """The regression this replaces: the budget used to be applied to the
+    PLANNER role, so pointing the planner at a -lite model failed every call
+    with a bare INVALID_ARGUMENT."""
+    monkeypatch.setattr(llm.settings, "llm_thinking_budget", 7, raising=False)
 
-
-def test_a_generic_failure_maps_to_502_not_500():
-    """A provider failure is an upstream failure, not a bug in this app."""
-    assert llm.LLMError.status_code == 502
+    assert llm._thinking_kwargs("m") == {"thinking_budget": 7}
+    llm._rejects_thinking_budget.add("m")
+    assert llm._thinking_kwargs("m") == {}
 
 
 # ---------------------------------------------------------------------------
-# Everything else is not retried
+# JSON mode and fences
 # ---------------------------------------------------------------------------
 
 
-def test_a_non_rate_limit_error_is_not_retried(stub, monkeypatch, no_sleep):
-    """A malformed request fails identically the second time; retrying only
-    makes the user wait longer for the same failure."""
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 3, raising=False)
-    model = stub(FakeModel(raises=Exception("400 invalid argument"), fail_times=99))
+def test_json_mode_is_requested_for_the_planner_only(monkeypatch):
+    llm.reset_models()
+    captured = {}
 
-    with pytest.raises(llm.LLMError) as caught:
-        llm.complete("hi")
+    class Recorder:
+        def __init__(self, **kwargs):
+            captured[(kwargs["model"], kwargs.get("response_mime_type"))] = kwargs
 
-    assert model.calls == 1
-    assert no_sleep == []
-    assert not isinstance(caught.value, llm.LLMRateLimited)
+    monkeypatch.setattr(llm, "ChatGoogleGenerativeAI", Recorder)
+    monkeypatch.setattr(llm.settings, "gemini_api_key", "x", raising=False)
+    monkeypatch.setattr(llm.settings, "llm_planner_json_mode", True, raising=False)
+
+    llm.get_model("m1", role=llm.PLANNER)
+    llm.get_model("m2", role=llm.FAST)
+
+    assert ("m1", "application/json") in captured
+    assert ("m2", None) in captured
 
 
-def test_provider_internals_do_not_reach_the_user(stub, monkeypatch):
-    """The provider's own message can be long and full of internals, so it is
-    logged and a short sentence is returned instead."""
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 0, raising=False)
-    stub(
-        FakeModel(
-            raises=Exception("500 at projects/abc/locations/us/models/internal-x"),
-            fail_times=99,
-        )
+def test_a_fenced_reply_is_still_parsed(clients):
+    """JSON mode is a request, not a guarantee; the fence strip is the belt."""
+    chain = llm.chain_for(llm.PLANNER)
+    clients(**{chain[0]: FakeClient(chain[0], reply='```json\n{"status": "ready"}\n```')})
+
+    assert llm.complete("hi", role=llm.PLANNER) == '{"status": "ready"}'
+
+
+def test_an_unfenced_reply_is_untouched(clients):
+    chain = llm.chain_for(llm.PLANNER)
+    clients(**{chain[0]: FakeClient(chain[0], reply='{"status": "ready"}')})
+
+    assert llm.complete("hi", role=llm.PLANNER) == '{"status": "ready"}'
+
+
+def test_complete_returns_a_plain_string(clients):
+    chain = llm.chain_for(llm.PLANNER)
+    clients(**{chain[0]: FakeClient(chain[0], reply="the answer")})
+
+    result = llm.complete("hi", role=llm.PLANNER)
+
+    assert result == "the answer"
+    assert isinstance(result, str)
+
+
+def test_stream_yields_strings(clients):
+    chain = llm.chain_for(llm.FAST)
+    clients(**{chain[0]: FakeClient(chain[0])})
+
+    pieces = list(llm.stream("hi", role=llm.FAST))
+
+    assert pieces == ["1 ", "2 ", "3"]
+    assert all(isinstance(p, str) for p in pieces)
+
+
+# ---------------------------------------------------------------------------
+# Safety of messages
+# ---------------------------------------------------------------------------
+
+
+def test_provider_internals_do_not_reach_the_user(clients, monkeypatch):
+    chain = llm.chain_for(llm.PLANNER)
+    clients(
+        **{
+            name: FakeClient(
+                name,
+                error=Exception("500 at projects/abc/locations/us/models/internal-x"),
+                fail_times=ALWAYS,
+            )
+            for name in chain
+        }
     )
 
     with pytest.raises(llm.LLMError) as caught:
-        llm.complete("hi")
+        llm.complete("hi", role=llm.PLANNER)
 
     assert "projects/abc" not in str(caught.value)
 
 
-def test_the_api_key_never_appears_in_an_error(stub, monkeypatch):
-    """The one place a key could plausibly escape into a response body."""
+def test_the_api_key_never_appears_in_an_error(clients, monkeypatch):
     monkeypatch.setattr(llm.settings, "gemini_api_key", "SECRET-KEY-123", raising=False)
-    monkeypatch.setattr(llm.settings, "llm_max_retries", 0, raising=False)
-    stub(FakeModel(raises=Exception("auth failed for key SECRET-KEY-123"), fail_times=99))
+    chain = llm.chain_for(llm.PLANNER)
+    clients(
+        **{
+            name: FakeClient(
+                name,
+                error=Exception("auth failed for key SECRET-KEY-123"),
+                fail_times=ALWAYS,
+            )
+            for name in chain
+        }
+    )
 
     with pytest.raises(llm.LLMError) as caught:
-        llm.complete("hi")
+        llm.complete("hi", role=llm.PLANNER)
 
     assert "SECRET-KEY-123" not in str(caught.value)
+
+
+def test_status_codes():
+    assert llm.LLMRateLimited.status_code == 429
+    assert llm.LLMRateLimited.code == "LLM_RATE_LIMITED"
+    assert llm.LLMNotConfigured.status_code == 503
+    assert llm.LLMError.status_code == 502
+
+
+def test_a_missing_key_is_its_own_error(monkeypatch):
+    llm.reset_models()
+    monkeypatch.setattr(llm.settings, "gemini_api_key", "", raising=False)
+
+    with pytest.raises(llm.LLMNotConfigured) as caught:
+        llm.get_model("m", role=llm.FAST)
+
+    assert "GEMINI_API_KEY" in str(caught.value)
+
+
+def test_the_api_key_is_passed_explicitly(monkeypatch):
+    """Not left to the SDK's GOOGLE_API_KEY / GEMINI_API_KEY lookup, which
+    fails when only the latter is set and ADC is also present."""
+    llm.reset_models()
+    captured = {}
+
+    class Recorder:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+    monkeypatch.setattr(llm, "ChatGoogleGenerativeAI", Recorder)
+    monkeypatch.setattr(llm.settings, "gemini_api_key", "a-key", raising=False)
+
+    llm.get_model("m", role=llm.FAST)
+
+    assert captured["google_api_key"] == "a-key"
+
+
+def test_clients_are_built_once_per_configuration(monkeypatch):
+    llm.reset_models()
+    built = []
+
+    class Recorder:
+        def __init__(self, **kwargs):
+            built.append(kwargs["model"])
+
+    monkeypatch.setattr(llm, "ChatGoogleGenerativeAI", Recorder)
+    monkeypatch.setattr(llm.settings, "gemini_api_key", "x", raising=False)
+
+    llm.get_model("m1", role=llm.FAST)
+    llm.get_model("m1", role=llm.FAST)
+    llm.get_model("m2", role=llm.FAST)
+
+    assert built == ["m1", "m2"]
 
 
 # ---------------------------------------------------------------------------
@@ -337,20 +527,11 @@ def test_the_api_key_never_appears_in_an_error(stub, monkeypatch):
 
 
 def test_only_llm_py_talks_to_a_provider():
-    """Switching provider stays a one-file job only while this holds.
-
-    It has already been worth it once: replacing the Hugging Face client with
-    Gemini touched this module and two one-line call sites.
-    """
+    """Switching provider stays a one-file job only while this holds."""
     import pathlib
 
     app_dir = pathlib.Path(__file__).resolve().parent.parent / "app"
-    markers = (
-        "langchain_google_genai",
-        "google.genai",
-        "import openai",
-        "from openai",
-    )
+    markers = ("langchain_google_genai", "google.genai", "import openai", "from openai")
     offenders = []
 
     for path in app_dir.rglob("*.py"):
@@ -364,13 +545,9 @@ def test_only_llm_py_talks_to_a_provider():
 
 
 def test_core_uses_the_planner_and_explainer_uses_the_fast_model():
-    """Asserted on the source because the alternative is a live call."""
     import pathlib
 
     agent = pathlib.Path(__file__).resolve().parent.parent / "app" / "agent"
 
-    core = (agent / "core.py").read_text(encoding="utf-8")
-    explainer = (agent / "explainer.py").read_text(encoding="utf-8")
-
-    assert "role=PLANNER" in core
-    assert "role=FAST" in explainer
+    assert "role=PLANNER" in (agent / "core.py").read_text(encoding="utf-8")
+    assert "role=FAST" in (agent / "explainer.py").read_text(encoding="utf-8")

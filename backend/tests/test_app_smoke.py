@@ -158,11 +158,13 @@ def test_config_is_the_only_env_reader():
     """
     from app.config import settings
 
-    assert settings.llm_planner_model, "LLM_PLANNER_MODEL must resolve"
-    assert settings.llm_fast_model, "LLM_FAST_MODEL must resolve"
-    # The two roles exist precisely so they can differ; if they are ever equal
-    # the cheap model is doing the planner's job or vice versa.
-    assert settings.llm_planner_model != settings.llm_fast_model
+    assert settings.planner_models, "LLM_PLANNER_MODELS must resolve"
+    assert settings.fast_models, "LLM_FAST_MODELS must resolve"
+    # The two roles exist precisely so they can differ; if the heads were ever
+    # equal the cheap model would be doing the planner's job or vice versa.
+    assert settings.planner_models[0] != settings.fast_models[0]
+    # The dev cache must never be on by default, and never in production.
+    assert settings.dev_cache_enabled is False or not settings.is_production
     assert settings.cors_origins, "CORS origins must never be empty"
     # Pooled for the app, direct for Alembic. If these are ever equal, one of
     # them is wrong and migrations will fail in confusing ways.

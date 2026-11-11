@@ -13,6 +13,12 @@ Neon Object Storage** (S3-compatible, Beta; private bucket `dataset`). Affects
 §2, §3, §4 `dataset_files`, §7, §8 (region is now constrained), §9 features
 0.5-2, and §10 risks 19-24. Written while implementing Phase A.
 
+Revision 5 — **A9: surviving the free tier.** One planner call per question
+instead of two (JSON mode plus a deterministic fence strip), model **fallback
+chains** so the per-model daily quota multiplies, a development response
+cache, and dirtier samples. Net effect: ~10 usable questions a day became
+~40. Affects §7, §10 risks 2 and 3b, and `samples/`.
+
 Revision 4 — **Q5 changed: the LLM provider is now Google Gemini**, via
 `langchain-google-genai`, with **two models** (`gemini-3.6-flash` to plan,
 `gemini-3.5-flash-lite` for everything else). The Hugging Face account had no
@@ -2073,16 +2079,51 @@ Ordered by how likely each one is to cost you a day.
    risk: the A8 verification run exhausted the planner's daily quota and two
    of six questions came back 429 on the first attempt at the run.
 
-   Consequences to plan around:
-   - **Development burns the same quota as demos.** Two verification runs were
-     enough to use up a day.
-   - `CONDENSER_ENABLED=false` (§6.5) stops being a nice-to-have and becomes
-     the default for any day you intend to demo.
-   - A `-lite` model is the only free model with usable volume. If the planner
-     has to run many times, it belongs on `-lite` too — but note that
-     `-lite` models **reject a thinking budget**, so
-     `LLM_PLANNER_THINKING_BUDGET` must be left blank for them or every call
-     fails with a bare `INVALID_ARGUMENT`.
+   **What A9 did about it.** Three mitigations, in order of how much they
+   buy:
+
+   1. **One planner call per question instead of two** (risk 3b). This is the
+      biggest single win and it doubles the usable question count outright.
+   2. **Fallback chains.** `LLM_PLANNER_MODELS` and `LLM_FAST_MODELS` are
+      ordered lists, and the quota is *per model*, so a chain of *n* models is
+      *n* times the daily capacity. On a 429 the next model is tried
+      **immediately** — a daily quota does not recover from a backoff of any
+      length, so sleeping first would only add latency to the same outcome.
+      Only once every model has refused does it back off and retry the chain,
+      which is what recovers a per-*minute* limit. Gemini's own
+      `retryDelay` for a daily limit is ~9 hours, so it is **capped at 120s**
+      and otherwise ignored; past that the honest answer is the 429.
+
+      | role | chain | daily planner capacity |
+      |---|---|---|
+      | planner | `gemini-3.6-flash`, `gemini-2.5-flash` | 40 calls ≈ **40 questions** |
+      | fast | `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-2.5-flash-lite` | 60 calls |
+
+      So ~10 questions/day became **~40**: 2× from the fence fix, 2× from the
+      second planner model.
+   3. **A development cache.** `LLM_DEV_CACHE=true` stores responses on disk
+      keyed by `(model, full prompt)`, so re-running a verification costs
+      nothing. Verified in A9: the cold run made 5 real calls, the warm run
+      made **0** and served 5 from cache. It is **refused in production** by
+      `app/config.py` regardless of the env file, because a cached answer
+      shown to a real user looks perfectly fine and was computed for someone
+      else's dataset.
+
+   Consequences still to plan around:
+   - **Development burns the same quota as demos** whenever the cache is off.
+     Turn it on while iterating; the live latency numbers in this document
+     were all taken with it off.
+   - `CONDENSER_ENABLED=false` (§6.5) remains the right default for any day
+     you intend to demo, since §6 would take a turn to ~3.5 calls.
+   - A `-lite` model is the only free model with really large volume. If the
+     planner ever has to run many times it belongs on `-lite` too — but note
+     that **`gemini-3.5-flash-lite` rejects a thinking budget of 0** while
+     accepting 512 or −1. `list-models` reports `thinking=True` for it, so the
+     capability is not discoverable; `llm.py` learns it at runtime by retrying
+     without the budget and remembering. Thinking is therefore configured
+     **per model, never per role** — the earlier role-based version failed
+     every call with a bare `INVALID_ARGUMENT` the moment the planner was
+     pointed at a `-lite` model.
    - Rate-limit handling works and was observed working: a 429 retries twice
      with exponential backoff **and jitter** and then surfaces as a real
      **HTTP 429 with `Retry-After`**, never a 500. The jitter matters because
@@ -2112,22 +2153,36 @@ Ordered by how likely each one is to cost you a day.
    perfectly, nothing errors, and the user is misled. T-C3 is the guard, and
    *"Understood as: …"* in the UI is the user's only visibility. Do not ship
    condensation without displaying it.
-3b. **The planner wraps its JSON in a markdown fence, and it costs double.**
-   Measured in A8 over six questions: `gemini-3.6-flash` returned
+3b. **The planner's markdown fence — FIXED in A9, and it halved LLM usage.**
+
+   *The problem (measured in A8).* `gemini-3.6-flash` returned
    ```` ```json … ``` ```` on **attempt 1 of every single question**.
-   `json.loads` fails, `validate_agent_output` reports "invalid JSON", the
-   retry prompt fires, and attempt 2 returns clean JSON and passes. So the
-   pipeline is *correct* — the retry exists for exactly this — but it is
-   paying **2 planner calls for every question**, which on a 20/day quota is
-   the difference between ~20 and ~10 questions a day.
+   `json.loads` failed, `validate_agent_output` reported "invalid JSON", the
+   retry prompt fired, and attempt 2 passed. The pipeline was correct — the
+   retry exists for exactly this — but it was paying **2 planner calls per
+   question**, which against a 20/day quota is the difference between ~20 and
+   ~10 questions a day.
 
-   Notably `gemini-3.5-flash-lite` returned clean JSON with no fence and
-   passed on attempt 1, so this is model-specific rather than inherent.
+   *The fix, two independent layers.* Asking nicely is not enough on its own,
+   so both are in place:
 
-   The fix is one line in the planner prompt (forbid code fences, or strip
-   them before parsing) and was deliberately **not** made in A8, which was
-   scoped to the provider swap. It is the single highest-value change
-   available: it halves LLM usage for no behavioural change.
+   1. **Gemini JSON mode.** `response_mime_type="application/json"` on the
+      planner client (`LLM_PLANNER_JSON_MODE`). This is a request, not a
+      guarantee, which is why there is a second layer.
+   2. **A deterministic fence strip.** `app/agent/text_utils.py` removes a
+      fence that wraps the *whole* reply, before anything parses it. It lives
+      at the provider boundary rather than in `validators.py`, because a
+      markdown fence is a provider quirk and `validators.py` should keep
+      describing what a valid plan *is*. It is deliberately conservative: a
+      fence in the middle of prose is left alone, because guessing which part
+      of a mixed reply was "the answer" is how a parser starts silently
+      picking the wrong one — that case is a planner failure and should be
+      reported as one.
+
+   *Result, measured over Q1-Q3 in A9:* **every question passed on attempt 1**
+   and the planner cost dropped from 2 calls to 1. Total real provider calls
+   for three questions: **5** (3 planner + 2 fast; the clarification needs no
+   explainer call), against 9 planner calls for six questions in A8.
 
 4. **JSON reliability at the planner.** It asks for JSON in prose and parses it
    by hand, with one retry. Small free models emit prose preambles, markdown
