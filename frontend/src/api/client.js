@@ -85,6 +85,10 @@ export const api = {
 
   getReport: (id) => request(`/api/datasets/${id}/report`, { headers: headers() }),
 
+  getColumns: (id) => request(`/api/datasets/${id}/columns`, { headers: headers() }),
+
+  getPreview: (id) => request(`/api/datasets/${id}/preview`, { headers: headers() }),
+
   uploadDataset: (file) => {
     const form = new FormData();
     form.append('file', file);

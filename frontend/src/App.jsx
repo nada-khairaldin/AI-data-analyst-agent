@@ -3,7 +3,6 @@ import Sidebar from './components/Sidebar';
 import WelcomeScreen from './components/WelcomeScreen';
 import DatasetOverview from './components/DatasetOverview';
 import ChatInterface from './components/ChatInterface';
-import PreprocessingReport from './components/PreprocessingReport';
 import DatasetRejected from './components/DatasetRejected';
 import ErrorBanner from './components/ErrorBanner';
 import { api, ApiError } from './api/client';
@@ -203,7 +202,6 @@ export default function App() {
               onBack={() => setCurrentView('welcome')}
               onNewConversation={startConversation}
               onSelectConversation={openConversation}
-              onShowReport={() => setCurrentView('report')}
             />
           )}
 
@@ -212,15 +210,6 @@ export default function App() {
               dataset={activeDataset}
               conversation={activeConversation}
               onTurnComplete={refreshDatasets}
-            />
-          )}
-
-          {currentView === 'report' && activeDataset && (
-            <PreprocessingReport
-              dataset={activeDataset}
-              report={report}
-              isReportLoading={isReportLoading}
-              onBack={() => setCurrentView('overview')}
             />
           )}
 
