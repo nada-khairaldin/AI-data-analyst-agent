@@ -19,6 +19,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [rejection, setRejection] = useState(null);
   const [report, setReport] = useState(null);
+  const [isReportLoading, setIsReportLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [theme, setTheme] = useState('dark');
@@ -47,6 +48,35 @@ export default function App() {
     })();
   }, [refreshDatasets]);
 
+  // The report belongs to whichever dataset is active, so it loads from one
+  // place keyed on the id. It used to be fetched inside openDataset only,
+  // which meant an upload — which sets the id directly — left the quality
+  // card and the preparation tab empty until the page was reloaded.
+  useEffect(() => {
+    if (!activeDatasetId) {
+      setReport(null);
+      return;
+    }
+    let cancelled = false;
+    setReport(null);
+    setIsReportLoading(true);
+    (async () => {
+      try {
+        const body = await api.getReport(activeDatasetId);
+        if (!cancelled) setReport(body);
+      } catch (cause) {
+        // The overview still works without it; only the quality card and the
+        // preparation tab need the report.
+        if (!cancelled) setError(cause instanceof ApiError ? cause.message : String(cause));
+      } finally {
+        if (!cancelled) setIsReportLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeDatasetId]);
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -61,7 +91,6 @@ export default function App() {
       await refreshDatasets();
       setActiveDatasetId(dataset.id);
       setActiveConversationId(null);
-      setReport(null);
       setCurrentView('overview');
     } catch (cause) {
       if (cause instanceof ApiError && cause.code === 'DATASET_REJECTED') {
@@ -77,20 +106,12 @@ export default function App() {
     }
   };
 
-  const openDataset = async (id) => {
-    setActiveDatasetId(id);
+  const openDataset = (id) => {
+    setActiveDatasetId(id);   // the effect above loads the report
     setActiveConversationId(null);
     setCurrentView('overview');
     setIsMobileOpen(false);
-    setReport(null);
     setError(null);
-    try {
-      setReport(await api.getReport(id));
-    } catch (cause) {
-      // The overview still works without the report; only the quality card
-      // and the report view need it.
-      setError(cause instanceof ApiError ? cause.message : String(cause));
-    }
   };
 
   const openConversation = (datasetId, conversationId) => {
@@ -178,6 +199,7 @@ export default function App() {
             <DatasetOverview
               dataset={activeDataset}
               report={report}
+              isReportLoading={isReportLoading}
               onBack={() => setCurrentView('welcome')}
               onNewConversation={startConversation}
               onSelectConversation={openConversation}
@@ -197,6 +219,7 @@ export default function App() {
             <PreprocessingReport
               dataset={activeDataset}
               report={report}
+              isReportLoading={isReportLoading}
               onBack={() => setCurrentView('overview')}
             />
           )}
