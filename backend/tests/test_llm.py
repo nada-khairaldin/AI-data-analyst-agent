@@ -551,3 +551,78 @@ def test_core_uses_the_planner_and_explainer_uses_the_fast_model():
 
     assert "role=PLANNER" in (agent / "core.py").read_text(encoding="utf-8")
     assert "role=FAST" in (agent / "explainer.py").read_text(encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# astream must behave like the sync path
+# ---------------------------------------------------------------------------
+
+
+class FakeAsyncClient:
+    """Raises on the first astream call, succeeds on the second."""
+
+    def __init__(self, name, error=None, fail_times=0):
+        self.name = name
+        self.error = error
+        self.fail_times = fail_times
+        self.calls = 0
+
+    async def astream(self, prompt):
+        self.calls += 1
+        if self.error and self.calls <= self.fail_times:
+            raise self.error
+        for piece in ("a ", "b"):
+            yield FakeReply(piece)
+
+
+async def test_astream_retries_a_model_that_rejects_the_thinking_budget(
+    monkeypatch, tmp_path
+):
+    """The bug this covers was found in the live phase C run: astream had its
+    own loop and so skipped the retry that _attempt gives the sync path. The
+    explainer died on INVALID_ARGUMENT while condensation worked.
+    """
+    llm.reset_models()
+    monkeypatch.setattr(llm.settings, "llm_thinking_budget", 0, raising=False)
+    monkeypatch.setattr(llm.settings, "llm_dev_cache", False, raising=False)
+    monkeypatch.setattr(
+        llm.settings, "llm_dev_cache_dir", str(tmp_path), raising=False
+    )
+
+    client = FakeAsyncClient(
+        "m", error=Exception("400 INVALID_ARGUMENT"), fail_times=1
+    )
+    monkeypatch.setattr(llm, "get_model", lambda model, role=llm.FAST: client)
+
+    pieces = [piece async for piece in llm.astream("hi", role=llm.FAST)]
+
+    assert pieces == ["a ", "b"]
+    assert client.calls == 2, "one rejection, one retry without the budget"
+    llm.reset_models()
+
+
+async def test_astream_does_not_retry_once_text_has_been_sent(monkeypatch, tmp_path):
+    """A reply cannot be un-sent, so a mid-stream failure must propagate
+    rather than replay text the user has already seen."""
+    llm.reset_models()
+    monkeypatch.setattr(llm.settings, "llm_dev_cache", False, raising=False)
+    monkeypatch.setattr(
+        llm.settings, "llm_dev_cache_dir", str(tmp_path), raising=False
+    )
+
+    class MidStreamFailure:
+        async def astream(self, prompt):
+            yield FakeReply("partial ")
+            raise Exception("400 INVALID_ARGUMENT")
+
+    monkeypatch.setattr(
+        llm, "get_model", lambda model, role=llm.FAST: MidStreamFailure()
+    )
+
+    pieces = []
+    with pytest.raises(llm.LLMError):
+        async for piece in llm.astream("hi", role=llm.FAST):
+            pieces.append(piece)
+
+    assert pieces == ["partial "]
+    llm.reset_models()

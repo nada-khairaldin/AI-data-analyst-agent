@@ -428,25 +428,52 @@ async def astream(prompt: str, *, role: str = FAST):
     last_rate_limit = None
 
     for model in chain:
-        try:
-            client = get_model(model, role=role)
-            collected = []
-            async for chunk in client.astream(prompt):
-                text = chunk.text
-                if text:
-                    collected.append(text)
-                    yield text
-            logger.info("astream answered by %s", model)
-            dev_cache.put(model, prompt, "".join(collected))
-            return
-        except Exception as error:
-            wrapped = _wrap(error, model=model)
-            if not isinstance(wrapped, LLMRateLimited):
-                raise wrapped from error
-            # Only safe to fall through while nothing has been yielded; once
-            # text has reached the client it cannot be replayed.
-            last_rate_limit = wrapped
-            logger.warning("Rate limited on %s (astream); trying the next model", model)
-            continue
+        # Two attempts per model at most: the second drops the thinking
+        # budget. A -lite model accepts a budget of 512 or -1 and REJECTS 0,
+        # and the capability is not discoverable, so it is learned. Without
+        # this the explainer died on INVALID_ARGUMENT while the sync path —
+        # which has the same retry in _attempt — worked fine.
+        for attempt in (1, 2):
+            emitted = False
+            try:
+                client = get_model(model, role=role)
+                collected = []
+                async for chunk in client.astream(prompt):
+                    text = chunk.text
+                    if text:
+                        emitted = True
+                        collected.append(text)
+                        yield text
+                logger.info("astream answered by %s", model)
+                dev_cache.put(model, prompt, "".join(collected))
+                return
+            except Exception as error:
+                # Once text has reached the client nothing can be retried or
+                # failed over: the reply cannot be un-sent.
+                if emitted:
+                    raise _wrap(error, model=model) from error
+
+                if (
+                    attempt == 1
+                    and bool(_thinking_kwargs(model))
+                    and _looks_like_thinking_rejection(error)
+                ):
+                    logger.warning(
+                        "%s rejected thinking_budget=%s in astream; retrying "
+                        "without it and remembering for this process.",
+                        model,
+                        settings.llm_thinking_budget,
+                    )
+                    _rejects_thinking_budget.add(model)
+                    continue
+
+                wrapped = _wrap(error, model=model)
+                if not isinstance(wrapped, LLMRateLimited):
+                    raise wrapped from error
+                last_rate_limit = wrapped
+                logger.warning(
+                    "Rate limited on %s (astream); trying the next model", model
+                )
+                break
 
     raise last_rate_limit or LLMError("The language model could not be reached.")
