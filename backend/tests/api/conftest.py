@@ -77,8 +77,11 @@ async def engine():
         connect_args=_test_connect_args(),
         pool_size=1,
         max_overflow=0,
-        pool_pre_ping=False,
-        pool_recycle=-1,
+        # One extra round trip per checkout, but this Neon compute drops idle
+        # connections ("connection was closed in the middle of operation") and
+        # with a pool of one that kills the rest of the session.
+        pool_pre_ping=True,
+        pool_recycle=300,
     ).execution_options(schema_translate_map={None: SCHEMA})
 
     # All DDL in ONE round trip, and straight to the asyncpg connection:
