@@ -20,6 +20,12 @@ function headers(extra = {}) {
   return { 'X-Session-Id': getSessionId(), ...extra };
 }
 
+// A gateway status with no envelope did not come from our app — it came from
+// the platform in front of it. On a free instance this is the single most
+// likely failure during a demo, and "Request failed (503)" tells nobody what
+// to do about it.
+const GATEWAY_STATUSES = new Set([502, 503, 504]);
+
 async function toError(response) {
   let body = null;
   try {
@@ -28,6 +34,16 @@ async function toError(response) {
     // An HTML error page from a proxy, or an empty body.
   }
   const error = body?.error;
+
+  if (!error && GATEWAY_STATUSES.has(response.status)) {
+    return new ApiError(
+      'The API is not responding yet. A free instance sleeps after 15 minutes '
+        + 'and takes 30-60s to wake, so this usually clears on a retry. If it '
+        + 'keeps happening, the service is down rather than asleep.',
+      { status: response.status, code: 'API_UNAVAILABLE' },
+    );
+  }
+
   return new ApiError(
     error?.message || `Request failed (${response.status})`,
     { status: response.status, code: error?.code, details: error?.details },

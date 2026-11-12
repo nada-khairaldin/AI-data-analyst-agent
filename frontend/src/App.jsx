@@ -156,7 +156,18 @@ export default function App() {
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
-        {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
+        {error && (
+          <ErrorBanner
+            message={error}
+            onRetry={async () => {
+              setError(null);
+              setIsLoading(true);
+              await refreshDatasets();
+              setIsLoading(false);
+            }}
+            onDismiss={() => setError(null)}
+          />
+        )}
 
         <main className="flex-1 overflow-hidden flex flex-col relative">
           {currentView === 'welcome' && (
