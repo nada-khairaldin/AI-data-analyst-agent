@@ -68,11 +68,12 @@ Two of these are easy to get wrong and both fail in confusing ways:
 
 **Leave `PYTHON_VERSION` unset and do not add a `runtime.txt`.**
 
-This was learned the hard way. A `runtime.txt` pinning 3.13.4 was committed,
-Render read it automatically on the next deploy, and the service — whose
-`/health` had been green minutes earlier — stopped answering entirely: TCP
-connected and TLS completed in 0.1s, but the app never replied, which is what
-a failed build or a crash-looping start looks like from outside.
+A `runtime.txt` pinning 3.13.4 was committed and then removed. The removal
+still stands, but the reason first given for it was wrong: the "outage" that
+prompted it was a **wrong hostname** being tested, not the pin. The real
+service deployed every push fine. The pin is still not worth having — the
+project is verified on 3.14.5, not 3.13 — but nothing here ever broke
+because of it.
 
 The project is developed and tested on **3.14.5** (`.python-version`, all 390
 tests). If you ever do need to pin, use that, and read the Render build log
@@ -157,6 +158,13 @@ local development working alongside it:
 CORS_ALLOWED_ORIGINS = https://<your-project>.vercel.app,http://localhost:5173
 ```
 
+**Both origins are needed if you ever point a local `npm run dev` at the
+deployed backend.** Verified against the live service: the Vercel origin is
+allowed and `http://localhost:5173` is **not**, so a local frontend talking to
+Render is blocked by CORS until localhost is added to the list. Use
+`http://localhost:5173` exactly — `127.0.0.1:5173` is a different origin to a
+browser and needs its own entry.
+
 Redeploy the Render service (an env var change triggers one).
 
 `"*"` will **not** work here, and the browser will not tell you why in a
@@ -216,7 +224,7 @@ against the 20-per-day limit. Ask something new and it costs ~3.
 Put `.env` back to the Render URL afterwards:
 
 ```bash
-echo "VITE_API_BASE_URL=https://ai-data-analyst-h1rx.onrender.com" > frontend/.env
+echo "VITE_API_BASE_URL=https://ai-data-analyst-agent-br1d.onrender.com" > frontend/.env
 ```
 
 ### Diagnosing the Render service itself
