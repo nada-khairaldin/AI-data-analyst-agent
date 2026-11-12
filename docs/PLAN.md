@@ -1845,6 +1845,42 @@ verifies the upgrade path.
 
 ---
 
+### Phase B deviations (recorded when they were made)
+
+**API tests run against an isolated Postgres SCHEMA, not a Neon branch.**
+The plan asked for a test branch. This environment has no Neon API key and no
+`neon` CLI, so a branch cannot be created from here. Each test session instead
+creates its own schema (`test_<random>`), redirects every table into it with
+SQLAlchemy's `schema_translate_map`, and drops it afterwards. The `public`
+data is never read or written, which is the property that mattered. Swapping
+to a real branch later is a change to one fixture.
+
+**The API tests share one event loop and one database connection.** Measured
+during B1: opening a connection to this Neon compute took between **4 and 65
+seconds** (and at the top of that range the handshake fails outright with
+"Authentication timed out"), while a statement on an already-open connection
+is ~0.35s. A connection per test was therefore unusable. Consequences:
+
+- the API tests use `httpx.AsyncClient` over the ASGI app rather than
+  `TestClient`, because TestClient runs the app on its own private event loop
+  which the fixtures cannot share, and asyncpg connections are bound to the
+  loop that created them;
+- the engine is session-scoped with `pool_size=1`;
+- the schema's DDL is sent as **one** script through asyncpg's simple-query
+  protocol. `metadata.create_all` issues ~30 separate statements, which
+  measured 61s of pure latency per session;
+- when the database is unreachable the API tests **skip with the reason
+  printed**, rather than failing. An unreachable database says nothing about
+  the code under test, and a skip that names its cause cannot be mistaken for
+  a pass.
+
+**`min`/`max` on a datetime column are now rejected.** B2 asked the validator
+to refuse `sum`/`mean`/`min`/`max` on non-numeric columns, so that a column
+left as text can never be "summed" into a concatenated string. Implemented
+literally, which means "the earliest order date" is also refused — datetime is
+not numeric. The allowed set is one constant
+(`validators.NUMERIC_DTYPE_PREFIXES`) if that trade-off should be revisited.
+
 ### 3 — Core endpoints matching the mock data
 
 **Build:** endpoints 2-10 of the contract, minus the chat endpoints: upload →

@@ -7,10 +7,14 @@
 # in tests/ change, never the assertions.
 pythonpath = ["."]
 testpaths = ["tests"]
-# Set explicitly so pytest-asyncio stops warning and so the behaviour does not
-# change under us when its default flips in a future release. Phase B's async
-# DB tests want a fresh loop per test.
-asyncio_default_fixture_loop_scope = "function"
+# API tests share ONE event loop and ONE database connection for the whole
+# session. Opening a connection to this Neon compute measured 4-65 seconds
+# while a statement on an open one is ~0.35s, so per-test connections made the
+# suite unusable. asyncpg connections are bound to the loop that created them,
+# hence a session-scoped loop as well.
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 # -p no:cacheprovider: the .pytest_cache directory only speeds up --lf/--ff,
 # and when the disk is full pytest fails to create it and dies with NO output
 # at all, which is a genuinely baffling way to lose an afternoon.

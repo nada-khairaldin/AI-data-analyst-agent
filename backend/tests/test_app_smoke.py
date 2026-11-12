@@ -1,11 +1,11 @@
 """Smoke tests for the restructured app (phase A3).
 
 These exist to catch the two things the A2 unit tests cannot: that the package
-actually assembles into a FastAPI app, and that the legacy endpoints still
-behave exactly as they did before the move.
+actually assembles into a FastAPI app, that the error envelope is right, and
+that nothing outside config.py reads the environment.
 
-No network and no database: /api/upload is in-memory, and /api/analyze is only
-exercised on paths that return before any LLM call.
+No network and no database — the endpoints that need either live in
+tests/api/, which runs against an isolated Neon schema.
 """
 
 import pytest
@@ -55,9 +55,17 @@ def test_routers_are_registered(client):
     than flattening them into app.routes, so inspecting app.routes is NOT a
     valid check. Issuing a request is.
     """
-    for path in ("/health", "/api/upload", "/api/analyze"):
-        response = client.request("POST" if path.startswith("/api") else "GET", path)
-        assert response.status_code != 404, f"{path} is not registered"
+    assert client.get("/health").status_code != 404
+    # No session header, so these answer 400 — which still proves they exist.
+    assert client.get("/api/datasets").status_code == 400
+    assert client.get("/api/conversations").status_code == 400
+
+
+def test_the_legacy_endpoints_are_gone(client):
+    """B3 removed /api/upload and /api/analyze along with the module-level
+    dict that lost every dataset on restart."""
+    assert client.post("/api/upload").status_code == 404
+    assert client.post("/api/analyze", json={}).status_code == 404
 
 
 # ---------------------------------------------------------------------------
@@ -73,76 +81,16 @@ def test_unknown_route_returns_the_error_envelope(client):
 
 
 def test_malformed_body_returns_a_validation_envelope(client):
-    response = client.post("/api/analyze", json={"query": "no session_id"})
+    response = client.patch(
+        "/api/conversations/9f1c2a44-5e3b-4a7e-9f41-0d6e2b7a1c33",
+        json={"not_title": "x"},
+        headers={"X-Session-Id": "9f1c2a44-5e3b-4a7e-9f41-0d6e2b7a1c33"},
+    )
 
     assert response.status_code == 400
     body = response.json()
     assert body["error"]["code"] == "VALIDATION_ERROR"
     assert body["error"]["details"]["fields"]
-
-
-# ---------------------------------------------------------------------------
-# Legacy behaviour is preserved
-# ---------------------------------------------------------------------------
-
-
-def test_legacy_upload_still_works(client):
-    csv = b"Product,Quantity\nLaptop,10\nMouse,5\n"
-
-    response = client.post(
-        "/api/upload", files={"file": ("orders.csv", csv, "text/csv")}
-    )
-    body = response.json()
-
-    assert response.status_code == 200
-    assert body["status"] == "success"
-    assert body["row_count"] == 2
-    assert body["column_count"] == 2
-    assert body["session_id"]
-    assert body["schema"] == {"Product": "str", "Quantity": "int64"}
-
-
-def test_legacy_upload_rejects_a_low_quality_dataset(client):
-    # Every column 50% missing -> above the 40% dataset limit.
-    csv = b"A,B,C\n1,1,1\n,,\n3,3,3\n,,\n"
-
-    response = client.post(
-        "/api/upload", files={"file": ("bad.csv", csv, "text/csv")}
-    )
-    body = response.json()
-
-    # Still HTTP 200 with status:error — the legacy shape, frozen on purpose.
-    # docs/API_CONTRACT.md moves this to 422; that is phase B.
-    assert response.status_code == 200
-    assert body["status"] == "error"
-    assert body["details"]
-
-
-def test_legacy_analyze_rejects_an_unknown_session(client):
-    response = client.post(
-        "/api/analyze", json={"session_id": "not-a-real-session", "query": "hi"}
-    )
-    body = response.json()
-
-    assert response.status_code == 200
-    assert body["status"] == "error"
-    assert "Session not found" in body["message"]
-
-
-def test_legacy_analyze_rejects_a_blank_question(client):
-    """Returns before any LLM call, so this is safe to run offline."""
-    csv = b"Product,Quantity\nLaptop,10\nMouse,5\n"
-    upload = client.post(
-        "/api/upload", files={"file": ("orders.csv", csv, "text/csv")}
-    ).json()
-
-    response = client.post(
-        "/api/analyze", json={"session_id": upload["session_id"], "query": "   "}
-    )
-    body = response.json()
-
-    assert body["status"] == "error"
-    assert body["message"] == "Please enter a question."
 
 
 # ---------------------------------------------------------------------------

@@ -15,6 +15,33 @@ TYPE_MAP = {
     "str": str
 }
 
+
+# Aggregations that are meaningless on a non-numeric column. `count` is absent
+# because counting anything is valid.
+#
+# This exists because of a real failure mode rather than tidiness: a column
+# whose type conversion fell below the 95% threshold stays as text, and
+# pandas' sum() on text CONCATENATES it. The plan validates, the analysis
+# runs, and the user is told the total quantity is "3102015..." — a wrong
+# answer delivered confidently, which is the worst kind. See samples/orders.csv.
+NUMERIC_ONLY_OPERATIONS = ("sum", "mean", "min", "max")
+
+# dtype strings as data_utils.get_schema() renders them: "int64", "float64",
+# "str", "bool", "datetime64[us]". Matched by prefix because the width varies.
+#
+# NOTE: datetime is deliberately NOT numeric here, so "the earliest order
+# date" (min on a date) is rejected. That follows the rule as specified; to
+# allow it, add a datetime branch to this one function.
+NUMERIC_DTYPE_PREFIXES = ("int", "uint", "float", "complex", "number", "decimal")
+
+
+def is_numeric_dtype_name(dtype) -> bool:
+    """True when a dtype STRING names a numeric type."""
+    if dtype is None:
+        return False
+    name = str(dtype).strip().lower()
+    return name.startswith(NUMERIC_DTYPE_PREFIXES)
+
 def validate_analysis_plan(plan, schema):
     if not plan:
         return False, "Analysis plan cannot be empty."
@@ -142,6 +169,24 @@ def validate_analysis_plan(plan, schema):
                 if column not in schema:
                     return False, (
                         f"Unknown column: {column}"
+                    )
+
+        # ==========================================
+        # Check the aggregated column is numeric
+        # ==========================================
+
+        if tool == "aggregate_data":
+            operation = step.get("operation")
+
+            if operation in NUMERIC_ONLY_OPERATIONS:
+                column = step.get("column")
+                dtype = schema.get(column)
+
+                if not is_numeric_dtype_name(dtype):
+                    return False, (
+                        f"Cannot apply {operation} to '{column}' "
+                        f"because its type is {dtype}. "
+                        f"{operation} requires a numeric column."
                     )
 
     # ==========================================

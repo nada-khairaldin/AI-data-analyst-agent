@@ -222,3 +222,15 @@ def test_bad_has_no_duplicate_rows():
     """RecordID stays populated so the mostly-empty rows are not duplicates of
     each other, which would trip a second rule and muddle the fixture."""
     assert load("bad.csv").duplicated().sum() == 0
+
+
+def test_orders_spans_several_months(orders):
+    """Phase C asks "per month" questions, which need more than one month.
+
+    Pinned because the fixture is generated: a regenerated sample that
+    collapsed to a single month would make every grouping question degenerate
+    while every other test still passed.
+    """
+    months = pd.to_datetime(orders["OrderDate"]).dt.to_period("M").unique()
+
+    assert len(months) >= 3, f"only {len(months)} month(s) in orders.csv"

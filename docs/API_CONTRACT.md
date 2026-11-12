@@ -951,6 +951,35 @@ too slow. Lowest priority of all endpoints — the input is cosmetic today.
 
 ---
 
+## 14b. `GET /api/limits` — added in phase B
+
+Not in the original contract. Returns the server's real limits so the
+frontend stops hardcoding them (`WelcomeScreen` prints "5 MB" as a literal
+today):
+
+```json
+{
+  "maxUploadBytes": 5242880,
+  "maxUploadSize": "5.0 MB",
+  "maxDatasetRows": 100000,
+  "maxDatasetsPerSession": 20
+}
+```
+
+No session header required — these are server configuration, not user data.
+
+---
+
+### Additive field on agent messages: `resultKind`
+
+Endpoints 10 and 11 return `resultKind` (`"table"` or `"scalar"`) alongside
+`resultData`, matching the `result` SSE event and `messages.result_kind`
+(`PLAN.md` §4). An aggregation with no `group_by` returns a **scalar**, not
+rows, and without this field the UI has to guess from the JSON type — which is
+the bug behind Suggested change S4.
+
+---
+
 ## 15. `GET /api/me` — **not built**
 
 Would have backed the sidebar footer, which hardcodes the avatar `U`,

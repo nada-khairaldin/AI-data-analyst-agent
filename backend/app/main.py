@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import register_exception_handlers
-from app.api.routers import health, legacy
+from app.api.routers import conversations, datasets, health
 from app.config import settings
 
 __version__ = "0.1.0"
@@ -56,7 +56,8 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(health.router)
-    app.include_router(legacy.router)
+    app.include_router(datasets.router)
+    app.include_router(conversations.router)
 
     @app.get("/", tags=["meta"])
     def read_root():

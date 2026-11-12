@@ -4,9 +4,9 @@ Every failure leaves the API as:
 
     {"error": {"code": "...", "message": "...", "details": {...}}}
 
-with a real HTTP status code. The legacy endpoints in routers/legacy.py still
-return ``{"status": "error"}`` with HTTP 200; they are frozen on purpose and
-phase B replaces them.
+with a real HTTP status code. The old /api/upload and /api/analyze returned
+``{"status": "error"}`` with HTTP 200, which the frontend could not tell from
+success without parsing the body; both were removed in B3.
 
 Raise ``ApiError`` (or a subclass) from anywhere; the handler does the rest.
 """
