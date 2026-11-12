@@ -970,13 +970,22 @@ No session header required — these are server configuration, not user data.
 
 ---
 
-### Additive field on agent messages: `resultKind`
+### Additive fields on agent messages: `resultKind` and `chartPlan`
 
 Endpoints 10 and 11 return `resultKind` (`"table"` or `"scalar"`) alongside
 `resultData`, matching the `result` SSE event and `messages.result_kind`
 (`PLAN.md` §4). An aggregation with no `group_by` returns a **scalar**, not
 rows, and without this field the UI has to guess from the JSON type — which is
 the bug behind Suggested change S4.
+
+They also return `chartPlan` — the **validated** chart object
+(`{should_plot, chart_type, x, y}`), or `null` when there is no chart. Added
+in phase D: `showChart` says a chart is wanted but not *which columns to
+plot*, so a reloaded conversation could not redraw its chart and the frontend
+would have to guess the axes. It is the same object the `result` SSE event
+carries, after `charting.py` has checked it against the actual result — so a
+chart the data does not support is already `null` here rather than something
+the client has to re-check.
 
 ---
 

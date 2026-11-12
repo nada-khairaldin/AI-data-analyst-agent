@@ -101,6 +101,10 @@ def message_detail(message) -> dict:
         "condensedQuestion": message.condensed_question,
         "showChart": show_chart,
         "chartTitle": chart_title(chart, message.analysis_plan) if show_chart else None,
+        # The axes, so a chart can be redrawn after a reload. showChart alone
+        # says a chart is wanted but not which columns to plot, and the
+        # frontend must not guess.
+        "chartPlan": chart if show_chart else None,
         "resultData": message.result_data,
         "resultKind": message.result_kind,
         "plan": plan,

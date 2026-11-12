@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
 import { ArrowLeft, FileText, CheckCircle2, MoreHorizontal, MessageSquare, AlertCircle } from 'lucide-react';
 
-export default function DatasetOverview({ 
-  dataset, 
-  onBack, 
-  onNewConversation, 
+export default function DatasetOverview({
+  dataset,
+  report,
+  onBack,
+  onNewConversation,
   onSelectConversation,
-  onShowReport 
+  onShowReport
 }) {
   const [activeTab, setActiveTab] = useState('Overview');
-  const tabs = ['Overview', 'Data Preparation', 'Columns & Types', 'Preview', 'Conversations'];
+  // Columns & Types, Preview and Conversations are out of scope for the live
+  // demo; their endpoints exist (6, 7, 8) but no UI consumes them yet.
+  const tabs = ['Overview', 'Data Preparation'];
 
   if (!dataset) return null;
+
+  // The circle is a 283-unit circumference; the offset is the unfilled part.
+  const score = report ? parseFloat(report.qualityScore) : null;
+  const dashOffset = score === null ? 283 : Math.max(0, 283 - (283 * score) / 100);
+  const scoreColor =
+    report?.qualityLabel === 'Good'
+      ? 'text-success'
+      : report?.qualityLabel === 'Fair'
+        ? 'text-warning'
+        : 'text-error';
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary overflow-hidden">
@@ -92,11 +105,11 @@ export default function DatasetOverview({
                     <div className="text-xs text-slate-500 uppercase tracking-wider">Columns</div>
                   </div>
                   <div className="space-y-1 border-l border-slate-100 dark:border-dark-border pl-4">
-                    <div className="text-2xl font-bold text-slate-800 dark:text-white">{dataset.missingRate || '2.1%'}</div>
+                    <div className="text-2xl font-bold text-slate-800 dark:text-white">{dataset.missingRate}</div>
                     <div className="text-xs text-slate-500 uppercase tracking-wider">Missing values</div>
                   </div>
                   <div className="space-y-1 border-l border-slate-100 dark:border-dark-border pl-4">
-                    <div className="text-2xl font-bold text-slate-800 dark:text-white">{dataset.duplicateRate || '0.4%'}</div>
+                    <div className="text-2xl font-bold text-slate-800 dark:text-white">{dataset.duplicateRate}</div>
                     <div className="text-xs text-slate-500 uppercase tracking-wider">Duplicate rows</div>
                   </div>
                 </div>
@@ -148,20 +161,20 @@ export default function DatasetOverview({
                   <div className="relative w-32 h-32 mb-4">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                       <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" className="text-slate-100 dark:text-dark-border" strokeWidth="8" />
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" className="text-success" strokeWidth="8" strokeDasharray="283" strokeDashoffset="6" />
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" className={scoreColor} strokeWidth="8" strokeDasharray="283" strokeDashoffset={dashOffset} />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                      <span className="text-2xl font-bold text-slate-800 dark:text-white">97.9%</span>
-                      <span className="text-xs text-success font-medium">Good</span>
+                      <span className="text-2xl font-bold text-slate-800 dark:text-white">{report?.qualityScore ?? '—'}</span>
+                      <span className={`text-xs font-medium ${scoreColor}`}>{report?.qualityLabel ?? 'Loading…'}</span>
                     </div>
                   </div>
                   
                   <div className="w-full space-y-2 mt-2 text-sm">
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                      <span className="flex items-center gap-1.5"><AlertCircle size={14} className="text-warning"/> 1 column excluded</span>
+                      <span className="flex items-center gap-1.5"><AlertCircle size={14} className="text-warning"/> {report?.excludedColumnCount ?? 0} column{report?.excludedColumnCount === 1 ? '' : 's'} excluded</span>
                     </div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                      <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-success"/> 2 columns converted</span>
+                      <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-success"/> {report?.convertedColumnCount ?? 0} column{report?.convertedColumnCount === 1 ? '' : 's'} converted</span>
                     </div>
                   </div>
                 </div>

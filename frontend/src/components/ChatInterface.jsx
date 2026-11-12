@@ -1,43 +1,217 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, ChevronDown, CheckCircle2, ChevronRight, BarChart2 } from 'lucide-react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
-} from 'recharts';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, CheckCircle2, ChevronRight, BarChart2, AlertTriangle, Lightbulb } from 'lucide-react';
+import ResultBlock from './ResultBlock';
+import { api, ApiError } from '../api/client';
+import { streamMessage } from '../api/stream';
 
-export default function ChatInterface({ 
-  dataset,
-  conversation,
-  onSendMessage
-}) {
+// The real pipeline stages. `label` comes from the server so wording can
+// change without a frontend deploy.
+const STAGE_ORDER = ['condensing', 'planning', 'validating', 'executing', 'explaining'];
+
+function StageList({ stages, current }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {stages.map(({ stage, label }) => {
+        const done = STAGE_ORDER.indexOf(stage) < STAGE_ORDER.indexOf(current);
+        return (
+          <div key={stage} className="flex items-center gap-2">
+            {done ? (
+              <CheckCircle2 size={14} className="text-success" />
+            ) : (
+              <div className="w-3.5 h-3.5 rounded-full border-[1.5px] border-primary border-t-transparent animate-spin ml-0.5 mr-[1px]" />
+            )}
+            <span className={done ? 'text-slate-700 dark:text-slate-300' : 'text-primary font-medium'}>
+              {label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function AgentMessage({ message }) {
+  const failed = message.status === 'failed';
+  const advisory = message.status === 'needs_clarification' || message.status === 'cannot_answer';
+
+  return (
+    <div className="space-y-4">
+      {/* "Understood as", only when the condenser actually resolved something */}
+      {message.condensedQuestion && (
+        <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg px-3 py-2 max-w-2xl">
+          <Lightbulb size={14} className="text-primary shrink-0 mt-0.5" />
+          <span>
+            <span className="font-medium">Understood as:</span> {message.condensedQuestion}
+          </span>
+        </div>
+      )}
+
+      <div
+        className={`text-[15px] leading-relaxed whitespace-pre-wrap ${
+          failed
+            ? 'text-error'
+            : advisory
+              ? 'text-amber-600 dark:text-amber-400'
+              : 'text-slate-800 dark:text-slate-200'
+        }`}
+      >
+        {failed && <AlertTriangle size={16} className="inline mr-1.5 -mt-0.5" />}
+        {message.content}
+      </div>
+
+      <ResultBlock
+        resultData={message.resultData}
+        resultKind={message.resultKind}
+        chartPlan={message.chartPlan}
+        chartTitle={message.chartTitle}
+      />
+
+      {message.plan && (
+        <details className="group bg-slate-50 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg overflow-hidden max-w-2xl">
+          <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-card transition-colors">
+            <ChevronRight size={16} className="text-slate-400 group-open:rotate-90 transition-transform" />
+            <span className="flex items-center gap-2">
+              <BarChart2 size={16} className="text-primary" />
+              Analysis performed
+              <span className="text-slate-400 font-normal text-xs ml-1">(click to expand)</span>
+            </span>
+          </summary>
+          <div className="px-5 py-4 border-t border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card space-y-4 text-sm">
+            <div>
+              <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Question</h5>
+              <p className="text-slate-600 dark:text-slate-400">{message.plan.question}</p>
+            </div>
+            <div>
+              <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Analysis Steps</h5>
+              <ol className="list-decimal pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                {message.plan.steps?.map((step, i) => <li key={i}>{step}</li>)}
+              </ol>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Used</h5>
+                <p className="text-slate-600 dark:text-slate-400">{message.plan.columnsUsed?.join(', ')}</p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Filters</h5>
+                <p className="text-slate-600 dark:text-slate-400">{message.plan.filters || 'None'}</p>
+              </div>
+            </div>
+            <div className="pt-2 flex items-center gap-1.5 text-success font-medium text-xs bg-success/10 w-fit px-2 py-1 rounded-full">
+              <CheckCircle2 size={14} />
+              Plan validated
+            </div>
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
+
+export default function ChatInterface({ dataset, conversation, onTurnComplete }) {
   const [input, setInput] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const messagesEndRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [turnError, setTurnError] = useState(null);
 
-  const messages = conversation?.messages || [];
+  // The live turn.
+  const [stages, setStages] = useState([]);
+  const [stage, setStage] = useState(null);
+  const [condensed, setCondensed] = useState(null);
+  const [liveResult, setLiveResult] = useState(null);
+  const [tokens, setTokens] = useState('');
+
+  const endRef = useRef(null);
+  const isStreaming = stage !== null;
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isAnalyzing]);
+    let cancelled = false;
+    setIsLoading(true);
+    setTurnError(null);
+    (async () => {
+      try {
+        const body = await api.getMessages(conversation.id);
+        if (!cancelled) setMessages(body.messages);
+      } catch (cause) {
+        if (!cancelled) setTurnError(cause instanceof ApiError ? cause.message : String(cause));
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [conversation.id]);
 
-  const handleSend = (e) => {
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, tokens, stage, liveResult]);
+
+  const resetTurn = useCallback(() => {
+    setStages([]);
+    setStage(null);
+    setCondensed(null);
+    setLiveResult(null);
+    setTokens('');
+  }, []);
+
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim() || isAnalyzing) return;
-    
-    onSendMessage(input.trim());
+    const question = input.trim();
+    if (!question || isStreaming) return;
+
     setInput('');
-    setIsAnalyzing(true);
-    
-    // Mock simulation of API response
-    setTimeout(() => {
-      setIsAnalyzing(false);
-    }, 2000);
+    setTurnError(null);
+    resetTurn();
+    // Optimistic, but the server is authoritative: the `done` event replaces
+    // everything below with what was actually persisted.
+    setMessages((prev) => [...prev, { role: 'user', content: question }]);
+
+    try {
+      await streamMessage(conversation.id, question, (event, data) => {
+        if (event === 'status') {
+          setStage(data.stage);
+          setStages((prev) =>
+            prev.some((s) => s.stage === data.stage) ? prev : [...prev, data],
+          );
+        } else if (event === 'condensed') {
+          setCondensed(data.question);
+        } else if (event === 'result') {
+          setLiveResult(data);
+        } else if (event === 'token') {
+          setTokens((prev) => prev + data.text);
+        } else if (event === 'done') {
+          setMessages((prev) => {
+            // Drop the optimistic user row and take the server's pair.
+            const withoutOptimistic = prev.slice(0, -1);
+            return [
+              ...withoutOptimistic,
+              { role: 'user', content: question },
+              data.message,
+            ];
+          });
+          resetTurn();
+          onTurnComplete?.();
+        } else if (event === 'error') {
+          setTurnError(data.message || 'The analysis failed.');
+          resetTurn();
+          // The server persisted a `failed` agent message, so reload to show
+          // it rather than leaving the question hanging.
+          api.getMessages(conversation.id)
+            .then((body) => setMessages(body.messages))
+            .catch(() => {});
+          onTurnComplete?.();
+        }
+      });
+    } catch (cause) {
+      // The stream never opened: a 4xx/5xx, or the network.
+      setTurnError(cause instanceof ApiError ? cause.message : String(cause));
+      resetTurn();
+    }
   };
 
   if (!dataset || !conversation) return null;
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-dark-bg">
-      {/* Header */}
       <header className="bg-white/80 dark:bg-dark-sidebar/80 backdrop-blur-md border-b border-slate-200 dark:border-dark-border px-6 py-4 flex items-center shrink-0 min-h-[72px]">
         <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <span className="text-slate-500 font-normal">{dataset.name}</span>
@@ -46,18 +220,31 @@ export default function ChatInterface({
         </h2>
       </header>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-        {messages.length === 0 && (
+        {isLoading && (
+          <div className="text-sm text-slate-500">Loading conversation…</div>
+        )}
+
+        {!isLoading && messages.length === 0 && !isStreaming && (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
             <div className="w-16 h-16 bg-blue-100 dark:bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2">
               <BarChart2 size={32} />
             </div>
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200">Start your analysis</h3>
             <div className="flex flex-wrap justify-center gap-2 max-w-md">
-              <button onClick={() => setInput('Show top 5 products')} className="px-3 py-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full text-sm hover:border-primary/50 transition-colors">Show top 5 products</button>
-              <button onClick={() => setInput('Which month had the highest sales?')} className="px-3 py-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full text-sm hover:border-primary/50 transition-colors">Which month had the highest sales?</button>
-              <button onClick={() => setInput('What is the average price per product?')} className="px-3 py-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full text-sm hover:border-primary/50 transition-colors">What is the average price per product?</button>
+              {[
+                'Which product has the highest total quantity sold?',
+                'Now show it per month',
+                'What is the average price?',
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => setInput(suggestion)}
+                  className="px-3 py-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full text-sm hover:border-primary/50 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -65,160 +252,83 @@ export default function ChatInterface({
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'agent' && (
-              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shrink-0 mt-1">
                 <BarChart2 size={16} />
               </div>
             )}
-            
-            <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-slate-200/50 dark:bg-white/10 text-slate-800 dark:text-white px-4 py-3 rounded-2xl rounded-tr-sm' : 'space-y-4'}`}>
-              
-              {/* Agent Text Response */}
-              {msg.role === 'agent' && (
-                <div className="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed">
-                  {msg.content}
-                </div>
-              )}
-
-              {/* User Text Response */}
-              {msg.role === 'user' && (
-                <div className="text-[15px]">
-                  {msg.content}
-                </div>
-              )}
-
-              {/* Chart / Data Result (Agent only) */}
-              {msg.role === 'agent' && msg.resultData && (
-                <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-5 shadow-sm">
-                  
-                  <div className="flex flex-col md:flex-row gap-8">
-                    {/* Data Table */}
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">{msg.chartTitle || 'Results'}</h4>
-                      <div className="overflow-hidden border border-slate-100 dark:border-dark-border rounded-lg">
-                        <table className="w-full text-sm text-left">
-                          <thead className="bg-slate-50 dark:bg-dark-bg text-slate-500">
-                            <tr>
-                              <th className="px-3 py-2 font-medium">Product</th>
-                              <th className="px-3 py-2 font-medium text-right">Total Quantity Sold</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
-                            {msg.resultData.map((row, i) => (
-                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-dark-elevated transition-colors">
-                                <td className="px-3 py-2 text-slate-700 dark:text-slate-300 font-medium">{row.product}</td>
-                                <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-400">{row.quantity?.toLocaleString()}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Chart (if applicable) */}
-                    {msg.showChart && (
-                      <div className="flex-1 h-64 border-l border-slate-100 dark:border-dark-border pl-0 md:pl-8">
-                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Total Quantity Sold by Product</h4>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={msg.resultData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" opacity={0.3} />
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="product" type="category" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} width={80} />
-                            <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px', color: '#f1f5f9'}} />
-                            <Bar dataKey="quantity" fill="#38BDF8" radius={[0, 4, 4, 0]} barSize={20} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Analysis Plan Expandable (Agent only) */}
-              {msg.role === 'agent' && msg.plan && (
-                <details className="group bg-slate-50 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg overflow-hidden transition-all max-w-2xl">
-                  <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-card transition-colors">
-                    <ChevronRight size={16} className="text-slate-400 group-open:rotate-90 transition-transform" />
-                    <span className="flex items-center gap-2">
-                      <BarChart2 size={16} className="text-primary" />
-                      Analysis performed <span className="text-slate-400 font-normal text-xs ml-1">(click to expand)</span>
-                    </span>
-                  </summary>
-                  <div className="px-5 py-4 border-t border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card space-y-4 text-sm">
-                    
-                    <div>
-                      <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Question</h5>
-                      <p className="text-slate-600 dark:text-slate-400">{msg.plan.question}</p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Analysis Steps</h5>
-                      <ol className="list-decimal pl-5 space-y-1 text-slate-600 dark:text-slate-400">
-                        {msg.plan.steps?.map((step, i) => (
-                          <li key={i}>{step}</li>
-                        ))}
-                      </ol>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Used</h5>
-                        <p className="text-slate-600 dark:text-slate-400">{msg.plan.columnsUsed?.join(', ')}</p>
-                      </div>
-                      <div>
-                        <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Filters</h5>
-                        <p className="text-slate-600 dark:text-slate-400">{msg.plan.filters || 'None'}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-2 flex items-center gap-1.5 text-success font-medium text-xs bg-success/10 w-fit px-2 py-1 rounded-full">
-                      <CheckCircle2 size={14} />
-                      Plan validated
-                    </div>
-                  </div>
-                </details>
-              )}
+            <div
+              className={
+                msg.role === 'user'
+                  ? 'max-w-[85%] bg-slate-200/50 dark:bg-white/10 text-slate-800 dark:text-white px-4 py-3 rounded-2xl rounded-tr-sm text-[15px]'
+                  : 'max-w-[85%] min-w-0'
+              }
+            >
+              {msg.role === 'user' ? msg.content : <AgentMessage message={msg} />}
             </div>
           </div>
         ))}
-        
-        {isAnalyzing && (
+
+        {/* The live turn */}
+        {isStreaming && (
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-1 border border-primary/30">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1 border border-primary/30">
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-slate-500 flex flex-col gap-2 shadow-sm min-w-[200px]">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={14} className="text-success" />
-                <span className="text-slate-700 dark:text-slate-300">Understanding question</span>
+            <div className="max-w-[85%] min-w-0 space-y-4">
+              {condensed && (
+                <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg px-3 py-2">
+                  <Lightbulb size={14} className="text-primary shrink-0 mt-0.5" />
+                  <span><span className="font-medium">Understood as:</span> {condensed}</span>
+                </div>
+              )}
+
+              <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow-sm min-w-[220px] w-fit">
+                <StageList stages={stages} current={stage} />
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={14} className="text-success" />
-                <span className="text-slate-700 dark:text-slate-300">Building analysis plan</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 rounded-full border-[1.5px] border-primary border-t-transparent animate-spin ml-0.5 mr-[1px]"></div>
-                <span className="text-primary font-medium">Running analysis</span>
-              </div>
+
+              {/* result arrives BEFORE the first token: the table is the
+                  answer, the sentence is commentary */}
+              {liveResult && (
+                <ResultBlock
+                  resultData={liveResult.resultData}
+                  resultKind={liveResult.resultKind}
+                  chartPlan={liveResult.chartPlan}
+                />
+              )}
+
+              {tokens && (
+                <div className="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed whitespace-pre-wrap">
+                  {tokens}
+                  <span className="inline-block w-1.5 h-4 bg-primary/70 ml-0.5 align-middle animate-pulse" />
+                </div>
+              )}
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
+
+        {turnError && (
+          <div className="flex items-start gap-2 text-sm bg-error/10 border border-error/30 rounded-lg px-4 py-3 text-slate-700 dark:text-slate-200">
+            <AlertTriangle size={16} className="text-error shrink-0 mt-0.5" />
+            <span>{turnError}</span>
+          </div>
+        )}
+
+        <div ref={endRef} />
       </div>
 
-      {/* Input Area */}
       <div className="p-4 md:p-6 bg-white dark:bg-dark-sidebar border-t border-slate-200 dark:border-dark-border">
         <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center">
-          <input 
+          <input
             type="text"
             value={input}
-            onChange={e => setInput(e.target.value)}
-            disabled={isAnalyzing}
-            placeholder="Ask another question about your data..."
+            onChange={(e) => setInput(e.target.value)}
+            disabled={isStreaming}
+            placeholder={isStreaming ? 'Analysing…' : 'Ask a question about your data...'}
             className="w-full bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-800 dark:text-white rounded-full py-3.5 pl-6 pr-14 focus:outline-none focus:border-primary/50 transition-colors shadow-sm disabled:opacity-50"
           />
-          <button 
+          <button
             type="submit"
-            disabled={!input.trim() || isAnalyzing}
+            disabled={!input.trim() || isStreaming}
             className="absolute right-2 top-1.5 bottom-1.5 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100"
           >
             <Send size={18} className="ml-1" />

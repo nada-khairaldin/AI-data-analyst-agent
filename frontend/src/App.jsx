@@ -1,293 +1,203 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import WelcomeScreen from './components/WelcomeScreen';
 import DatasetOverview from './components/DatasetOverview';
 import ChatInterface from './components/ChatInterface';
 import PreprocessingReport from './components/PreprocessingReport';
 import DatasetRejected from './components/DatasetRejected';
+import ErrorBanner from './components/ErrorBanner';
+import { api, ApiError } from './api/client';
 import { Menu, Sun, Moon } from 'lucide-react';
 
-// Mock Data
-const MOCK_DATASETS = [
-  {
-    id: '1',
-    name: 'orders.csv',
-    rowCount: 2384,
-    colCount: 8,
-    size: '45 KB',
-    missingRate: '2.1%',
-    duplicateRate: '0.4%',
-    status: 'ready',
-    conversations: [
-      { id: 'c1', title: 'Product Performance', date: '2 hours ago', messageCount: 12,
-        messages: [
-          { role: 'user', content: 'Which product has the highest total quantity sold?' },
-          { 
-            role: 'agent', 
-            content: 'The product with the highest total quantity sold is Laptop.\nTotal quantity sold: 1,248 units.',
-            showChart: true,
-            chartTitle: 'Top 5 products by total quantity',
-            resultData: [
-              { product: 'Laptop', quantity: 1248 },
-              { product: 'Mouse', quantity: 986 },
-              { product: 'Keyboard', quantity: 712 },
-              { product: 'Monitor', quantity: 456 },
-              { product: 'Headphones', quantity: 324 },
-            ],
-            plan: {
-              question: 'Which product has the highest total quantity sold?',
-              steps: [
-                'Group by Product',
-                'Calculate SUM of Quantity',
-                'Sort by total quantity (descending)',
-                'Take top 1 result'
-              ],
-              columnsUsed: ['Product', 'Quantity'],
-              filters: 'None'
-            }
-          }
-        ]
-      },
-      { id: 'c2', title: 'Sales Overview', date: '1 day ago', messageCount: 8, messages: [] },
-      { id: 'c3', title: 'Revenue Analysis', date: '2 days ago', messageCount: 15, messages: [] }
-    ]
-  },
-  {
-    id: '2',
-    name: 'customers.csv',
-    rowCount: 1200,
-    colCount: 6,
-    size: '30 KB',
-    status: 'ready',
-    conversations: []
-  },
-  {
-    id: '3',
-    name: 'expenses.csv',
-    rowCount: 856,
-    colCount: 6,
-    size: '22 KB',
-    status: 'ready',
-    conversations: []
-  }
-];
-
 export default function App() {
-  const [datasets, setDatasets] = useState(MOCK_DATASETS);
+  const [datasets, setDatasets] = useState([]);
   const [activeDatasetId, setActiveDatasetId] = useState(null);
   const [activeConversationId, setActiveConversationId] = useState(null);
-  const [currentView, setCurrentView] = useState('welcome'); // welcome, overview, chat, report, rejected
+  const [currentView, setCurrentView] = useState('welcome');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
-  // Theme state
-  const [theme, setTheme] = useState('dark'); // 'light' or 'dark'
+  const [isLoading, setIsLoading] = useState(true);
+  const [rejection, setRejection] = useState(null);
+  const [report, setReport] = useState(null);
+  const [error, setError] = useState(null);
+
+  const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
+  const refreshDatasets = useCallback(async () => {
+    try {
+      const body = await api.listDatasets();
+      setDatasets(body.datasets);
+      return body.datasets;
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : String(cause));
+      return [];
+    }
+  }, []);
 
-  const handleFileUpload = (e) => {
+  // First paint. A cold Render instance takes 30-60s to wake, so the spinner
+  // has to resolve either way — never hang.
+  useEffect(() => {
+    (async () => {
+      await refreshDatasets();
+      setIsLoading(false);
+    })();
+  }, [refreshDatasets]);
+
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = ''; // so picking the same file again re-triggers
 
     setIsUploading(true);
-    
-    // Simulate upload delay and check
-    setTimeout(() => {
-      setIsUploading(false);
-      
-      // Simulate rejecting a file if its name includes 'problem' or 'bad'
-      if (file.name.toLowerCase().includes('problem') || file.name.toLowerCase().includes('bad')) {
+    setError(null);
+    setRejection(null);
+
+    try {
+      const dataset = await api.uploadDataset(file);
+      await refreshDatasets();
+      setActiveDatasetId(dataset.id);
+      setActiveConversationId(null);
+      setReport(null);
+      setCurrentView('overview');
+    } catch (cause) {
+      if (cause instanceof ApiError && cause.code === 'DATASET_REJECTED') {
+        // The rejection screen renders these; fall back to the filename we
+        // already know if the server sent no details.
+        setRejection({ filename: file.name, ...(cause.details || {}) });
         setCurrentView('rejected');
       } else {
-        // Success upload mock
-        const newDataset = {
-          id: Date.now().toString(),
-          name: file.name,
-          rowCount: Math.floor(Math.random() * 5000) + 100,
-          colCount: Math.floor(Math.random() * 10) + 3,
-          status: 'ready',
-          conversations: []
-        };
-        setDatasets(prev => [newDataset, ...prev]);
-        setActiveDatasetId(newDataset.id);
-        setActiveConversationId(null);
-        setCurrentView('overview');
+        setError(cause instanceof ApiError ? cause.message : String(cause));
       }
-    }, 1500);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleSelectDataset = (id) => {
+  const openDataset = async (id) => {
     setActiveDatasetId(id);
     setActiveConversationId(null);
     setCurrentView('overview');
     setIsMobileOpen(false);
+    setReport(null);
+    setError(null);
+    try {
+      setReport(await api.getReport(id));
+    } catch (cause) {
+      // The overview still works without the report; only the quality card
+      // and the report view need it.
+      setError(cause instanceof ApiError ? cause.message : String(cause));
+    }
   };
 
-  const handleSelectConversation = (datasetId, conversationId) => {
+  const openConversation = (datasetId, conversationId) => {
     setActiveDatasetId(datasetId);
     setActiveConversationId(conversationId);
     setCurrentView('chat');
     setIsMobileOpen(false);
+    setError(null);
   };
 
-  const handleNewConversation = (datasetId) => {
-    const newConvId = 'conv_' + Date.now();
-    const newConv = { id: newConvId, title: 'New Conversation', date: 'Just now', messageCount: 0, messages: [] };
-    
-    setDatasets(prev => prev.map(d => {
-      if (d.id === datasetId) {
-        return { ...d, conversations: [newConv, ...(d.conversations || [])] };
-      }
-      return d;
-    }));
-    
-    setActiveDatasetId(datasetId);
-    setActiveConversationId(newConvId);
-    setCurrentView('chat');
-    setIsMobileOpen(false);
+  const startConversation = async (datasetId) => {
+    setError(null);
+    try {
+      const conversation = await api.createConversation(datasetId);
+      await refreshDatasets();
+      openConversation(datasetId, conversation.id);
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : String(cause));
+    }
   };
 
-  const handleSendMessage = (text) => {
-    setDatasets(prev => prev.map(d => {
-      if (d.id === activeDatasetId) {
-        return {
-          ...d,
-          conversations: d.conversations.map(c => {
-            if (c.id === activeConversationId) {
-              const newMessages = [...c.messages, { role: 'user', content: text }];
-              // Update title if it's a new conversation
-              const title = c.title === 'New Conversation' ? text.substring(0, 25) + '...' : c.title;
-              return { ...c, title, messages: newMessages, messageCount: newMessages.length };
-            }
-            return c;
-          })
-        };
-      }
-      return d;
-    }));
-    
-    // Simulate agent reply
-    setTimeout(() => {
-      setDatasets(prev => prev.map(d => {
-        if (d.id === activeDatasetId) {
-          return {
-            ...d,
-            conversations: d.conversations.map(c => {
-              if (c.id === activeConversationId) {
-                const reply = {
-                  role: 'agent',
-                  content: "I've analyzed the data for your request.",
-                  showChart: false
-                };
-                return { ...c, messages: [...c.messages, reply], messageCount: c.messages.length + 1 };
-              }
-              return c;
-            })
-          };
-        }
-        return d;
-      }));
-    }, 2000);
-  };
-
-  const activeDataset = datasets.find(d => d.id === activeDatasetId);
-  const activeConversation = activeDataset?.conversations?.find(c => c.id === activeConversationId);
+  const activeDataset = datasets.find((d) => d.id === activeDatasetId) || null;
+  const activeConversation =
+    activeDataset?.conversations?.find((c) => c.id === activeConversationId) || null;
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-dark-bg font-sans overflow-hidden">
-      
-      <Sidebar 
+      <Sidebar
         datasets={datasets}
         activeDatasetId={activeDatasetId}
         activeConversationId={activeConversationId}
-        onSelectDataset={handleSelectDataset}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
+        onSelectDataset={openDataset}
+        onSelectConversation={openConversation}
+        onNewConversation={startConversation}
         onUploadDataset={() => setCurrentView('welcome')}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
+        isLoading={isLoading}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        
-        {/* Mobile Header / Theme Toggle */}
         <div className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-dark-sidebar border-b border-slate-200 dark:border-dark-border z-10">
-          <button 
+          <button
             onClick={() => setIsMobileOpen(true)}
             className="p-2 -ml-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
           >
             <Menu size={24} />
           </button>
           <div className="font-semibold text-slate-800 dark:text-white">AI Data Analyst</div>
-          <button 
-            onClick={toggleTheme} 
+          <button
+            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
             className="w-10 h-10 flex items-center justify-center -mr-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
           >
-             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
-        
-        {/* Desktop Theme Toggle (floating top right) */}
-        <button 
-          onClick={toggleTheme} 
+
+        <button
+          onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
           className="hidden lg:flex absolute top-4 right-6 z-50 w-10 h-10 items-center justify-center bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full shadow-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
           title="Toggle Theme"
         >
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
-        {/* Main Content Area */}
+        {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
+
         <main className="flex-1 overflow-hidden flex flex-col relative">
           {currentView === 'welcome' && (
-            <WelcomeScreen 
-              onFileUpload={handleFileUpload} 
-              isUploading={isUploading} 
-            />
+            <WelcomeScreen onFileUpload={handleFileUpload} isUploading={isUploading} />
           )}
-          
+
           {currentView === 'overview' && activeDataset && (
-            <DatasetOverview 
-              dataset={activeDataset} 
+            <DatasetOverview
+              dataset={activeDataset}
+              report={report}
               onBack={() => setCurrentView('welcome')}
-              onNewConversation={handleNewConversation}
-              onSelectConversation={handleSelectConversation}
+              onNewConversation={startConversation}
+              onSelectConversation={openConversation}
               onShowReport={() => setCurrentView('report')}
             />
           )}
-          
+
           {currentView === 'chat' && activeDataset && activeConversation && (
-            <ChatInterface 
+            <ChatInterface
               dataset={activeDataset}
               conversation={activeConversation}
-              onSendMessage={handleSendMessage}
+              onTurnComplete={refreshDatasets}
             />
           )}
-          
+
           {currentView === 'report' && activeDataset && (
-            <PreprocessingReport 
+            <PreprocessingReport
               dataset={activeDataset}
+              report={report}
               onBack={() => setCurrentView('overview')}
             />
           )}
-          
+
           {currentView === 'rejected' && (
-            <DatasetRejected 
+            <DatasetRejected
+              {...(rejection || {})}
               onUploadAnother={() => setCurrentView('welcome')}
               onClose={() => setCurrentView('welcome')}
             />
           )}
         </main>
-
       </div>
     </div>
   );

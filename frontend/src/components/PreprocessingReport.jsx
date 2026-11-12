@@ -1,150 +1,112 @@
 import React from 'react';
-import { ArrowLeft, CheckCircle2, AlertTriangle, AlertCircle, Info, Database } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, Info, XCircle } from 'lucide-react';
 
-export default function PreprocessingReport({ dataset, onBack }) {
+// Rendered from the server's ordered `checks` array. Every value in this view
+// was a literal before — customer_phone, 78.4%, order_date, 2.1%, "6 checks
+// completed" — so a different CSV showed the same story.
+
+const LEVELS = {
+  success: { Icon: CheckCircle2, tone: 'text-success', bar: '' },
+  warning: { Icon: AlertCircle, tone: 'text-warning', bar: 'border-l-4 border-warning' },
+  info: { Icon: Info, tone: 'text-primary', bar: 'border-l-4 border-primary' },
+  error: { Icon: XCircle, tone: 'text-error', bar: 'border-l-4 border-error' },
+};
+
+function Check({ check }) {
+  const { Icon, tone, bar } = LEVELS[check.level] || LEVELS.info;
+
+  return (
+    <div
+      className={`bg-white dark:bg-dark-card rounded-xl border border-slate-200 dark:border-dark-border p-5 shadow-sm ${bar}`}
+    >
+      <div className="flex items-start gap-3">
+        <Icon size={20} className={`${tone} shrink-0 mt-0.5`} />
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-200">{check.title}</h3>
+          {check.summary && (
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{check.summary}</p>
+          )}
+
+          {check.excludedColumns?.length > 0 && (
+            <ul className="mt-3 space-y-1.5 text-sm">
+              {check.excludedColumns.map((column) => (
+                <li key={column.name} className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono bg-slate-100 dark:bg-dark-bg px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">
+                    {column.name}
+                  </span>
+                  <span className="text-slate-500">({column.reason})</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {check.conversions?.length > 0 && (
+            <ul className="mt-3 space-y-1.5 text-sm">
+              {check.conversions.map((conversion) => (
+                <li key={conversion.name} className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-slate-700 dark:text-slate-300">
+                    {conversion.name}
+                  </span>
+                  <span className="text-slate-400">
+                    {conversion.from} → {conversion.to}
+                  </span>
+                  <span className="text-success text-xs">{conversion.successRate}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PreprocessingReport({ dataset, report, onBack }) {
   if (!dataset) return null;
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary overflow-hidden">
-      
-      {/* Header */}
-      <header className="bg-white dark:bg-dark-sidebar border-b border-slate-200 dark:border-dark-border px-6 py-6 flex-shrink-0">
-        <button 
+      <header className="bg-white dark:bg-dark-sidebar border-b border-slate-200 dark:border-dark-border px-6 py-4 shrink-0">
+        <button
           onClick={onBack}
-          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-6 transition-colors"
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors mb-2"
         >
-          <ArrowLeft size={16} />
-          Back
+          <ArrowLeft size={16} /> Back to overview
         </button>
-        
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Data Preparation Report</h2>
-        <div className="flex items-center gap-3 text-sm text-slate-500">
-          <span className="font-medium text-slate-700 dark:text-slate-300">{dataset.name}</span>
-          <span>•</span>
-          <span>{dataset.rowCount?.toLocaleString()} rows</span>
-          <span>•</span>
-          <span>{dataset.colCount} columns</span>
-        </div>
-
-        <div className="flex items-center gap-4 mt-6">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-success/10 text-success rounded-full text-sm font-medium">
-            <CheckCircle2 size={16} />
-            6 checks completed
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-warning/10 text-warning rounded-full text-sm font-medium">
-            <AlertTriangle size={16} />
-            2 notices
-          </div>
-        </div>
+        <h1 className="text-xl font-bold text-slate-800 dark:text-white">Data preparation</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          {dataset.name} · {dataset.rowCount?.toLocaleString()} rows · {dataset.colCount} columns
+        </p>
       </header>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-3xl mx-auto space-y-4">
-          
-          <div className="bg-blue-50/50 dark:bg-primary/5 border border-blue-100 dark:border-primary/20 rounded-xl p-4 flex gap-3 text-sm mb-6">
-            <Info size={20} className="text-blue-500 dark:text-primary flex-shrink-0" />
-            <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
-              The original dataset is preserved. All changes are applied to a working copy for analysis, without modifying your file.
-            </p>
-          </div>
+          {!report && <div className="text-sm text-slate-500">Loading report…</div>}
 
-          <div className="space-y-4">
-            
-            {/* Validation */}
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-5 flex gap-4 shadow-sm">
-              <div className="mt-0.5">
-                <CheckCircle2 size={24} className="text-success" />
+          {report && (
+            <>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <span className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1.5 rounded-full font-medium">
+                  <CheckCircle2 size={14} />
+                  {report.checksCompleted} checks completed
+                </span>
+                <span className="flex items-center gap-1.5 bg-warning/10 text-warning px-3 py-1.5 rounded-full font-medium">
+                  <AlertCircle size={14} />
+                  {report.noticeCount} notice{report.noticeCount === 1 ? '' : 's'}
+                </span>
+                <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-dark-card text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-full font-medium">
+                  Quality {report.qualityScore} ({report.qualityLabel})
+                </span>
               </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">1. File validation</h4>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">CSV file loaded successfully.</p>
-              </div>
-            </div>
 
-            {/* Size */}
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-5 flex gap-4 shadow-sm">
-              <div className="mt-0.5">
-                <CheckCircle2 size={24} className="text-success" />
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">2. Dataset size</h4>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{dataset.rowCount?.toLocaleString()} rows • {dataset.colCount} columns</p>
-              </div>
-            </div>
+              {report.checks?.map((check) => <Check key={check.order} check={check} />)}
 
-            {/* Missing values */}
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-5 flex gap-4 shadow-sm">
-              <div className="mt-0.5">
-                <CheckCircle2 size={24} className="text-success" />
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">3. Missing values</h4>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Overall missing rate: 2.1% (within threshold).</p>
-              </div>
-            </div>
-
-            {/* Excluded columns */}
-            <div className="bg-white dark:bg-dark-card border border-warning/50 dark:border-warning/30 rounded-xl p-5 flex gap-4 shadow-sm relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-warning"></div>
-              <div className="mt-0.5">
-                <AlertCircle size={24} className="text-warning" />
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">4. Column excluded from analysis</h4>
-                <div className="mt-2 space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono bg-slate-100 dark:bg-dark-bg px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">customer_phone</span>
-                    <span className="text-slate-500">(78.4% missing)</span>
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400">This column remains in the original dataset but will not be used for analysis.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Data type conversion */}
-            <div className="bg-white dark:bg-dark-card border border-blue-100 dark:border-blue-900/30 rounded-xl p-5 flex gap-4 shadow-sm relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
-              <div className="mt-0.5">
-                <Info size={24} className="text-blue-500" />
-              </div>
-              <div className="w-full">
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">5. Data type conversion</h4>
-                <div className="mt-3 space-y-3 text-sm w-full max-w-lg">
-                  
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-dark-border pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-slate-700 dark:text-slate-300">order_date</span>
-                      <span className="text-slate-400 text-xs">object &rarr; datetime</span>
-                    </div>
-                    <span className="text-success font-medium">99.7% converted</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between pb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-slate-700 dark:text-slate-300">quantity</span>
-                      <span className="text-slate-400 text-xs">object &rarr; int64</span>
-                    </div>
-                    <span className="text-success font-medium">100% converted</span>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Duplicate rows */}
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-5 flex gap-4 shadow-sm">
-              <div className="mt-0.5">
-                <CheckCircle2 size={24} className="text-success" />
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">6. Duplicate rows</h4>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">0.4% detected (below threshold).</p>
-              </div>
-            </div>
-
-          </div>
-          
+              <p className="text-xs text-slate-500 pt-2">
+                Excluded columns remain in the original dataset; they are only left
+                out of the analysis.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
