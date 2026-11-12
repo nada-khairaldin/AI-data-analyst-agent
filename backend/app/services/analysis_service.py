@@ -53,9 +53,19 @@ def result_kind(result):
 
 
 def serialise_result(result):
-    """Result rows as JSON. NaN becomes null, scalars pass through."""
+    """Result rows as JSON. NaN becomes null, scalars pass through.
+
+    ``astype(object)`` first: on a float column ``where(notna, None)`` puts
+    the None straight back as NaN, and NaN is not valid JSON — a strict parser
+    rejects it and the browser's JSON.parse throws. orders.csv has an
+    unparseable quantity, so this is reachable, not theoretical.
+    """
     if isinstance(result, pd.DataFrame):
-        return result.where(pd.notna(result), None).to_dict(orient="records")
+        return (
+            result.astype(object)
+            .where(pd.notna(result), None)
+            .to_dict(orient="records")
+        )
     if hasattr(result, "item"):
         try:
             return result.item()
