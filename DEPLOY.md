@@ -183,3 +183,67 @@ preprocessing report, start a conversation, ask
 *"Which product has the highest total quantity sold?"*
 
 `samples/bad.csv` should be rejected with the missing-values screen.
+
+
+---
+
+## If Render is down and you need to demo now
+
+The frontend talks to whatever `VITE_API_BASE_URL` points at, so running
+everything locally is a two-terminal fallback and needs no code change.
+
+```bash
+# terminal 1 — backend
+cd backend
+LLM_DEV_CACHE=true ../.venv/Scripts/python.exe -m uvicorn app.main:app --port 8100
+# wait for: Application startup complete.  (Neon cold start can take ~45s)
+curl http://127.0.0.1:8100/health
+
+# terminal 2 — frontend
+cd frontend
+# point it at the local backend instead of Render
+echo "VITE_API_BASE_URL=http://127.0.0.1:8100" > .env
+npm run dev          # http://localhost:5173
+```
+
+`http://localhost:5173` is already in `CORS_ALLOWED_ORIGINS` on Render, and the
+local backend's own default allows it too, so nothing else changes.
+
+`LLM_DEV_CACHE=true` is what makes the demo cheap: the four questions from the
+phase C run are already cached, so re-asking them costs **0** Gemini calls
+against the 20-per-day limit. Ask something new and it costs ~3.
+
+Put `.env` back to the Render URL afterwards:
+
+```bash
+echo "VITE_API_BASE_URL=https://ai-data-analyst-h1rx.onrender.com" > frontend/.env
+```
+
+### Diagnosing the Render service itself
+
+What "down" looked like from outside, for comparison:
+
+```
+* ALPN: server accepted http/1.1
+> GET /health HTTP/1.1
+* Operation timed out after 40010 ms with 0 bytes received
+```
+
+TLS completes and the request is sent, then nothing. Render's edge is up and
+the application behind it is not answering — a failed build, or a start
+command that crash-loops. The edge holds the connection open, which is why
+there is no 502 to read.
+
+Check, in this order:
+
+1. **Events** tab — did a deploy run at all? If auto-deploy is off, a push
+   changes nothing and the service is still on the old commit.
+2. **Logs** tab — the build log for a failed wheel, and the runtime log for a
+   traceback on startup. A missing env var surfaces here, not at build time.
+3. **Manual Deploy → Clear build cache & deploy**, which is the quickest way
+   to rule out a half-written cache.
+
+Also worth knowing: DNS puts this service in **gcp-us-west1**, not Ohio. It
+works, but every database query crosses the country to Neon in `us-east-2`.
+Recreating it in Ohio would cut a noticeable amount of latency off every
+request.
