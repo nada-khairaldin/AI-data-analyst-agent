@@ -928,6 +928,25 @@ dead `MoreHorizontal` button. Response `204`.
 
 ---
 
+## 13b. `DELETE /api/conversations/{conversationId}` — added in phase E
+
+Delete one conversation. Messages and the rolling summary cascade. Response
+`204`. Another session's conversation is `404`, not `403`, for the same reason
+as every other conversation endpoint.
+
+**Notes:**
+- Destructive; the UI confirms first with its own dialog, not `window.confirm`.
+- Implemented as a single `DELETE` statement so the **database** does the
+  cascading. `conversation_summaries.covers_through_id` references
+  `messages.id` with no `ondelete`, which is safe only because `NO ACTION` is
+  checked once at the end of the statement, by which time both children are
+  gone. Deleting through the ORM issues separate statements and would depend on
+  their ordering, so it is deliberately not done that way.
+- Unlike a dataset there is no object store involved, so `204` means the rows
+  really are gone.
+
+---
+
 ## 14. `GET /api/conversations?q=<text>`
 
 Backs the sidebar's **non-functional** search input (`Sidebar.jsx:69-76` — no

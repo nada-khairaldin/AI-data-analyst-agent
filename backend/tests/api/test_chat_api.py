@@ -1,6 +1,6 @@
 """API tests for conversations and the chat turn (phase B1/B2).
 
-The LLM is never called. ``run_agent`` and ``explain_result`` are replaced at
+The LLM is never called. ``run_agent`` and ``astream_explanation`` are replaced at
 their use sites in analysis_service, which is where the names are bound — the
 rest of the pipeline (execute_plan, chart validation, persistence, the event
 sequence) is the real code.
@@ -28,11 +28,16 @@ def fake_agent(monkeypatch):
         agent_state.update(state)
         return agent_state
 
+    async def fake_astream_explanation(question, plan, result):
+        yield "Mouse sold the most, at 2709 units."
+
     monkeypatch.setattr(analysis_service, "run_agent", fake_run_agent)
+    # C3 replaced the blocking explain_result with an async generator. This
+    # fixture kept patching the old name, which monkeypatch rejects as a
+    # missing attribute -- so every test using it errored out instead of
+    # running.
     monkeypatch.setattr(
-        analysis_service,
-        "explain_result",
-        lambda question, plan, result: "Mouse sold the most, at 2709 units.",
+        analysis_service, "astream_explanation", fake_astream_explanation
     )
     return set_plan
 
@@ -133,6 +138,57 @@ async def test_rename_a_conversation(client, conversation, headers):
 
     assert response.status_code == 200
     assert response.json()["title"] == "Renamed"
+
+
+async def test_delete_a_conversation(client, conversation, headers):
+    dataset_id, conversation_id = conversation
+
+    response = await client.delete(
+        f"/api/conversations/{conversation_id}", headers=headers
+    )
+    assert response.status_code == 204
+
+    gone = await client.get(
+        f"/api/conversations/{conversation_id}/messages", headers=headers
+    )
+    assert gone.status_code == 404
+
+    listing = await client.get(f"/api/datasets/{dataset_id}", headers=headers)
+    assert listing.json()["conversations"] == []
+
+
+async def test_delete_a_conversation_takes_its_messages(
+    client, conversation, headers, fake_agent
+):
+    _, conversation_id = conversation
+    await client.post(
+        f"/api/conversations/{conversation_id}/messages",
+        json={"content": "Which product has the highest total quantity sold?"},
+        headers=headers,
+    )
+
+    assert (
+        await client.delete(f"/api/conversations/{conversation_id}", headers=headers)
+    ).status_code == 204
+
+    # The messages cascade, so nothing is left pointing at a dead parent.
+    assert (
+        await client.get(
+            f"/api/conversations/{conversation_id}/messages", headers=headers
+        )
+    ).status_code == 404
+
+
+async def test_another_session_cannot_delete_a_conversation(client, conversation):
+    _, conversation_id = conversation
+    stranger = {"X-Session-Id": str(uuid.uuid4())}
+
+    response = await client.delete(
+        f"/api/conversations/{conversation_id}", headers=stranger
+    )
+
+    # 404 rather than 403: telling the two apart confirms the id exists.
+    assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------
@@ -314,12 +370,12 @@ async def test_a_clarification_makes_no_explainer_call(
         )
         return state
 
+    async def should_not_run(*args, **kwargs):
+        calls.append(1)
+        yield "should not be called"
+
     monkeypatch.setattr(analysis_service, "run_agent", fake_run_agent)
-    monkeypatch.setattr(
-        analysis_service,
-        "explain_result",
-        lambda *a, **k: calls.append(1) or "should not be called",
-    )
+    monkeypatch.setattr(analysis_service, "astream_explanation", should_not_run)
 
     _, conversation_id = conversation
     await client.post(
@@ -511,7 +567,10 @@ async def test_the_explainer_falling_silent_does_not_lose_the_turn(
     monkeypatch.setattr(
         analysis_service, "run_agent", lambda s: (s.update(READY_PLAN), s)[1]
     )
-    monkeypatch.setattr(analysis_service, "explain_result", lambda *a, **k: "   ")
+    async def only_whitespace(*args, **kwargs):
+        yield "   "
+
+    monkeypatch.setattr(analysis_service, "astream_explanation", only_whitespace)
 
     _, conversation_id = conversation
     body = (await client.post(
