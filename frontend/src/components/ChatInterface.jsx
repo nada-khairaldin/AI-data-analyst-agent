@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessagesSkeleton } from './Skeleton';
+import { suggestQuestions } from '../lib/suggestions';
 import { Send, CheckCircle2, ChevronRight, BarChart2, AlertTriangle, Lightbulb } from 'lucide-react';
 import ResultBlock from './ResultBlock';
 import { api, ApiError } from '../api/client';
@@ -111,6 +112,7 @@ function AgentMessage({ message }) {
 
 export default function ChatInterface({ dataset, conversation, onTurnComplete }) {
   const [input, setInput] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [turnError, setTurnError] = useState(null);
@@ -141,6 +143,23 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
     })();
     return () => { cancelled = true; };
   }, [conversation.id]);
+
+  // Starter questions are built from this dataset's own columns, with fixed
+  // templates and no LLM call: a suggestion has to be certain to run, and a
+  // free-tier call spent before the user asks anything is one they cannot
+  // spend on a real question. A failure here just leaves the chips off.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const body = await api.getColumns(dataset.id);
+        if (!cancelled) setSuggestions(suggestQuestions(body.columns));
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [dataset.id]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -233,11 +252,7 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
             </div>
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200">Start your analysis</h3>
             <div className="flex flex-wrap justify-center gap-2 max-w-md">
-              {[
-                'Which product has the highest total quantity sold?',
-                'Now show it per month',
-                'What is the average price?',
-              ].map((suggestion) => (
+              {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => setInput(suggestion)}
