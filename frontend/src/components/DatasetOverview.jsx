@@ -4,6 +4,7 @@ import DataPreparation from './DataPreparation';
 import ColumnsTable from './ColumnsTable';
 import PreviewTable from './PreviewTable';
 import { Bar } from './Skeleton';
+import QualityRing from './QualityRing';
 import { api, ApiError } from '../api/client';
 
 const TABS = ['Overview', 'Data Preparation', 'Columns & Types', 'Preview'];
@@ -65,7 +66,6 @@ export default function DatasetOverview({
 
   // The circle is a 283-unit circumference; the offset is the unfilled part.
   const score = report ? parseFloat(report.qualityScore) : null;
-  const dashOffset = score === null ? 283 : Math.max(0, 283 - (283 * score) / 100);
   const scoreColor =
     report?.qualityLabel === 'Good'
       ? 'text-success'
@@ -216,39 +216,13 @@ export default function DatasetOverview({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-4">
-                    <div className="relative w-32 h-32 mb-4">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="45"
-                          fill="none"
-                          stroke="currentColor"
-                          className="text-slate-100 dark:text-dark-border"
-                          strokeWidth="8"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="45"
-                          fill="none"
-                          stroke="currentColor"
-                          className={scoreColor}
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          strokeDasharray="283"
-                          strokeDashoffset={dashOffset}
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span className="text-2xl font-bold text-slate-800 dark:text-white tabular-nums">
-                          {report.qualityScore}
-                        </span>
-                        <span className={`text-xs font-medium ${scoreColor}`}>
-                          {report.qualityLabel}
-                        </span>
-                      </div>
-                    </div>
+                    <QualityRing
+                      score={score}
+                      scoreText={report.qualityScore}
+                      label={report.qualityLabel}
+                      colorClass={scoreColor}
+                      animationKey={datasetId}
+                    />
 
                     <div className="w-full space-y-2 mt-2 text-sm">
                       <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">

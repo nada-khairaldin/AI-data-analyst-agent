@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SidebarSkeleton } from './Skeleton';
 import { Plus, Search, Settings, FileText, ChevronDown, ChevronRight, MessageSquare, UploadCloud, Database } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -82,7 +83,7 @@ export default function Sidebar({
           <div className="text-xs font-semibold text-slate-500 tracking-wider mb-3 px-1">YOUR DATASETS</div>
           
           {isLoading && (
-            <div className="px-1 py-2 text-sm text-slate-500">Loading datasets…</div>
+            <SidebarSkeleton />
           )}
           {!isLoading && datasets.length === 0 && (
             <div className="px-1 py-2 text-sm text-slate-500">

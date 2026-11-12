@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { MessagesSkeleton } from './Skeleton';
 import { Send, CheckCircle2, ChevronRight, BarChart2, AlertTriangle, Lightbulb } from 'lucide-react';
 import ResultBlock from './ResultBlock';
 import { api, ApiError } from '../api/client';
@@ -222,7 +223,7 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
         {isLoading && (
-          <div className="text-sm text-slate-500">Loading conversation…</div>
+          <MessagesSkeleton />
         )}
 
         {!isLoading && messages.length === 0 && !isStreaming && (
