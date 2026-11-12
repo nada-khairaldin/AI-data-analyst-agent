@@ -3,6 +3,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, Query
+from fastapi import Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -91,6 +92,18 @@ async def rename_conversation(
     await db.commit()
     await db.refresh(conversation)
     return conversation_summary(conversation)
+
+
+@router.delete("/conversations/{conversation_id}", status_code=204)
+async def delete_conversation(
+    conversation_id: uuid.UUID,
+    session_id: uuid.UUID = Depends(get_session_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Endpoint 15. Messages and the summary cascade in the database."""
+    await conversation_service.delete_conversation(db, session_id, conversation_id)
+    await db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/conversations/{conversation_id}/messages", status_code=201)

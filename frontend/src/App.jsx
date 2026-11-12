@@ -5,6 +5,7 @@ import DatasetOverview from './components/DatasetOverview';
 import ChatInterface from './components/ChatInterface';
 import DatasetRejected from './components/DatasetRejected';
 import ErrorBanner from './components/ErrorBanner';
+import ConfirmDialog from './components/ConfirmDialog';
 import { api, ApiError } from './api/client';
 import { Menu, Sun, Moon } from 'lucide-react';
 
@@ -20,6 +21,8 @@ export default function App() {
   const [report, setReport] = useState(null);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [theme, setTheme] = useState('dark');
 
@@ -76,10 +79,10 @@ export default function App() {
     };
   }, [activeDatasetId]);
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
+  // Takes a File, not an event, so the picker and the drop zone share one
+  // path and cannot validate differently.
+  const handleFileUpload = async (file) => {
     if (!file) return;
-    e.target.value = ''; // so picking the same file again re-triggers
 
     setIsUploading(true);
     setError(null);
@@ -132,6 +135,48 @@ export default function App() {
     }
   };
 
+  // Deleting is confirmed through a dialog, so the click only records what
+  // was asked for; confirmDelete does the work.
+  const askDeleteDataset = (dataset) =>
+    setPendingDelete({ kind: 'dataset', id: dataset.id, name: dataset.name,
+      conversationCount: dataset.conversations?.length || 0 });
+
+  const askDeleteConversation = (datasetId, conversation) =>
+    setPendingDelete({ kind: 'conversation', id: conversation.id,
+      name: conversation.title, datasetId });
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      if (pendingDelete.kind === 'dataset') {
+        await api.deleteDataset(pendingDelete.id);
+        const remaining = await refreshDatasets();
+        // Only move if the thing being looked at is the thing deleted.
+        if (pendingDelete.id === activeDatasetId) {
+          const next = remaining[0];
+          setActiveConversationId(null);
+          setActiveDatasetId(next ? next.id : null);
+          setCurrentView(next ? 'overview' : 'welcome');
+        }
+      } else {
+        await api.deleteConversation(pendingDelete.id);
+        await refreshDatasets();
+        if (pendingDelete.id === activeConversationId) {
+          setActiveConversationId(null);
+          setCurrentView('overview');
+        }
+      }
+      setPendingDelete(null);
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : String(cause));
+      setPendingDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const activeDataset = datasets.find((d) => d.id === activeDatasetId) || null;
   const activeConversation =
     activeDataset?.conversations?.find((c) => c.id === activeConversationId) || null;
@@ -146,6 +191,8 @@ export default function App() {
         onSelectConversation={openConversation}
         onNewConversation={startConversation}
         onUploadDataset={() => setCurrentView('welcome')}
+        onDeleteDataset={askDeleteDataset}
+        onDeleteConversation={askDeleteConversation}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
         isLoading={isLoading}
@@ -222,6 +269,37 @@ export default function App() {
           )}
         </main>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        isBusy={isDeleting}
+        title={
+          pendingDelete?.kind === 'dataset' ? 'Delete this dataset?' : 'Delete this conversation?'
+        }
+        body={
+          pendingDelete?.kind === 'dataset' ? (
+            <>
+              <strong className="text-slate-800 dark:text-slate-200">{pendingDelete?.name}</strong>{' '}
+              and its stored file will be deleted.
+              {pendingDelete?.conversationCount > 0 && (
+                <>
+                  {' '}
+                  Its {pendingDelete.conversationCount} conversation
+                  {pendingDelete.conversationCount === 1 ? '' : 's'} will be deleted too.
+                </>
+              )}{' '}
+              This cannot be undone.
+            </>
+          ) : (
+            <>
+              <strong className="text-slate-800 dark:text-slate-200">{pendingDelete?.name}</strong>{' '}
+              and all of its messages will be deleted. This cannot be undone.
+            </>
+          )
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

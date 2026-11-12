@@ -7,7 +7,7 @@ same transaction, so they can never drift from the rows they summarise.
 import json
 import uuid
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import NotFound
@@ -50,6 +50,25 @@ async def get_conversation(db: AsyncSession, session_id: uuid.UUID, conversation
     if conversation is None:
         raise NotFound("Conversation not found.")
     return conversation
+
+
+async def delete_conversation(db: AsyncSession, session_id: uuid.UUID, conversation_id):
+    """Endpoint 15. One statement, so the database does the cascading.
+
+    Messages and the summary both cascade from the conversation, but
+    conversation_summaries.covers_through_id points at messages.id with no
+    ondelete. In a single statement that is safe: NO ACTION is checked once
+    at the end, by which time both children are gone. Deleting through the
+    ORM would issue separate statements and rely on their ordering, so it is
+    deliberately not done that way.
+    """
+    await get_conversation(db, session_id, conversation_id)  # 404s if not theirs
+    await db.execute(
+        delete(Conversation).where(
+            Conversation.id == conversation_id,
+            Conversation.session_id == session_id,
+        )
+    )
 
 
 async def list_conversations(

@@ -7,6 +7,7 @@ import {
   MessageSquare,
   UploadCloud,
   Database,
+  Trash2,
 } from 'lucide-react';
 import { SidebarSkeleton } from './Skeleton';
 
@@ -25,6 +26,8 @@ export default function Sidebar({
   onSelectConversation,
   isMobileOpen,
   setIsMobileOpen,
+  onDeleteDataset,
+  onDeleteConversation,
 }) {
   const [expandedId, setExpandedId] = useState(activeDatasetId);
   const [showAllFor, setShowAllFor] = useState({});
@@ -107,50 +110,74 @@ export default function Sidebar({
 
                 return (
                   <div key={dataset.id} className="mb-2">
-                    <button
-                      onClick={() => handleDatasetClick(dataset.id)}
-                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-sm transition-colors ${
+                    <div
+                      className={`group flex items-center rounded-md transition-colors ${
                         isActive
                           ? 'bg-primary/10 text-primary font-medium'
                           : 'hover:bg-white/5 text-slate-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <FileText
-                          size={16}
-                          className={isActive ? 'text-primary' : 'text-slate-400'}
-                        />
-                        <span className="truncate">{dataset.name}</span>
-                      </div>
-                      {conversations.length > 0 && (
-                        <div className="shrink-0 text-slate-400">
-                          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      <button
+                        onClick={() => handleDatasetClick(dataset.id)}
+                        className="flex-1 flex items-center justify-between px-2 py-1.5 text-sm min-w-0"
+                      >
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <FileText
+                            size={16}
+                            className={isActive ? 'text-primary' : 'text-slate-400'}
+                          />
+                          <span className="truncate">{dataset.name}</span>
                         </div>
-                      )}
-                    </button>
+                        {conversations.length > 0 && (
+                          <div className="shrink-0 text-slate-400 ml-2">
+                            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </div>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => onDeleteDataset?.(dataset)}
+                        aria-label={`Delete ${dataset.name}`}
+                        title="Delete dataset"
+                        className="shrink-0 p-1.5 mr-1 rounded text-slate-500 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:text-rose-400 hover:bg-white/5 transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
 
                     {isExpanded ? (
                       <div className="ml-6 mt-1 space-y-0.5 border-l border-dark-border/50 pl-2">
                         {visible.map((conv) => (
-                          <button
+                          <div
                             key={conv.id}
-                            onClick={() => onSelectConversation(dataset.id, conv.id)}
-                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors text-left ${
+                            className={`group/conv flex items-center rounded-md transition-colors ${
                               conv.id === activeConversationId
                                 ? 'text-white bg-white/5'
                                 : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                             }`}
                           >
-                            <MessageSquare
-                              size={14}
-                              className={
-                                conv.id === activeConversationId
-                                  ? 'text-primary/70'
-                                  : 'text-slate-500'
-                              }
-                            />
-                            <span className="truncate">{conv.title}</span>
-                          </button>
+                            <button
+                              onClick={() => onSelectConversation(dataset.id, conv.id)}
+                              className="flex-1 flex items-center gap-2 px-2 py-1.5 text-sm text-left min-w-0"
+                            >
+                              <MessageSquare
+                                size={14}
+                                className={
+                                  conv.id === activeConversationId
+                                    ? 'text-primary/70'
+                                    : 'text-slate-500'
+                                }
+                              />
+                              <span className="truncate">{conv.title}</span>
+                            </button>
+                            <button
+                              onClick={() => onDeleteConversation?.(dataset.id, conv)}
+                              aria-label={`Delete ${conv.title}`}
+                              title="Delete conversation"
+                              className="shrink-0 p-1.5 mr-1 rounded text-slate-500 opacity-0 group-hover/conv:opacity-100 focus:opacity-100 hover:text-rose-400 transition-all"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                         ))}
 
                         {hidden > 0 && (

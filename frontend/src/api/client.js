@@ -107,6 +107,12 @@ export const api = {
       body: JSON.stringify({}),
     }),
 
+  deleteDataset: (id) =>
+    request(`/api/datasets/${id}`, { method: 'DELETE', headers: headers() }),
+
+  deleteConversation: (id) =>
+    request(`/api/conversations/${id}`, { method: 'DELETE', headers: headers() }),
+
   getMessages: (conversationId) =>
     request(`/api/conversations/${conversationId}/messages`, {
       headers: headers(),
