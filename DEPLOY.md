@@ -192,6 +192,36 @@ preprocessing report, start a conversation, ask
 
 `samples/bad.csv` should be rejected with the missing-values screen.
 
+### Streaming through Render — measured, not assumed
+
+Render fronts the service with Cloudflare, so the obvious worry is a proxy
+buffering the SSE response. It does not. Measured against the live service
+from the Vercel origin, on a **warm** instance:
+
+```
+ 0.68s  HTTP/1.1 200 OK            <- response headers
+ 0.68s  event: status  condensing  <- first event, same flush
+ 5.82s  event: condensed           <- after the condenser call
+ 5.83s  event: result
+ 6.53s  event: token               <- first token
+```
+
+The first event arrives with the headers. `X-Accel-Buffering: no` and
+`Cache-Control: no-transform` are doing their job.
+
+**A cold instance looks exactly like buffering and is not.** The same request
+against a sleeping service showed nothing for 14-22s and then every event at
+once. That delay is `_turn_generator` in `api/routers/conversations.py`: it
+awaits the conversation, dataset, columns and the Parquet frame *before*
+`StreamingResponse` is constructed, so the response cannot start until the
+dataset is loaded — and on a cold start that means waking the instance, waking
+the Neon compute, and the first object-storage fetch.
+
+This is deliberate: those four awaits are what turn a missing conversation
+into a real `404` instead of an `error` event after a `200`. The cost is paid
+once, on the first question after idle. **Open `/health` and ask one throwaway
+question before demoing** and the stream is immediate.
+
 
 ---
 
