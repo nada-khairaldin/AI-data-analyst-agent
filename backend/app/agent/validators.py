@@ -354,10 +354,12 @@ def get_final_result_columns(plan, schema):
             group_by = step.get("group_by")
 
             if group_by:
-                current_columns = {
-                    group_by,
-                    step["column"]
-                }
+                # group_by may be a list: "per product per month" is one
+                # aggregation over two keys, and pandas groupby takes either.
+                # Without this the set construction crashed with
+                # "unhashable type: 'list'" and the whole turn 500'd.
+                keys = group_by if isinstance(group_by, list) else [group_by]
+                current_columns = set(keys) | {step["column"]}
             else:
                 return None
 

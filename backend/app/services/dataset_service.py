@@ -9,6 +9,8 @@ import io
 import logging
 import uuid
 
+import pandas as pd
+
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,6 +44,29 @@ logger = logging.getLogger(__name__)
 # "6 checks completed" is a real count rather than the literal the JSX has
 # today (API_CONTRACT.md endpoint 5).
 CHECK_COUNT = 6
+
+
+CALENDAR_SUFFIXES = ("_year", "_month")
+
+
+def add_calendar_columns(frame):
+    """For every datetime column add <col>_year (int) and <col>_month (YYYY-MM).
+
+    "Show it per month" needs a column to group by: tools.py has no date
+    truncation, so without these the planner can only group by the raw date
+    and answer per DAY. Derived at upload so it works on any CSV.
+    """
+    for name in list(frame.columns):
+        if not pd.api.types.is_datetime64_any_dtype(frame[name]):
+            continue
+        year = f"{name}_year"
+        month = f"{name}_month"
+        if year not in frame.columns:
+            # Nullable Int64: .dt.year on NaT would otherwise force a float.
+            frame[year] = frame[name].dt.year.astype("Int64")
+        if month not in frame.columns:
+            frame[month] = frame[name].dt.strftime("%Y-%m")
+    return frame
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +189,10 @@ async def create_dataset(
     working = prepared["working_df"]
     excluded = prepared["unavailable_columns"]
     conversions = prepared["conversions"]
+
+    # Before the schema is read, so the derived columns reach dataset_columns
+    # and the planner.
+    working = add_calendar_columns(working)
 
     # The working frame keeps EVERY column, including excluded ones. The old
     # endpoint dropped them, which is exactly why the agent was handed

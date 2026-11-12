@@ -71,10 +71,11 @@ async def test_upload_returns_the_contract_shape(upload):
 async def test_upload_reports_the_real_row_and_column_counts(upload):
     body = (await upload()).json()
 
-    # 1,500 rows (1,305 unique + 195 duplicates) and all 9 columns,
-    # including the excluded one: the working frame keeps every column now.
+    # 1,500 rows (1,305 unique + 195 duplicates) and 11 columns: the 9 from
+    # the CSV, including the excluded one, plus OrderDate_year and
+    # OrderDate_month derived at upload.
     assert body["rowCount"] == 1500
-    assert body["colCount"] == 9
+    assert body["colCount"] == 11
 
 
 async def test_upload_preformats_size_and_rates_as_strings(upload):
@@ -325,7 +326,7 @@ async def test_columns_include_the_excluded_one(client, upload, headers):
     body = (await client.get(f"/api/datasets/{dataset_id}/columns", headers=headers)).json()
     by_name = {c["name"]: c for c in body["columns"]}
 
-    assert len(body["columns"]) == 9
+    assert len(body["columns"]) == 11
     assert by_name["customer_phone"]["available"] is False
     assert by_name["customer_phone"]["exclusionReason"]
     assert by_name["Product"]["available"] is True

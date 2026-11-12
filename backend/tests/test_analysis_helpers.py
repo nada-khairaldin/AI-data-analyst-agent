@@ -177,3 +177,66 @@ def test_a_status_event_carries_stage_and_label():
     assert item["event"] == "status"
     assert item["data"]["stage"] == "planning"
     assert item["data"]["label"]
+
+
+# ---------------------------------------------------------------------------
+# Derived calendar columns (phase D0)
+# ---------------------------------------------------------------------------
+
+
+def test_a_datetime_column_gains_year_and_month():
+    """"Per month" needs something to group by: tools.py has no date
+    truncation, so without these the planner can only group by the raw date
+    and answer per DAY."""
+    from app.services.dataset_service import add_calendar_columns
+
+    frame = pd.DataFrame({"OrderDate": pd.to_datetime(["2023-01-05", "2024-12-31"])})
+
+    result = add_calendar_columns(frame)
+
+    assert list(result["OrderDate_year"]) == [2023, 2024]
+    assert list(result["OrderDate_month"]) == ["2023-01", "2024-12"]
+
+
+def test_the_year_column_is_numeric_so_it_can_be_filtered():
+    from app.agent.validators import dtype_kind
+    from app.services.dataset_service import add_calendar_columns
+
+    frame = add_calendar_columns(
+        pd.DataFrame({"d": pd.to_datetime(["2024-01-01"])})
+    )
+
+    assert dtype_kind(str(frame["d_year"].dtype)) == "numeric"
+    # The month is text, so it can be grouped by but never summed.
+    assert dtype_kind(str(frame["d_month"].dtype)) == "other"
+
+
+def test_non_datetime_columns_are_left_alone():
+    from app.services.dataset_service import add_calendar_columns
+
+    frame = add_calendar_columns(pd.DataFrame({"a": [1], "b": ["x"]}))
+
+    assert list(frame.columns) == ["a", "b"]
+
+
+def test_missing_dates_do_not_break_the_derived_columns():
+    """NaT would force .dt.year to float without the nullable Int64 cast."""
+    from app.services.dataset_service import add_calendar_columns
+
+    frame = add_calendar_columns(
+        pd.DataFrame({"d": pd.to_datetime(["2024-01-01", None])})
+    )
+
+    assert frame["d_year"].isna().sum() == 1
+    assert str(frame["d_year"].dtype) == "Int64"
+
+
+def test_it_is_idempotent():
+    """Re-uploading the same frame must not add _year_year."""
+    from app.services.dataset_service import add_calendar_columns
+
+    frame = add_calendar_columns(
+        add_calendar_columns(pd.DataFrame({"d": pd.to_datetime(["2024-01-01"])}))
+    )
+
+    assert sorted(frame.columns) == ["d", "d_month", "d_year"]

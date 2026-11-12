@@ -217,8 +217,10 @@ def plan_steps(analysis_plan) -> list[str]:
 
         elif tool == "aggregate_data":
             word = _OPERATION_WORDS.get(step.get("operation"), step.get("operation"))
-            if step.get("group_by"):
-                steps.append(f"Group by {step['group_by']}")
+            group_by = step.get("group_by")
+            if group_by:
+                keys = group_by if isinstance(group_by, list) else [group_by]
+                steps.append(f"Group by {' and '.join(str(k) for k in keys)}")
             steps.append(f"Calculate {word} of {step.get('column')}")
 
         elif tool == "sort_data":
@@ -265,8 +267,11 @@ def plan_columns_used(analysis_plan) -> list[str]:
     for step in analysis_plan or []:
         for field in ("column", "group_by"):
             value = step.get(field)
-            if isinstance(value, str) and value not in seen:
-                seen.append(value)
+            # group_by may be a list for a multi-key aggregation.
+            values = value if isinstance(value, list) else [value]
+            for item in values:
+                if isinstance(item, str) and item not in seen:
+                    seen.append(item)
         for value in step.get("columns") or []:
             if value not in seen:
                 seen.append(value)

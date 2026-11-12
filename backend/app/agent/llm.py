@@ -76,7 +76,11 @@ class LLMNotConfigured(LLMError):
     code = "LLM_NOT_CONFIGURED"
 
 
-class LLMRateLimited(LLMError):
+class LLMRetryable(LLMError):
+    """A failure worth trying another model for."""
+
+
+class LLMRateLimited(LLMRetryable):
     """Every model in the chain is out of quota.
 
     Its own class because it is the one provider failure with a real user
@@ -86,6 +90,17 @@ class LLMRateLimited(LLMError):
 
     status_code = 429
     code = "LLM_RATE_LIMITED"
+
+
+class LLMOverloaded(LLMRetryable):
+    """The model is up but refusing work: 503 "high demand".
+
+    Transient and model-specific, so it fails over exactly like a 429. Kept
+    separate because the quota is not spent — the user should simply retry.
+    """
+
+    status_code = 503
+    code = "LLM_OVERLOADED"
 
 
 # ---------------------------------------------------------------------------
@@ -218,6 +233,22 @@ def _is_rate_limit(error: Exception) -> bool:
     return any(marker in text for marker in _RATE_LIMIT_MARKERS)
 
 
+_OVERLOADED_MARKERS = (
+    "503",
+    "unavailable",
+    "high demand",
+    "overloaded",
+    "try again later",
+)
+
+
+def _is_overloaded(error: Exception) -> bool:
+    if type(error).__name__ in ("ServiceUnavailable", "Unavailable"):
+        return True
+    text = str(error).lower()
+    return any(marker in text for marker in _OVERLOADED_MARKERS)
+
+
 def _retry_after(error: Exception):
     """Seconds the provider asked us to wait, if it said.
 
@@ -240,6 +271,11 @@ def _wrap(error: Exception, *, model: str | None = None) -> LLMError:
         return LLMRateLimited(
             "The Gemini free tier's rate limit was reached on every available "
             "model. Wait a minute and ask again.",
+            retry_after=_retry_after(error),
+        )
+    if _is_overloaded(error):
+        return LLMOverloaded(
+            "Every available model is busy right now. Please try again.",
             retry_after=_retry_after(error),
         )
     logger.warning(
@@ -301,14 +337,15 @@ def _run(role: str, operation, *, what: str):
                 result = operation(model)
             except Exception as error:
                 wrapped = _wrap(error, model=model)
-                if not isinstance(wrapped, LLMRateLimited):
+                if not isinstance(wrapped, LLMRetryable):
                     raise wrapped from error
 
                 last_rate_limit = wrapped
                 logger.warning(
-                    "Rate limited on %s (%s); trying the next model",
+                    "%s unusable (%s): %s; trying the next model",
                     model,
                     what,
+                    wrapped.code,
                 )
                 continue
 
@@ -327,7 +364,7 @@ def _run(role: str, operation, *, what: str):
             )
             delay += random.uniform(0, 0.5)
             logger.warning(
-                "All %d model(s) rate limited for %s, round %d/%d; waiting %.1fs",
+                "All %d model(s) unusable for %s, round %d/%d; waiting %.1fs",
                 len(chain),
                 what,
                 round_number,
