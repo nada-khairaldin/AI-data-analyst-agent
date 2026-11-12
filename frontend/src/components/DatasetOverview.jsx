@@ -49,7 +49,7 @@ export default function DatasetOverview({
                 {dataset.name}
               </h2>
               <p className="text-sm text-slate-500 mt-0.5">
-                {dataset.rowCount?.toLocaleString()} rows • {dataset.colCount} columns • {dataset.size || '45 KB'}
+                {dataset.rowCount?.toLocaleString()} rows • {dataset.colCount} columns • {dataset.size}
               </p>
             </div>
           </div>
@@ -135,7 +135,7 @@ export default function DatasetOverview({
                       <div>
                         <div className="font-medium text-slate-800 dark:text-slate-200">{conv.title}</div>
                         <div className="text-sm text-slate-500 flex gap-2">
-                          <span>{conv.date || '2 hours ago'}</span>
+                          <span>{conv.date}</span>
                           <span>•</span>
                           <span>{conv.messageCount || 12} messages</span>
                         </div>

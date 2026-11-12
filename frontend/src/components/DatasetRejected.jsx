@@ -33,7 +33,7 @@ export default function DatasetRejected({ filename, fileSize, missingRate, onUpl
             </div>
             <div className="flex-1 overflow-hidden">
               <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{filename || 'problematic.csv'}</div>
-              <div className="text-sm text-slate-500 mt-0.5">{fileSize || '28 KB'}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{fileSize}</div>
             </div>
           </div>
 
@@ -41,14 +41,14 @@ export default function DatasetRejected({ filename, fileSize, missingRate, onUpl
           <div className="space-y-4">
             <div className="flex justify-between text-sm">
               <span className="font-medium text-slate-700 dark:text-slate-300">Missing values</span>
-              <span className="font-bold text-error">{missingRate || '47.3%'}</span>
+              <span className="font-bold text-error">{missingRate}</span>
             </div>
             
             {/* Progress Bar */}
             <div className="h-3 w-full bg-slate-100 dark:bg-dark-bg rounded-full overflow-hidden relative">
               <div 
                 className="absolute left-0 top-0 bottom-0 bg-error rounded-full" 
-                style={{ width: missingRate || '47.3%' }}
+                style={{ width: missingRate }}
               ></div>
               {/* Max allowed marker */}
               <div 
