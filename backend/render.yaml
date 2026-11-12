@@ -1,0 +1,49 @@
+# Render blueprint. Optional — the dashboard steps in DEPLOY.md are enough —
+# but it documents the service exactly and makes it reproducible.
+services:
+  - type: web
+    name: data-analysis-agent-api
+    runtime: python
+    # Ohio: Neon Object Storage only exists in aws-us-east-2 / eu-central-1,
+    # and this project's Neon is in us-east-2. Same region = no cross-region
+    # latency on every query.
+    region: ohio
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # $PORT is assigned by Render; binding 127.0.0.1 would make the service
+    # unreachable from outside the container.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        # The project is tested on 3.14.5 (.python-version). 3.13 is pinned
+        # here for broader wheel coverage of pandas/pyarrow/asyncpg — a
+        # missing wheel means a source build that will not finish on a free
+        # instance. If the build fails, switch this to 3.14.5. See DEPLOY.md.
+        value: 3.13.4
+      # Everything below is set in the dashboard, never committed.
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_DIRECT
+        sync: false
+      - key: AWS_ENDPOINT_URL_S3
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: NEON_STORAGE_BUCKET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LLM_DEV_CACHE
+        value: "false"
