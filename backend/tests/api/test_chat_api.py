@@ -32,7 +32,7 @@ def fake_agent(monkeypatch):
     monkeypatch.setattr(
         analysis_service,
         "explain_result",
-        lambda question, plan, result: "Mouse sold the most, at 45 units.",
+        lambda question, plan, result: "Mouse sold the most, at 70 units.",
     )
     return set_plan
 
@@ -159,7 +159,11 @@ async def test_a_ready_turn_returns_the_contract_shape(
     assert message["role"] == "agent"
     assert message["status"] == "ready"
     assert message["content"]
-    assert message["resultData"] == [{"Product": "Mouse", "quantity": 45.0}]
+    # 70 = 10+15+20 from the base rows, plus the 10 and 15 that
+    # samples/generate.py duplicates on purpose. The duplicates are NOT
+    # removed, which is the point: the dataset warns about them and the
+    # analysis counts them.
+    assert message["resultData"] == [{"Product": "Mouse", "quantity": 70.0}]
     assert message["resultKind"] == "table"
     assert message["showChart"] is True
     assert message["chartTitle"]
@@ -169,8 +173,9 @@ async def test_a_ready_turn_returns_the_contract_shape(
 
 
 async def test_the_analysis_uses_the_stored_parquet(client, conversation, headers, fake_agent):
-    """45 = 10+15+20 from orders.csv, so the number proves the real stored
-    frame was loaded and the real execute_plan ran."""
+    """The exact total proves the real stored frame was loaded, the real
+    execute_plan ran, and the text quantity column was converted to numbers —
+    a string column would have concatenated instead of summing."""
     _, conversation_id = conversation
     fake_agent(**READY_PLAN)
 
@@ -180,7 +185,7 @@ async def test_the_analysis_uses_the_stored_parquet(client, conversation, header
         headers=headers,
     )).json()
 
-    assert body["message"]["resultData"][0]["quantity"] == 45.0
+    assert body["message"]["resultData"][0]["quantity"] == 70.0
 
 
 async def test_both_messages_are_persisted(client, conversation, headers, fake_agent):
@@ -519,6 +524,70 @@ async def test_the_explainer_falling_silent_does_not_lose_the_turn(
 
     assert body["message"]["status"] == "ready"
     assert body["message"]["content"].strip()
+
+
+async def test_the_earliest_order_date_runs_end_to_end(
+    client, conversation, headers, fake_agent
+):
+    """min on a date column, which the validator now allows.
+
+    Two things only this path proves: the plan survives validation, and the
+    Timestamp it produces comes back as an ISO string. A raw Timestamp is
+    neither JSON-serialisable nor a valid jsonb value, so without the
+    conversion this turn would 500 on persistence.
+    """
+    _, conversation_id = conversation
+    fake_agent(
+        status=STATUSES["READY"],
+        analysis_plan=[
+            {"tool": "aggregate_data", "column": "OrderDate", "operation": "min"}
+        ],
+        chart_plan=None,
+        message=None,
+    )
+
+    response = await client.post(
+        f"/api/conversations/{conversation_id}/messages",
+        json={"content": "What is the earliest order date?"},
+        headers=headers,
+    )
+    message = response.json()["message"]
+
+    assert response.status_code == 201
+    assert message["status"] == "ready"
+    assert message["resultKind"] == "scalar"
+    # 2024-01-05 is the first OrderDate in samples/orders.csv.
+    assert message["resultData"] == "2024-01-05T00:00:00"
+    assert message["plan"]["steps"] == ["Calculate MINIMUM of OrderDate"]
+    assert message["showChart"] is False
+
+
+async def test_the_stored_message_round_trips_the_date(
+    client, conversation, headers, fake_agent
+):
+    """Reading it back proves it was storable as jsonb, not just returnable."""
+    _, conversation_id = conversation
+    fake_agent(
+        status=STATUSES["READY"],
+        analysis_plan=[
+            {"tool": "aggregate_data", "column": "OrderDate", "operation": "max"}
+        ],
+        chart_plan=None,
+        message=None,
+    )
+
+    await client.post(
+        f"/api/conversations/{conversation_id}/messages",
+        json={"content": "What is the latest order date?"},
+        headers=headers,
+    )
+    history = (
+        await client.get(
+            f"/api/conversations/{conversation_id}/messages", headers=headers
+        )
+    ).json()
+
+    assert history["messages"][-1]["resultData"] == "2024-05-18T00:00:00"
 
 
 # ---------------------------------------------------------------------------

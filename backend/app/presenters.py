@@ -312,3 +312,51 @@ def chart_title(chart_plan, analysis_plan) -> str | None:
         title = f"Top {limit} {x} by {measure}"
 
     return title[:1].upper() + title[1:]
+
+
+# ---------------------------------------------------------------------------
+# JSON safety
+# ---------------------------------------------------------------------------
+
+
+def to_jsonable(value):
+    """One pandas/numpy scalar -> something json.dumps accepts.
+
+    Needed in two places that both write JSON the browser must parse: the
+    preview rows and a message's result_data (which also goes into a jsonb
+    column, where a Timestamp is not a valid value).
+
+    Handles, in order: None; NaN/NaT (-> null, because NaN is not valid JSON
+    and a strict parser rejects it); datetimes and dates (-> ISO 8601 string);
+    numpy scalars (-> their Python equivalent); anything already primitive.
+    """
+    if value is None:
+        return None
+
+    # NaN is the only value that is not equal to itself. Catches NaN, NaT and
+    # pandas.NA without importing pandas here.
+    try:
+        if value != value:
+            return None
+    except (TypeError, ValueError):
+        pass
+
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, float) and (value in (float("inf"), float("-inf"))):
+        return None
+
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+
+    if hasattr(value, "item"):
+        try:
+            return to_jsonable(value.item())
+        except (ValueError, AttributeError):
+            return str(value)
+
+    if isinstance(value, (str, int, float)):
+        return value
+
+    return str(value)

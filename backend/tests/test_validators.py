@@ -576,3 +576,134 @@ def test_valid_explainer_output_returns_the_summary():
     assert is_valid is True
     assert summary.startswith("Laptop")
     assert error is None
+
+
+# ---------------------------------------------------------------------------
+# Which column kinds each aggregation accepts
+#
+# The rule that stops a text column being "summed". pandas' sum() on text
+# CONCATENATES it, so a column whose type conversion fell below the 95%
+# threshold would otherwise produce a confidently wrong total.
+# ---------------------------------------------------------------------------
+
+DTYPES = {
+    "Product": "str",
+    "quantity": "float64",
+    "Price": "int64",
+    "OrderDate": "datetime64[us]",
+}
+
+
+def aggregate(column, operation):
+    return validate_analysis_plan(
+        [{"tool": "aggregate_data", "column": column, "operation": operation}],
+        DTYPES,
+    )
+
+
+@pytest.mark.parametrize("operation", ["sum", "mean", "min", "max", "count"])
+def test_every_aggregation_is_allowed_on_a_numeric_column(operation):
+    is_valid, error = aggregate("quantity", operation)
+
+    assert is_valid is True, error
+
+
+@pytest.mark.parametrize("operation", ["sum", "mean"])
+def test_sum_and_mean_are_refused_on_text(operation):
+    """The failure this rule exists for: sum on text concatenates."""
+    is_valid, error = aggregate("Product", operation)
+
+    assert is_valid is False
+    assert "requires a numeric column" in error
+
+
+@pytest.mark.parametrize("operation", ["min", "max"])
+def test_min_and_max_are_refused_on_text(operation):
+    """Text compares lexicographically, which would quietly answer a
+    different question than the one asked."""
+    is_valid, error = aggregate("Product", operation)
+
+    assert is_valid is False
+    assert "numeric or datetime" in error
+
+
+def test_count_is_allowed_on_text():
+    """Counting rows needs neither ordering nor arithmetic."""
+    is_valid, error = aggregate("Product", "count")
+
+    assert is_valid is True, error
+
+
+@pytest.mark.parametrize("operation", ["min", "max", "count"])
+def test_min_max_and_count_are_allowed_on_a_datetime_column(operation):
+    """A date is ordered, so "the earliest order date" is a real question
+    with a correct answer."""
+    is_valid, error = aggregate("OrderDate", operation)
+
+    assert is_valid is True, error
+
+
+@pytest.mark.parametrize("operation", ["sum", "mean"])
+def test_sum_and_mean_are_refused_on_a_datetime_column(operation):
+    """There is no meaningful sum of two dates."""
+    is_valid, error = aggregate("OrderDate", operation)
+
+    assert is_valid is False
+    assert "requires a numeric column" in error
+
+
+def test_the_earliest_order_date_plan_validates():
+    """The plan for "What is the earliest order date?" end to end."""
+    plan = [{"tool": "aggregate_data", "column": "OrderDate", "operation": "min"}]
+
+    is_valid, error = validate_analysis_plan(plan, DTYPES)
+
+    assert is_valid is True, error
+
+
+def test_the_earliest_order_date_passes_the_full_agent_output():
+    """Including the type-flow and chart checks, as the planner's reply would."""
+    raw = json.dumps(
+        {
+            "status": "ready",
+            "message": None,
+            "analysis_plan": [
+                {"tool": "aggregate_data", "column": "OrderDate", "operation": "min"}
+            ],
+            # A scalar result cannot be charted, so the no-chart object is
+            # the only valid shape here — chart_plan: null is rejected for a
+            # "ready" status.
+            "chart_plan": {
+                "should_plot": False,
+                "chart_type": None,
+                "x": None,
+                "y": None,
+            },
+        }
+    )
+
+    is_valid, output, error = validate_agent_output(raw, DTYPES)
+
+    assert is_valid is True, error
+    assert output["analysis_plan"][0]["operation"] == "min"
+
+
+@pytest.mark.parametrize(
+    "dtype,expected",
+    [
+        ("int64", "numeric"),
+        ("float64", "numeric"),
+        ("uint8", "numeric"),
+        ("datetime64[us]", "datetime"),
+        ("datetime64[ns, UTC]", "datetime"),
+        ("period[M]", "datetime"),
+        ("str", "other"),
+        ("object", "other"),
+        ("bool", "other"),
+        (None, "other"),
+    ],
+)
+def test_dtype_classification(dtype, expected):
+    from app.agent.validators import dtype_kind
+
+    assert dtype_kind(dtype) == expected

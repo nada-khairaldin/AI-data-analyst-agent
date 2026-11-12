@@ -1874,12 +1874,25 @@ is ~0.35s. A connection per test was therefore unusable. Consequences:
   the code under test, and a skip that names its cause cannot be mistaken for
   a pass.
 
-**`min`/`max` on a datetime column are now rejected.** B2 asked the validator
-to refuse `sum`/`mean`/`min`/`max` on non-numeric columns, so that a column
-left as text can never be "summed" into a concatenated string. Implemented
-literally, which means "the earliest order date" is also refused — datetime is
-not numeric. The allowed set is one constant
-(`validators.NUMERIC_DTYPE_PREFIXES`) if that trade-off should be revisited.
+**Aggregations are restricted by column kind, not just "numeric".** B2 asked
+the validator to refuse `sum`/`mean`/`min`/`max` on non-numeric columns, so a
+column left as text can never be "summed" into a concatenated string — the
+failure where pandas returns `"3102015..."` and the user is told that is the
+total. Implemented literally at first, which also refused "the earliest order
+date"; refined on review to classify by kind
+(`validators.AGGREGATION_COLUMN_KINDS`):
+
+| operation | accepts | why |
+|---|---|---|
+| `sum`, `mean` | numeric | there is no meaningful sum of two dates, and on text it concatenates |
+| `min`, `max` | numeric, datetime | both are ordered, so "the earliest order date" has a correct answer. Text is excluded: it would compare lexicographically and quietly answer a different question |
+| `count` | anything | counting rows needs neither ordering nor arithmetic |
+
+Enabling dates exposed a real bug: `min` on a date column returns a
+`Timestamp`, which is neither JSON-serialisable nor a valid `jsonb` value, so
+the turn would have failed on persistence. Both the preview rows and a
+message's `result_data` now pass every value through one converter,
+`presenters.to_jsonable`.
 
 ### 3 — Core endpoints matching the mock data
 

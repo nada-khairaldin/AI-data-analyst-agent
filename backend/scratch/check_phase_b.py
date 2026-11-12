@@ -21,7 +21,7 @@ import uuid
 
 import httpx
 
-BASE = "http://127.0.0.1:8000"
+BASE = "http://127.0.0.1:8100"
 SAMPLES = "../samples"
 SESSION = str(uuid.uuid4())
 
@@ -30,6 +30,9 @@ QUESTIONS = [
     "What is the average price?",
     "Show me the best",
     "Predict next year's sales",
+    # Added after the datetime rule was relaxed: min/max are allowed on a date
+    # column, and the Timestamp has to come back as an ISO string.
+    "What is the earliest order date?",
 ]
 
 

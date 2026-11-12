@@ -1,6 +1,5 @@
 """Dataset endpoints: API_CONTRACT.md 2-9 and 13."""
 
-import math
 import uuid
 
 from fastapi import APIRouter, Depends, File, Query, Response, UploadFile
@@ -15,7 +14,7 @@ from app.api.serializers import (
     report_detail,
 )
 from app.config import settings
-from app.presenters import format_bytes
+from app.presenters import format_bytes, to_jsonable
 from app.db.session import get_db
 from app.services import conversation_service, dataset_service
 
@@ -104,7 +103,7 @@ async def get_preview(
     for record in head.to_dict(orient="records"):
         row = {}
         for key, value in record.items():
-            row[str(key)] = _jsonable(value)
+            row[str(key)] = to_jsonable(value)
         rows.append(row)
 
     return {
@@ -113,29 +112,6 @@ async def get_preview(
         "rows": rows,
         "totalRows": int(len(frame)),
     }
-
-
-def _jsonable(value):
-    """pandas scalars -> JSON. NaN/NaT/NA all become null."""
-    if value is None:
-        return None
-    try:
-        if value is not value:  # NaN is the only value unequal to itself
-            return None
-    except (TypeError, ValueError):
-        pass
-    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
-        return None
-    if hasattr(value, "isoformat"):
-        return value.isoformat()
-    if hasattr(value, "item"):
-        try:
-            return _jsonable(value.item())
-        except (ValueError, AttributeError):
-            return str(value)
-    if isinstance(value, (str, int, float, bool)):
-        return value
-    return str(value)
 
 
 @router.get("/datasets/{dataset_id}/conversations")

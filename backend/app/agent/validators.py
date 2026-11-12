@@ -16,31 +16,57 @@ TYPE_MAP = {
 }
 
 
-# Aggregations that are meaningless on a non-numeric column. `count` is absent
-# because counting anything is valid.
+# Which column kinds each aggregation accepts.
 #
 # This exists because of a real failure mode rather than tidiness: a column
 # whose type conversion fell below the 95% threshold stays as text, and
 # pandas' sum() on text CONCATENATES it. The plan validates, the analysis
 # runs, and the user is told the total quantity is "3102015..." — a wrong
-# answer delivered confidently, which is the worst kind. See samples/orders.csv.
-NUMERIC_ONLY_OPERATIONS = ("sum", "mean", "min", "max")
+# answer delivered confidently, which is the worst kind. See
+# samples/orders.csv.
+#
+#   sum, mean  numeric only. Meaningless on a date (what is the sum of two
+#              dates?) and actively dangerous on text.
+#   min, max   numeric OR datetime. Both are ordered, so "the earliest order
+#              date" is a real question with a correct answer. Text is
+#              excluded: it would compare lexicographically and quietly
+#              answer a different question than the user asked.
+#   count      anything. Counting rows needs no ordering or arithmetic.
+AGGREGATION_COLUMN_KINDS = {
+    "sum": ("numeric",),
+    "mean": ("numeric",),
+    "min": ("numeric", "datetime"),
+    "max": ("numeric", "datetime"),
+    "count": ("numeric", "datetime", "other"),
+}
 
 # dtype strings as data_utils.get_schema() renders them: "int64", "float64",
 # "str", "bool", "datetime64[us]". Matched by prefix because the width varies.
-#
-# NOTE: datetime is deliberately NOT numeric here, so "the earliest order
-# date" (min on a date) is rejected. That follows the rule as specified; to
-# allow it, add a datetime branch to this one function.
 NUMERIC_DTYPE_PREFIXES = ("int", "uint", "float", "complex", "number", "decimal")
+DATETIME_DTYPE_PREFIXES = ("datetime", "timestamp", "period")
+
+
+def dtype_kind(dtype) -> str:
+    """Classify a dtype STRING as "numeric", "datetime" or "other"."""
+    name = str(dtype or "").strip().lower()
+    if name.startswith(NUMERIC_DTYPE_PREFIXES):
+        return "numeric"
+    if name.startswith(DATETIME_DTYPE_PREFIXES):
+        return "datetime"
+    return "other"
+
+
+def describe_kinds(kinds) -> str:
+    """"numeric", or "numeric or datetime" — for the error message."""
+    words = [k for k in kinds if k != "other"]
+    if len(words) == 1:
+        return words[0]
+    return " or ".join(words)
 
 
 def is_numeric_dtype_name(dtype) -> bool:
     """True when a dtype STRING names a numeric type."""
-    if dtype is None:
-        return False
-    name = str(dtype).strip().lower()
-    return name.startswith(NUMERIC_DTYPE_PREFIXES)
+    return dtype_kind(dtype) == "numeric"
 
 def validate_analysis_plan(plan, schema):
     if not plan:
@@ -177,16 +203,18 @@ def validate_analysis_plan(plan, schema):
 
         if tool == "aggregate_data":
             operation = step.get("operation")
+            allowed = AGGREGATION_COLUMN_KINDS.get(operation)
 
-            if operation in NUMERIC_ONLY_OPERATIONS:
+            if allowed is not None:
                 column = step.get("column")
                 dtype = schema.get(column)
 
-                if not is_numeric_dtype_name(dtype):
+                if dtype_kind(dtype) not in allowed:
                     return False, (
                         f"Cannot apply {operation} to '{column}' "
                         f"because its type is {dtype}. "
-                        f"{operation} requires a numeric column."
+                        f"{operation} requires a "
+                        f"{describe_kinds(allowed)} column."
                     )
 
     # ==========================================

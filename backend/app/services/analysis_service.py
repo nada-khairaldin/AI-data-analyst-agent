@@ -26,7 +26,7 @@ from app.agent.llm import LLMError
 from app.agent.tools import execute_plan
 from app.api.serializers import conversation_summary, message_detail
 from app.data.data_utils import get_schema
-from app.presenters import render_plan
+from app.presenters import render_plan, to_jsonable
 from app.services import conversation_service
 
 logger = logging.getLogger(__name__)
@@ -53,25 +53,20 @@ def result_kind(result):
 
 
 def serialise_result(result):
-    """Result rows as JSON. NaN becomes null, scalars pass through.
+    """Result rows or scalar as JSON-safe values.
 
-    ``astype(object)`` first: on a float column ``where(notna, None)`` puts
-    the None straight back as NaN, and NaN is not valid JSON — a strict parser
-    rejects it and the browser's JSON.parse throws. orders.csv has an
-    unparseable quantity, so this is reachable, not theoretical.
+    Every value goes through ``to_jsonable``, which is what makes NaN become
+    null and a Timestamp become an ISO string. Both matter: NaN is not valid
+    JSON (a strict parser and the browser's JSON.parse both reject it), and a
+    Timestamp is neither JSON-serialisable nor a valid jsonb value — which is
+    reachable now that min/max are allowed on date columns.
     """
     if isinstance(result, pd.DataFrame):
-        return (
-            result.astype(object)
-            .where(pd.notna(result), None)
-            .to_dict(orient="records")
-        )
-    if hasattr(result, "item"):
-        try:
-            return result.item()
-        except (ValueError, AttributeError):
-            return str(result)
-    return result
+        return [
+            {str(key): to_jsonable(value) for key, value in record.items()}
+            for record in result.to_dict(orient="records")
+        ]
+    return to_jsonable(result)
 
 
 async def run_turn(db, conversation, dataset, frame, columns, question, *, history=None):
