@@ -425,6 +425,16 @@ def validate_chart_plan(chart_plan, analysis_plan, schema):
     return True, None
 
 
+# DEAD CODE as of phase C3, kept deliberately.
+#
+# The explainer returns plain text now and is consumed with astream, because
+# a half-written JSON object cannot be shown to anyone (PLAN §6B). Nothing
+# calls this. The guarantee it provided — a non-empty summary — moved to
+# analysis_service, which falls back to a deterministic sentence built from
+# the result instead of raising and losing a turn that had already succeeded.
+#
+# Left in place rather than deleted: it is still the reference for what the
+# old envelope looked like, and tests/test_validators.py still covers it.
 def validate_explainer_output(raw_output):
     try:
         output = json.loads(raw_output)

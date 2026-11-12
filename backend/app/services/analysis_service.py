@@ -21,13 +21,14 @@ from app.agent.charting import (
     validate_chart_data_types,
     validate_chart_semantics,
 )
-from app.agent.explainer import explain_result
+from app.agent.explainer import astream_explanation
 from app.agent.llm import LLMError
 from app.agent.tools import execute_plan
 from app.api.serializers import conversation_summary, message_detail
+from app.config import settings
 from app.data.data_utils import get_schema
 from app.presenters import render_plan, to_jsonable
-from app.services import conversation_service
+from app.services import condenser, conversation_service, summarizer
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,15 @@ async def run_turn(db, conversation, dataset, frame, columns, question, *, histo
 
     try:
         async for item in _pipeline(
-            db, conversation, dataset, frame, columns, question, history, started
+            db,
+            conversation,
+            dataset,
+            frame,
+            columns,
+            question,
+            history,
+            started,
+            first_question=first,
         ):
             yield item
     except LLMError as error:
@@ -108,17 +117,17 @@ async def run_turn(db, conversation, dataset, frame, columns, question, *, histo
 
 
 async def _pipeline(
-    db, conversation, dataset, frame, columns, question, history, started
+    db,
+    conversation,
+    dataset,
+    frame,
+    columns,
+    question,
+    history,
+    started,
+    *,
+    first_question,
 ):
-    # ---- condensing -----------------------------------------------------
-    # The stage is announced for a stable event sequence, but no condenser
-    # runs yet and no `condensed` event is emitted — the contract says it is
-    # absent when condensation is skipped.
-    yield _status("condensing")
-
-    # ---- planning -------------------------------------------------------
-    yield _status("planning")
-
     # Real unavailable_columns, from dataset_columns. The old endpoint passed
     # {} because it had dropped the columns, so the agent could only say
     # "unknown column" and never "excluded for quality reasons".
@@ -127,18 +136,65 @@ async def _pipeline(
         for column in columns
         if not column.is_available
     }
-    available = [column.name for column in columns if column.is_available]
+    available = {column.name for column in columns if column.is_available}
 
     # The planner is only shown columns it may use. An excluded column in the
     # schema would invite a plan that the executor then cannot run.
     schema = {
         name: dtype
         for name, dtype in get_schema(frame).items()
-        if name in set(available)
+        if name in available
     }
 
+    # ---- condensing -----------------------------------------------------
+    yield _status("condensing")
+
+    condensed_question = None
+    asked = question
+
+    if not first_question:
+        outcome = condenser.condense(
+            question=question,
+            schema=schema,
+            excluded_columns=unavailable,
+            fact_sheet=await summarizer.fact_sheet(db, conversation.id),
+            window=conversation_service.render_window(
+                await conversation_service.window_exchanges(
+                    db,
+                    conversation.id,
+                    exchanges=settings.history_window_exchanges,
+                )
+            ),
+        )
+
+        if outcome["kind"] == condenser.INSTRUCTION:
+            # An instruction asks nothing, so there is nothing to plan or
+            # explain: 1 LLM call instead of 3 (PLAN §6.4). It is persisted as
+            # a normal ready agent message so the next turn's window and the
+            # fact sheet both carry the agreement forward.
+            text = outcome["acknowledgement"]
+            for chunk in _as_chunks(text):
+                yield event("token", text=chunk)
+            yield await _finish(
+                db,
+                conversation,
+                status=STATUSES["READY"],
+                content=text,
+                started=started,
+                condensed_question=None,
+            )
+            return
+
+        asked = outcome["question"]
+        if not outcome["fell_back"] and asked.strip() != question.strip():
+            condensed_question = asked
+            yield event("condensed", question=asked)
+
+    # ---- planning -------------------------------------------------------
+    yield _status("planning")
+
     state = create_agent_state(
-        question=question, schema=schema, unavailable_columns=unavailable
+        question=asked, schema=schema, unavailable_columns=unavailable
     )
     state = run_agent(state)
 
@@ -164,7 +220,12 @@ async def _pipeline(
         for chunk in _as_chunks(text):
             yield event("token", text=chunk)
         yield await _finish(
-            db, conversation, status=status, content=text, started=started
+            db,
+            conversation,
+            status=status,
+            content=text,
+            started=started,
+            condensed_question=condensed_question,
         )
         return
 
@@ -204,19 +265,24 @@ async def _pipeline(
     # ---- explaining -----------------------------------------------------
     yield _status("explaining")
 
+    collected = []
     try:
-        answer = explain_result(question, plan, result)
+        async for piece in astream_explanation(asked, plan, result):
+            collected.append(piece)
+            yield event("token", text=piece)
     except LLMError:
         raise
     except Exception as error:
         logger.warning("Explainer failed, falling back: %s", error)
-        answer = _fallback_answer(result, plan)
 
-    if not (answer or "").strip():
+    answer = "".join(collected).strip()
+    if not answer:
+        # Deterministic sentence from the result rather than raising, which is
+        # what the old code did after the analysis had already succeeded and
+        # already been paid for (PLAN §6B).
         answer = _fallback_answer(result, plan)
-
-    for chunk in _as_chunks(answer):
-        yield event("token", text=chunk)
+        for chunk in _as_chunks(answer):
+            yield event("token", text=chunk)
 
     yield await _finish(
         db,
@@ -224,12 +290,17 @@ async def _pipeline(
         status=STATUSES["READY"],
         content=answer,
         started=started,
+        condensed_question=condensed_question,
         analysis_plan=plan,
         chart_plan=chart_plan,
         result_data=rows,
         result_kind=kind,
         plan_display=plan_display,
     )
+
+    # After `done`, never before: a summariser failure must not touch a turn
+    # that is already answered.
+    await _maybe_refresh_summary(db, conversation)
 
 
 def _validated_chart(result, chart_plan):
@@ -298,6 +369,7 @@ async def _finish(
     status,
     content,
     started,
+    condensed_question=None,
     analysis_plan=None,
     chart_plan=None,
     result_data=None,
@@ -311,6 +383,7 @@ async def _finish(
         role="agent",
         content=content,
         status=status,
+        condensed_question=condensed_question,
         analysis_plan=analysis_plan,
         chart_plan=chart_plan,
         result_data=result_data,
@@ -343,3 +416,33 @@ async def _fail(db, conversation, code, message, started, **extra):
     )
     await db.commit()
     return event("error", code=code, message=message)
+
+
+async def _maybe_refresh_summary(db, conversation):
+    """Refresh the fact sheet when 2 exchanges have left the window.
+
+    Wrapped whole: the turn is already persisted and `done` already emitted,
+    so nothing here may raise into the caller. A failure keeps the previous
+    sheet, which is always safe.
+    """
+    try:
+        summary = await summarizer.load_summary(db, conversation.id)
+        if not summarizer.is_due(conversation, summary):
+            return
+
+        covered = summary.exchange_count if summary else 0
+        pairs = await summarizer.exchanges_outside_window(
+            db, conversation.id, covered=covered
+        )
+        if not pairs:
+            return
+
+        text = await summarizer.refresh(
+            db, conversation, pairs, covers_through_id=pairs[-1][1].id
+        )
+        if text is not None:
+            await db.commit()
+            logger.info("Fact sheet refreshed for conversation %s", conversation.id)
+    except Exception as error:
+        logger.warning("Fact sheet refresh skipped: %s", error)
+        await db.rollback()

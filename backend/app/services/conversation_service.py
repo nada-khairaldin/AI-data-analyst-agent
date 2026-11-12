@@ -4,6 +4,7 @@ Writing a message also updates the conversation's denormalised counters in the
 same transaction, so they can never drift from the rows they summarise.
 """
 
+import json
 import uuid
 
 from sqlalchemy import func, or_, select
@@ -177,3 +178,97 @@ async def autotitle(db: AsyncSession, conversation: Conversation, question: str)
         conversation.title = title_from_question(question)
         await db.flush()
     return conversation
+
+
+# ---------------------------------------------------------------------------
+# The condenser's window (PLAN §6.2)
+# ---------------------------------------------------------------------------
+
+DIGEST_ROWS = 5
+
+
+def result_digest(message) -> str:
+    """The first 5 rows plus the total count — never the full result_data.
+
+    The most expensive mistake available here: one 500-row answer left in the
+    window would be re-sent on every later turn, growing the cost of every
+    future question forever. Five rows answers what a follow-up actually needs
+    ("and the second one?") at a fixed size.
+    """
+    rows = message.result_data
+    if rows is None:
+        return "no result"
+    if not isinstance(rows, list):
+        return f"scalar result: {rows}"
+    if not rows:
+        return "0 rows"
+
+    head = json.dumps(rows[:DIGEST_ROWS], separators=(",", ":"))
+    if len(rows) > DIGEST_ROWS:
+        return f"{head} (first {DIGEST_ROWS} of {len(rows)} rows)"
+    return f"{head} ({len(rows)} rows)"
+
+
+async def window_exchanges(db: AsyncSession, conversation_id, *, exchanges=3):
+    """The last N complete user+agent pairs, oldest first.
+
+    Counted in PAIRS, never messages: a window that opens on an agent reply
+    whose question has been cut off is actively misleading — worse than no
+    context at all.
+    """
+    statement = (
+        select(Message)
+        .where(Message.conversation_id == conversation_id)
+        .order_by(Message.created_at.desc(), Message.id.desc())
+        .limit(exchanges * 4)
+    )
+    rows = list((await db.execute(statement)).scalars())
+    rows.reverse()
+
+    pairs = []
+    pending = None
+    for message in rows:
+        if message.role == "user":
+            pending = message
+        elif pending is not None:
+            pairs.append((pending, message))
+            pending = None
+
+    return pairs[-exchanges:]
+
+
+def render_window(pairs) -> str:
+    """The window as text for the condenser prompt.
+
+    Each agent turn carries its condensed_question, its plan as compact JSON
+    and the result digest — the three things a follow-up refers back to.
+    """
+    if not pairs:
+        return "none"
+
+    lines = []
+    for question, answer in pairs:
+        lines.append(f"user: {question.content}")
+        if answer.condensed_question:
+            lines.append(f"  understood as: {answer.condensed_question}")
+        if answer.status and answer.status != "ready":
+            lines.append(f"  agent ({answer.status}): {answer.content}")
+            continue
+        if answer.analysis_plan:
+            lines.append(
+                f"  plan: {json.dumps(answer.analysis_plan, separators=(',', ':'))}"
+            )
+        lines.append(f"  result: {result_digest(answer)}")
+        lines.append(f"  agent: {answer.content}")
+    return "\n".join(lines)
+
+
+async def last_agent_message(db: AsyncSession, conversation_id):
+    """For the clarification pairing — see PLAN §6.4."""
+    statement = (
+        select(Message)
+        .where(Message.conversation_id == conversation_id, Message.role == "agent")
+        .order_by(Message.created_at.desc(), Message.id.desc())
+        .limit(1)
+    )
+    return (await db.execute(statement)).scalar_one_or_none()

@@ -405,3 +405,48 @@ def stream(prompt: str, *, role: str = FAST):
         raise _wrap(error, model=model) from error
 
     dev_cache.put(model, prompt, "".join(collected))
+
+
+async def astream(prompt: str, *, role: str = FAST):
+    """Async version of `stream`, for the SSE path.
+
+    The sync `stream` would block the event loop for the whole explainer
+    call, which is exactly the latency SSE exists to hide.
+
+    The chain walk and the retry are done synchronously before the first
+    chunk — that part is a single call setup — and only the iteration is
+    async.
+    """
+    for model in chain_for(role):
+        cached = dev_cache.get(model, prompt)
+        if cached is not None:
+            for piece in dev_cache.chunk(cached):
+                yield piece
+            return
+
+    chain = chain_for(role)
+    last_rate_limit = None
+
+    for model in chain:
+        try:
+            client = get_model(model, role=role)
+            collected = []
+            async for chunk in client.astream(prompt):
+                text = chunk.text
+                if text:
+                    collected.append(text)
+                    yield text
+            logger.info("astream answered by %s", model)
+            dev_cache.put(model, prompt, "".join(collected))
+            return
+        except Exception as error:
+            wrapped = _wrap(error, model=model)
+            if not isinstance(wrapped, LLMRateLimited):
+                raise wrapped from error
+            # Only safe to fall through while nothing has been yielded; once
+            # text has reached the client it cannot be replayed.
+            last_rate_limit = wrapped
+            logger.warning("Rate limited on %s (astream); trying the next model", model)
+            continue
+
+    raise last_rate_limit or LLMError("The language model could not be reached.")

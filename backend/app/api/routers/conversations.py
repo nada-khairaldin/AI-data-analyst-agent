@@ -3,6 +3,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +15,8 @@ from app.api.serializers import (
     search_result,
 )
 from app.api.errors import ApiError
+from app.api.sse import SSE_HEADERS, stream_events
+from app.config import settings
 from app.db.models import Dataset
 from app.db.session import get_db
 from app.services import analysis_service, conversation_service, dataset_service
@@ -109,20 +112,11 @@ async def send_message(
             "A question is required.", code="VALIDATION_ERROR", status_code=400
         )
 
-    conversation = await conversation_service.get_conversation(
-        db, session_id, conversation_id
-    )
-    dataset = await dataset_service.get_dataset(
-        db, session_id, conversation.dataset_id
-    )
-    columns = await dataset_service.get_columns(db, session_id, dataset.id)
-    frame = await dataset_service.load_frame(db, session_id, dataset.id)
+    generator = await _turn_generator(db, session_id, conversation_id, question)
 
     done = None
     failure = None
-    async for item in analysis_service.run_turn(
-        db, conversation, dataset, frame, columns, question, history=[]
-    ):
+    async for item in generator:
         if item["event"] == "done":
             done = item["data"]
         elif item["event"] == "error":
@@ -138,3 +132,48 @@ async def send_message(
         )
 
     return done
+
+
+async def _turn_generator(db, session_id, conversation_id, question):
+    """Shared setup for both chat endpoints, so neither can drift."""
+    conversation = await conversation_service.get_conversation(
+        db, session_id, conversation_id
+    )
+    dataset = await dataset_service.get_dataset(
+        db, session_id, conversation.dataset_id
+    )
+    columns = await dataset_service.get_columns(db, session_id, dataset.id)
+    frame = await dataset_service.load_frame(db, session_id, dataset.id)
+
+    return analysis_service.run_turn(
+        db, conversation, dataset, frame, columns, question, history=[]
+    )
+
+
+@router.post("/conversations/{conversation_id}/messages/stream")
+async def stream_message(
+    conversation_id: uuid.UUID,
+    body: MessageCreate,
+    session_id: uuid.UUID = Depends(get_or_create_session),
+    db: AsyncSession = Depends(get_db),
+):
+    """Endpoint 11b — the same work as endpoint 11, delivered as it happens.
+
+    Both endpoints drain the SAME generator, so they cannot answer
+    differently. The 4xx checks run BEFORE the response starts: once the
+    status line is sent, an error can only be an `error` event, which is far
+    less useful to a client than a real status code.
+    """
+    question = (body.content or "").strip()
+    if not question:
+        raise ApiError(
+            "A question is required.", code="VALIDATION_ERROR", status_code=400
+        )
+
+    generator = await _turn_generator(db, session_id, conversation_id, question)
+
+    return StreamingResponse(
+        stream_events(generator, heartbeat=settings.sse_heartbeat_seconds),
+        media_type="text/event-stream",
+        headers=SSE_HEADERS,
+    )

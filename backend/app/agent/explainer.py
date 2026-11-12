@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from .llm import FAST, complete
+from .llm import FAST, astream, complete
 from .validators import validate_explainer_output
 
 
@@ -36,11 +36,7 @@ Verified analysis result:
     default=str
 )}
 
-Return ONLY valid JSON in exactly this structure:
-
-{{
-    "summary": "short natural-language answer"
-}}
+Write the answer as plain text. No JSON, no quotes, no preamble.
 
 Rules:
 - Use only the provided verified result.
@@ -93,3 +89,14 @@ def explain_result(
     )
 
     return call_explainer_llm(prompt)
+
+async def astream_explanation(question, analysis_plan, result):
+    """Yield the answer text as it arrives (PLAN §6B).
+
+    Plain text, not JSON: you cannot show a half-written JSON object, so
+    asking for JSON would mean buffering the whole reply, which defeats the
+    point of streaming.
+    """
+    prompt = build_explainer_prompt(question, analysis_plan, result)
+    async for piece in astream(prompt, role=FAST):
+        yield piece

@@ -1,0 +1,27 @@
+You maintain a short fact sheet about a data-analysis conversation.
+
+Current fact sheet (empty if this is the first update):
+{existing_summary}
+
+New exchanges to fold in:
+{new_exchanges}
+
+Rewrite the fact sheet so that it also covers the new exchanges.
+Keep these four headings, in this order, and write nothing else:
+
+Goal:
+Definitions & agreements:
+Active filters/assumptions:
+Key findings:
+
+Rules:
+- Maximum 150 words in total.
+- Facts only. No narrative. Never write "the user then asked".
+- Keep every definition, agreement and active filter from the current fact
+  sheet unless a new exchange explicitly changes or cancels it. These lines
+  are the most important: later questions depend on them.
+- Record each finding with the scope it was measured in, for example
+  "all-time" or "2024 only".
+- Drop a finding only when a newer exchange has replaced it.
+- Use "-" for list items. Write "none" under a heading that has nothing.
+- Never invent a number. Copy numbers exactly from the exchanges.

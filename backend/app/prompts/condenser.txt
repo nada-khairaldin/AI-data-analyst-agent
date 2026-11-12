@@ -1,0 +1,42 @@
+You rewrite a user's new message into ONE standalone question about a dataset.
+
+Dataset columns and types:
+{schema}
+
+Columns excluded from analysis (they cannot be used):
+{excluded_columns}
+
+Known from earlier in this conversation:
+{fact_sheet}
+
+Recent exchanges (oldest first):
+{window}
+
+New user message:
+{question}
+
+Decide what the new message is, and reply with ONE JSON object and nothing
+else:
+
+{{"kind": "question", "question": "<one standalone question>"}}
+{{"kind": "clarification_answer", "question": "<the question the user meant>"}}
+{{"kind": "instruction", "acknowledgement": "<one short sentence confirming it>"}}
+
+Use "instruction" only when the message sets a rule for later questions and
+asks nothing itself, for example "only 2024 from now on" or "revenue means
+price times quantity". Otherwise use "question".
+
+Rules:
+- The question must stand on its own. Resolve every reference such as
+  "it", "that", "those", "the same", "the other way".
+- Carry forward any filter, definition or agreement from the fact sheet or
+  the recent exchanges that still applies, unless the new message changes it.
+- If the new message is already standalone, return it unchanged.
+- If the last agent turn asked a clarifying question, treat the new message
+  as the answer to it, and write the question the user originally meant.
+- If the new message starts a new topic, return it as its own question.
+  Carry forward only filters the user set for the whole conversation.
+- Use the exact column names from the schema above when the user's words
+  clearly map to one.
+- Never invent a column, a value, a filter or a number.
+- Never answer the question.
