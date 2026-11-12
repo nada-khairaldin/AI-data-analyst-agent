@@ -32,7 +32,7 @@ def fake_agent(monkeypatch):
     monkeypatch.setattr(
         analysis_service,
         "explain_result",
-        lambda question, plan, result: "Mouse sold the most, at 70 units.",
+        lambda question, plan, result: "Mouse sold the most, at 2709 units.",
     )
     return set_plan
 
@@ -159,11 +159,9 @@ async def test_a_ready_turn_returns_the_contract_shape(
     assert message["role"] == "agent"
     assert message["status"] == "ready"
     assert message["content"]
-    # 70 = 10+15+20 from the base rows, plus the 10 and 15 that
-    # samples/generate.py duplicates on purpose. The duplicates are NOT
-    # removed, which is the point: the dataset warns about them and the
-    # analysis counts them.
-    assert message["resultData"] == [{"Product": "Mouse", "quantity": 70.0}]
+    # The duplicates are NOT removed, which is the point: the dataset warns
+    # about them and the analysis counts them.
+    assert message["resultData"] == [{"Product": "Mouse", "quantity": 2709.0}]
     assert message["resultKind"] == "table"
     assert message["showChart"] is True
     assert message["chartTitle"]
@@ -185,7 +183,7 @@ async def test_the_analysis_uses_the_stored_parquet(client, conversation, header
         headers=headers,
     )).json()
 
-    assert body["message"]["resultData"][0]["quantity"] == 70.0
+    assert body["message"]["resultData"][0]["quantity"] == 2709.0
 
 
 async def test_both_messages_are_persisted(client, conversation, headers, fake_agent):
@@ -556,8 +554,8 @@ async def test_the_earliest_order_date_runs_end_to_end(
     assert response.status_code == 201
     assert message["status"] == "ready"
     assert message["resultKind"] == "scalar"
-    # 2024-01-05 is the first OrderDate in samples/orders.csv.
-    assert message["resultData"] == "2024-01-05T00:00:00"
+    # The first OrderDate in samples/orders.csv, which now starts in 2023.
+    assert message["resultData"] == "2023-01-01T00:00:00"
     assert message["plan"]["steps"] == ["Calculate MINIMUM of OrderDate"]
     assert message["showChart"] is False
 
@@ -587,7 +585,7 @@ async def test_the_stored_message_round_trips_the_date(
         )
     ).json()
 
-    assert history["messages"][-1]["resultData"] == "2024-05-18T00:00:00"
+    assert history["messages"][-1]["resultData"] == "2024-12-31T00:00:00"
 
 
 # ---------------------------------------------------------------------------

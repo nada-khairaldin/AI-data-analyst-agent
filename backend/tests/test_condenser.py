@@ -233,3 +233,40 @@ def test_the_prompt_forbids_answering():
     )
 
     assert "Never answer the question" in prompt
+
+
+def test_the_json_examples_in_the_prompt_are_real_json():
+    """Found a bug here: the template used {{ }} as if it were a format
+    string, but substitution is .replace(), so the model was shown literal
+    double braces and asked to return them.
+    """
+    import json
+
+    prompt = condenser.build_prompt(
+        question="q", schema={}, excluded_columns={}, fact_sheet="", window=""
+    )
+
+    examples = [
+        line.strip()
+        for line in prompt.splitlines()
+        if line.strip().startswith('{"kind"')
+    ]
+    assert len(examples) == 3, "all three kinds must be shown"
+
+    for example in examples:
+        placeholder_free = (
+            example.replace("<one standalone question>", "x")
+            .replace("<the question the user meant>", "x")
+            .replace("<one short sentence confirming it>", "x")
+        )
+        parsed = json.loads(placeholder_free)
+        assert parsed["kind"] in condenser.KINDS
+
+
+def test_no_doubled_braces_survive_into_the_prompt():
+    prompt = condenser.build_prompt(
+        question="q", schema={}, excluded_columns={}, fact_sheet="", window=""
+    )
+
+    assert "{{" not in prompt
+    assert "}}" not in prompt

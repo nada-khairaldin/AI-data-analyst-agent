@@ -71,10 +71,10 @@ async def test_upload_returns_the_contract_shape(upload):
 async def test_upload_reports_the_real_row_and_column_counts(upload):
     body = (await upload()).json()
 
-    # 23 rows (20 + 3 duplicates) and all 8 columns, including the excluded
-    # one: the working frame keeps every column now.
-    assert body["rowCount"] == 23
-    assert body["colCount"] == 8
+    # 1,500 rows (1,305 unique + 195 duplicates) and all 9 columns,
+    # including the excluded one: the working frame keeps every column now.
+    assert body["rowCount"] == 1500
+    assert body["colCount"] == 9
 
 
 async def test_upload_preformats_size_and_rates_as_strings(upload):
@@ -325,7 +325,7 @@ async def test_columns_include_the_excluded_one(client, upload, headers):
     body = (await client.get(f"/api/datasets/{dataset_id}/columns", headers=headers)).json()
     by_name = {c["name"]: c for c in body["columns"]}
 
-    assert len(body["columns"]) == 8
+    assert len(body["columns"]) == 9
     assert by_name["customer_phone"]["available"] is False
     assert by_name["customer_phone"]["exclusionReason"]
     assert by_name["Product"]["available"] is True
@@ -369,7 +369,7 @@ async def test_preview_returns_ordered_columns_and_rows(client, upload, headers)
 
     assert body["columns"][0] == "OrderID"
     assert len(body["rows"]) == 3
-    assert body["totalRows"] == 23
+    assert body["totalRows"] == 1500
     assert set(body["rows"][0]) == set(body["columns"])
 
 
@@ -396,7 +396,7 @@ async def test_preview_serialises_missing_values_as_null(client, upload, headers
     dataset_id = (await upload()).json()["id"]
 
     body = (await client.get(
-        f"/api/datasets/{dataset_id}/preview?limit=23", headers=headers
+        f"/api/datasets/{dataset_id}/preview?limit=40", headers=headers
     )).json()
     phones = [row["customer_phone"] for row in body["rows"]]
 

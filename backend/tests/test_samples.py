@@ -96,12 +96,12 @@ def test_orders_has_a_column_above_the_exclusion_threshold(orders):
 
 
 def test_orders_stays_well_under_the_dataset_rejection_limit(orders):
-    """One column at 74% out of eight keeps the dataset mean near 9%, far
+    """One column at 75% out of nine keeps the dataset mean near 9%, far
     below the 40% that would reject the file outright."""
     report = validate_dataframe(orders)
 
     assert report["overall_missing_ratio"] < 0.40
-    assert report["overall_missing_ratio"] == pytest.approx(0.0924, abs=0.005)
+    assert report["overall_missing_ratio"] == pytest.approx(0.087, abs=0.01)
 
 
 def test_orders_has_exact_duplicate_rows(orders):
@@ -112,7 +112,7 @@ def test_orders_has_exact_duplicate_rows(orders):
     df.duplicated() found none. The warning never fired and the fixture looked
     correct. Duplicating complete rows is what makes them exact.
     """
-    assert orders.duplicated().sum() == 3
+    assert orders.duplicated().sum() == 195
 
 
 def test_orders_duplicate_ratio_warns_without_rejecting(orders):
@@ -131,27 +131,31 @@ def test_orders_quantity_arrives_as_text(orders):
 
 
 def test_orders_quantity_is_converted_but_only_just(orders):
-    """The sharp edge, and the reason there is exactly ONE unparseable value.
+    """The sharp edge: the bad share is tuned to stay inside the limit.
 
-    22 of 23 values parse = 95.65%, which just clears the 95% conversion
-    threshold, so the column IS converted and the bad row becomes NaN. A
-    second bad value would drop it to 91%, the column would stay text, and
-    summing it would concatenate strings — making the answer to "highest total
-    quantity" silently wrong rather than merely missing a row.
+    ~97% of values parse, clearing the 95% conversion threshold, so the column
+    IS converted and the bad rows become NaN. Push the bad share past 5% and
+    the column stays text, at which point summing it CONCATENATES and
+    "highest total quantity" is silently wrong rather than merely short a few
+    rows. That is the failure this fixture exists to keep reachable.
     """
     result = prepare_dataframe(orders)
     conversion = result["conversions"]["quantity"]
 
     assert conversion["converted_to"] == "numeric"
-    assert float(conversion["success_rate"]) == pytest.approx(0.9565, abs=0.001)
+    assert float(conversion["success_rate"]) == pytest.approx(0.9725, abs=0.01)
     assert float(conversion["success_rate"]) > 0.95, "must clear the threshold"
     assert pd.api.types.is_numeric_dtype(result["working_df"]["quantity"])
 
 
-def test_orders_has_exactly_one_unparseable_quantity(orders):
+def test_orders_has_some_unparseable_quantities_but_not_too_many(orders):
+    """Both bounds matter: zero would stop exercising the conversion path at
+    all, and too many would flip the column to text."""
     numeric = pd.to_numeric(orders["quantity"], errors="coerce")
+    bad = numeric.isna().sum()
 
-    assert numeric.isna().sum() == 1
+    assert bad > 0
+    assert bad / len(orders) < 0.05
 
 
 def test_orders_still_supports_the_verification_questions(orders):
@@ -224,13 +228,31 @@ def test_bad_has_no_duplicate_rows():
     assert load("bad.csv").duplicated().sum() == 0
 
 
-def test_orders_spans_several_months(orders):
-    """Phase C asks "per month" questions, which need more than one month.
-
-    Pinned because the fixture is generated: a regenerated sample that
-    collapsed to a single month would make every grouping question degenerate
-    while every other test still passed.
+def test_orders_covers_every_month_of_two_years(orders):
+    """Phase C asks "per month" and "only 2024" questions, so both years and
+    all 24 months have to be present - an empty month makes a grouping
+    question degenerate while every other test still passes.
     """
-    months = pd.to_datetime(orders["OrderDate"]).dt.to_period("M").unique()
+    dates = pd.to_datetime(orders["OrderDate"])
+    months = dates.dt.to_period("M").unique()
+    years = sorted(dates.dt.year.unique())
 
-    assert len(months) >= 3, f"only {len(months)} month(s) in orders.csv"
+    assert len(months) == 24, f"only {len(months)} month(s) in orders.csv"
+    assert years == [2023, 2024]
+
+
+def test_orders_has_enough_products_and_countries(orders):
+    """Grouping questions need real cardinality to be meaningful."""
+    assert orders["Product"].nunique() >= 5
+    assert orders["Country"].nunique() >= 4
+
+
+def test_orders_has_a_revenue_column(orders):
+    """tools.py has no multiplication, so without a precomputed Revenue
+    column "total revenue per country" could only ever be cannot_answer."""
+    assert "Revenue" in orders.columns
+    assert pd.api.types.is_numeric_dtype(orders["Revenue"])
+
+
+def test_orders_is_large_enough_to_be_realistic(orders):
+    assert len(orders) >= 1000

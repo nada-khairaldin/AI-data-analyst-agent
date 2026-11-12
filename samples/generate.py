@@ -2,57 +2,74 @@
 
 Run from the repo root:  python samples/generate.py
 
-    orders.csv     dirty on purpose, but still ACCEPTED
+    orders.csv     ~1,500 rows over 2023-2024, dirty on purpose, ACCEPTED
     customers.csv  clean, the control case
     bad.csv        dirty enough to be REJECTED
 
 Everything random is drawn from ``SEED``, so the files are byte-identical on
 every run. That matters more than it looks: the expected answers in the
-verification runs (and in docs/PLAN.md) are specific numbers, and a sample
-file that quietly changed would turn a correct answer into a failing check
-with no code change to blame.
+verification runs and in the tests are specific numbers, and a sample that
+quietly changed would turn a correct answer into a failing check with no code
+change to blame.
 
-Why orders.csv is dirty rather than clean: a clean sample only ever exercises
-the happy path, so the preprocessing report, the excluded-column handling and
-the type-conversion notice are never seen until a real user finds them. Each
-flaw below is aimed at one specific code path, and the thresholds in
-validation.py are what decide how far each one can go.
+Why orders.csv is dirty rather than clean: a clean sample only exercises the
+happy path, so the preprocessing report, the excluded-column handling and the
+type-conversion notice are never seen until a real user finds them. Each flaw
+below aims at one code path, and the thresholds in validation.py decide how
+far each one can go.
 """
 
 import csv
 import pathlib
 import random
+from datetime import date, timedelta
 
 SEED = 20260111
 HERE = pathlib.Path(__file__).resolve().parent
 
 # ---------------------------------------------------------------------------
-# orders.csv — dirty, but inside every rejection threshold
+# orders.csv
 # ---------------------------------------------------------------------------
 #
-# Thresholds this file is deliberately steering between (validation.py):
+# Shape: two full years so "per month" and "only 2024" are both real
+# questions — every one of the 24 months has rows.
 #
-#   MISSING_COLUMN_THRESHOLD   0.70  a column above this is EXCLUDED
-#   MISSING_DATASET_THRESHOLD  0.40  a dataset above this is REJECTED
-#   DUPLICATE_WARNING_THRESHOLD 0.10 above this: a warning
-#   DUPLICATE_REJECT_THRESHOLD  0.50 above this: rejected
-#   TYPE_CONVERSION_THRESHOLD  0.95  below this: the column is NOT converted
+# Thresholds this file steers between (validation.py):
 #
-# 1. customer_phone is ~75% missing: ABOVE the column threshold, so it is
-#    excluded with a reason, and the agent is told why rather than silently
-#    losing a column. One column at 75% of eight keeps the dataset average
-#    near 9%, far below the 40% that would reject the whole file.
+#   MISSING_COLUMN_THRESHOLD    0.70  a column above this is EXCLUDED
+#   MISSING_DATASET_THRESHOLD   0.40  a dataset above this is REJECTED
+#   DUPLICATE_WARNING_THRESHOLD 0.10  above this: a warning
+#   DUPLICATE_REJECT_THRESHOLD  0.50  above this: rejected
+#   TYPE_CONVERSION_THRESHOLD   0.95  BELOW this the column stays text
 #
-# 2. quantity arrives as TEXT. Some values are whitespace-padded and exactly
-#    ONE is a word ("twelve"). That is the sharp bit: 22 of 23 values parse,
-#    which is 95.6% and just clears the 95% conversion threshold, so the
-#    column IS converted to numeric and the unparseable row becomes NaN. A
-#    second bad value would drop it to 91% and the column would stay text —
-#    at which point summing it would concatenate strings and the answer to
-#    "highest total quantity" would be silently wrong.
+# 1. customer_phone ~75% missing: above the column threshold, so it is
+#    excluded with a reason and the agent is told why rather than silently
+#    losing a column. One column of nine keeps the dataset mean near 9%, far
+#    below the 40% that would reject the file.
 #
-# 3. Three duplicate rows out of 23 is 13%: above the 10% warning line,
-#    nowhere near the 50% that rejects.
+# 2. quantity arrives as TEXT. Some values are whitespace-padded and 4% are
+#    words, so 96% parse — just clearing the 95% conversion threshold, which
+#    means the column IS converted and the bad rows become NaN. Push the bad
+#    share past 5% and the column stays text, at which point summing it
+#    CONCATENATES and "highest total quantity" is silently wrong rather than
+#    merely short a few rows.
+#
+# 3. 195 duplicate rows of 1,500 is 13%: above the 10% warning line, nowhere
+#    near the 50% that rejects.
+#
+# Revenue is precomputed because tools.py has no multiplication: without it,
+# "total revenue per country" could only ever be cannot_answer. It is computed
+# from the TRUE quantity, so the data stays internally consistent even where
+# the quantity text is corrupt — which is what a half-mangled export looks
+# like.
+
+UNIQUE_ROWS = 1305
+DUPLICATE_ROWS = 195  # 195 / 1500 = 13%
+# 4% of the UNIQUE rows. The duplicates can copy a bad row, so the final
+# convertible share lands a little under 96% — still clear of 0.95, and the
+# script prints the real figure rather than the intended one.
+BAD_QUANTITY_SHARE = 0.03
+MISSING_PHONE_SHARE = 0.75
 
 ORDER_COLUMNS = [
     "OrderID",
@@ -61,82 +78,113 @@ ORDER_COLUMNS = [
     "Category",
     "quantity",
     "Price",
+    "Revenue",
     "Country",
     "customer_phone",
 ]
 
-ORDER_ROWS = [
-    (1001, "2024-01-05", "Laptop", "Electronics", "3", 1200.00, "Germany"),
-    (1002, "2024-01-07", "Mouse", "Accessories", "10", 25.50, "France"),
-    (1003, "2024-01-11", "Keyboard", "Accessories", " 7 ", 45.00, "Spain"),
-    (1004, "2024-01-15", "Laptop", "Electronics", "2", 1200.00, "Germany"),
-    (1005, "2024-01-19", "Monitor", "Electronics", "4", 310.00, "Italy"),
-    (1006, "2024-02-02", "Mouse", "Accessories", "15", 25.50, "Germany"),
-    (1007, "2024-02-08", "Headset", "Accessories", "6", 89.99, "France"),
-    (1008, "2024-02-14", "Laptop", "Electronics", "1", 1250.00, "Netherlands"),
-    (1009, "2024-02-21", "Monitor", "Electronics", "5", 299.00, "Spain"),
-    (1010, "2024-03-03", "Keyboard", "Accessories", "12", 42.00, "Germany"),
-    (1011, "2024-03-09", "Webcam", "Accessories", "8", 65.00, "Italy"),
-    (1012, "2024-03-16", "Laptop", "Electronics", "2", 1180.00, "France"),
-    (1013, "2024-03-22", "Mouse", "Accessories", "20", 24.00, "Spain"),
-    (1014, "2024-04-01", "Monitor", "Electronics", " 3", 320.00, "Germany"),
-    (1015, "2024-04-08", "Headset", "Accessories", "9", 85.00, "Netherlands"),
-    # The one value that cannot be parsed. Keep it to exactly one.
-    (1016, "2024-04-15", "Docking Station", "Accessories", "twelve", 145.00, "Germany"),
-    (1017, "2024-04-23", "Laptop", "Electronics", "4", 1210.00, "Italy"),
-    (1018, "2024-05-02", "Webcam", "Accessories", "11", 62.50, "France"),
-    (1019, "2024-05-11", "Keyboard", "Accessories", "6 ", 48.00, "Netherlands"),
-    (1020, "2024-05-18", "Monitor", "Electronics", "2", 305.00, "Spain"),
+# (product, category, unit price)
+CATALOGUE = [
+    ("Laptop", "Electronics", 1200.00),
+    ("Monitor", "Electronics", 310.00),
+    ("Tablet", "Electronics", 450.00),
+    ("Mouse", "Accessories", 25.50),
+    ("Keyboard", "Accessories", 45.00),
+    ("Headset", "Accessories", 89.99),
+    ("Webcam", "Accessories", 65.00),
+    ("Docking Station", "Accessories", 145.00),
 ]
 
-# Rows repeated verbatim, by index into ORDER_ROWS. Three of 23 = 13%.
-DUPLICATE_INDICES = [1, 5, 11]
+COUNTRIES = ["Germany", "France", "Spain", "Italy", "Netherlands", "Belgium"]
+
+# Words that do not parse as numbers. Spread thinly on purpose: see note 2.
+BAD_QUANTITIES = ["twelve", "n/a", "two", "unknown", "TBC"]
+
+MONTHS = [(year, month) for year in (2023, 2024) for month in range(1, 13)]
 
 
 def write_orders(path):
     """Phones are assigned BEFORE duplicating, which is the whole trick.
 
-    A first attempt duplicated the base rows and then filled phones per row.
-    Because the phone is random, the "duplicates" each got a different phone
-    and were not duplicates at all — `df.duplicated()` found none and the
-    13% duplicate warning never fired. The fixture looked right and tested
-    nothing. Duplicating complete rows is what makes them exact.
-
-    The rows chosen to carry a phone also exclude the duplicated ones, so
-    copying a row cannot change the missing-phone ratio.
+    A first version duplicated the base rows and then filled a random phone
+    per row, so each "duplicate" got a different phone and was not a
+    duplicate at all — `df.duplicated()` found none and the 13% warning never
+    fired. The fixture looked right and tested nothing.
     """
     rng = random.Random(SEED)
 
-    total = len(ORDER_ROWS) + len(DUPLICATE_INDICES)
-    present_count = total - round(total * 0.75)
+    # Spread the unique rows over all 24 months, so every month has data and
+    # no month is empty for a "per month" question.
+    per_month, extra = divmod(UNIQUE_ROWS, len(MONTHS))
+    counts = [per_month + (1 if index < extra else 0) for index in range(len(MONTHS))]
 
-    candidates = [i for i in range(len(ORDER_ROWS)) if i not in DUPLICATE_INDICES]
-    present_indices = set(rng.sample(candidates, present_count))
+    rows = []
+    order_id = 10001
+    for (year, month), count in zip(MONTHS, counts):
+        first = date(year, month, 1)
+        days_in_month = ((first + timedelta(days=31)).replace(day=1) - first).days
+        for _ in range(count):
+            product, category, base_price = CATALOGUE[rng.randrange(len(CATALOGUE))]
+            day = rng.randrange(1, days_in_month + 1)
+            quantity = rng.randint(1, 25)
+            # A little price drift, so averages are not suspiciously round.
+            price = round(base_price * rng.uniform(0.95, 1.08), 2)
+            rows.append(
+                {
+                    "OrderID": order_id,
+                    "OrderDate": date(year, month, day).isoformat(),
+                    "Product": product,
+                    "Category": category,
+                    "quantity": quantity,
+                    "Price": price,
+                    "Revenue": round(price * quantity, 2),
+                    "Country": COUNTRIES[rng.randrange(len(COUNTRIES))],
+                }
+            )
+            order_id += 1
 
-    complete = []
-    for index, row in enumerate(ORDER_ROWS):
-        phone = ""
-        if index in present_indices:
-            phone = f"+49-30-{rng.randint(1000000, 9999999)}"
-        complete.append(list(row) + [phone])
+    total = UNIQUE_ROWS + DUPLICATE_ROWS
 
-    rows = complete + [list(complete[i]) for i in DUPLICATE_INDICES]
+    # quantity as text: mostly digits, some padded, 4% unparseable words.
+    bad_count = round(total * BAD_QUANTITY_SHARE)
+    bad_indices = set(rng.sample(range(UNIQUE_ROWS), bad_count))
+    for index, row in enumerate(rows):
+        if index in bad_indices:
+            row["quantity"] = BAD_QUANTITIES[index % len(BAD_QUANTITIES)]
+        elif index % 7 == 0:
+            row["quantity"] = f" {row['quantity']} "  # whitespace padding
+        else:
+            row["quantity"] = str(row["quantity"])
+
+    # ~75% of phones missing, chosen by count so the ratio is exact. The rows
+    # that will be duplicated are excluded, so copying one cannot move it.
+    duplicate_indices = rng.sample(range(UNIQUE_ROWS), DUPLICATE_ROWS)
+    present_count = total - round(total * MISSING_PHONE_SHARE)
+    candidates = [i for i in range(UNIQUE_ROWS) if i not in set(duplicate_indices)]
+    present = set(rng.sample(candidates, present_count))
+
+    for index, row in enumerate(rows):
+        row["customer_phone"] = (
+            f"+49-30-{rng.randint(1000000, 9999999)}" if index in present else ""
+        )
+
+    complete = rows + [dict(rows[i]) for i in duplicate_indices]
 
     with open(path, "w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(ORDER_COLUMNS)
-        writer.writerows(rows)
+        writer = csv.DictWriter(handle, fieldnames=ORDER_COLUMNS)
+        writer.writeheader()
+        writer.writerows(complete)
 
-    return len(rows), total - present_count
+    return len(complete), total - present_count, bad_count
 
 
 # ---------------------------------------------------------------------------
 # customers.csv — the clean control
 # ---------------------------------------------------------------------------
 #
-# Left completely clean on purpose. With orders.csv now dirty, something has
-# to still exercise the "no warnings at all" path, or a regression that makes
-# every upload produce a warning would look normal.
+# Left completely clean on purpose. With orders.csv dirty, something has to
+# still exercise the "no warnings at all" path, or a regression that made
+# every upload warn would look entirely normal.
 
 CUSTOMER_COLUMNS = [
     "CustomerID",
@@ -183,29 +231,20 @@ def write_customers(path):
 # so the mean of the per-column ratios is (0 + 4 x 0.55) / 5 = 0.44, above
 # MISSING_DATASET_THRESHOLD of 0.40.
 #
-# The arithmetic needs care. A first attempt blanked exactly half of each data
-# column, giving (0 + 4 x 0.50) / 5 = 0.40 exactly — and the check is `>`, not
-# `>=`, so the file was ACCEPTED. 55% is chosen to clear the threshold with
-# margin rather than to sit on it.
+# The arithmetic needs care. A first version blanked exactly half of each data
+# column, giving 0.40 exactly — and the check is `>`, not `>=`, so the file
+# was ACCEPTED and the fixture did the opposite of its job.
 #
-# Two other things this fixture is steering around:
-#
-# - No column reaches 70%, so no column is excluded. Had one column carried
-#   all the missingness it would be dropped and the file accepted, which is a
-#   different code path and not the one this fixture is for.
-# - RecordID stays populated so that no two rows are identical. Blanking it
-#   too would make the empty rows duplicates of each other and the file would
-#   trip the duplicate rule as well, muddling what the fixture demonstrates.
-#
-# Note that overall_missing_ratio is the mean of the per-column means, not the
-# fraction of missing cells (see tests/test_validation.py).
+# No column reaches 70%, so nothing is merely excluded; and RecordID stays
+# populated so the mostly-empty rows are not duplicates of each other, which
+# would trip a second rule and muddle what this fixture demonstrates.
 
 BAD_COLUMNS = ["RecordID", "Region", "Units", "Revenue", "Owner"]
 
 
 def write_bad(path):
     rows = []
-    # 11 of 20 = 55% per data column. Taken from the top so the pattern is
+    # 11 of 20 = 55% per data column, taken from the top so the pattern is
     # obvious on sight rather than depending on the seed.
     blank_rows = set(range(11))
     for index in range(20):
@@ -228,14 +267,40 @@ def write_bad(path):
 
 
 if __name__ == "__main__":
-    total, missing = write_orders(HERE / "orders.csv")
-    print(f"orders.csv    {total} rows, {missing} phones missing "
-          f"({missing / total:.0%}), 3 duplicates, quantity as text")
+    total, missing, bad = write_orders(HERE / "orders.csv")
+
+    # Read back and report the ACTUAL convertible share, since duplicating a
+    # bad row changes it.
+    import csv as _csv
+
+    with open(HERE / "orders.csv", encoding="utf-8") as handle:
+        values = [row["quantity"] for row in _csv.DictReader(handle)]
+
+    def _numeric(value):
+        try:
+            float(value.strip())
+            return True
+        except ValueError:
+            return False
+
+    convertible = sum(1 for v in values if _numeric(v)) / len(values)
+    print(
+        f"orders.csv    {total} rows over {len(MONTHS)} months, "
+        f"{len(CATALOGUE)} products, {len(COUNTRIES)} countries"
+    )
+    print(
+        f"              {missing} phones missing ({missing / total:.0%}), "
+        f"{DUPLICATE_ROWS} duplicates ({DUPLICATE_ROWS / total:.0%}), "
+        f"{len(values) - sum(1 for v in values if _numeric(v))} unparseable "
+        f"quantities ({convertible:.1%} convertible, threshold 95%)"
+    )
 
     count = write_customers(HERE / "customers.csv")
     print(f"customers.csv {count} rows, clean")
 
     count = write_bad(HERE / "bad.csv")
-    print(f"bad.csv       {count} rows, 4 columns 55% missing "
-          f"-> 44% overall (rejected: limit is 40%)")
+    print(
+        f"bad.csv       {count} rows, 4 columns 55% missing "
+        f"-> 44% overall (rejected: limit is 40%)"
+    )
     print(f"\nseed {SEED} — output is byte-identical on every run")

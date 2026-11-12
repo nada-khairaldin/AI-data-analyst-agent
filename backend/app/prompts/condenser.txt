@@ -18,9 +18,9 @@ New user message:
 Decide what the new message is, and reply with ONE JSON object and nothing
 else:
 
-{{"kind": "question", "question": "<one standalone question>"}}
-{{"kind": "clarification_answer", "question": "<the question the user meant>"}}
-{{"kind": "instruction", "acknowledgement": "<one short sentence confirming it>"}}
+{"kind": "question", "question": "<one standalone question>"}
+{"kind": "clarification_answer", "question": "<the question the user meant>"}
+{"kind": "instruction", "acknowledgement": "<one short sentence confirming it>"}
 
 Use "instruction" only when the message sets a rule for later questions and
 asks nothing itself, for example "only 2024 from now on" or "revenue means

@@ -167,6 +167,16 @@ async def _pipeline(
             ),
         )
 
+        # Logged because "what did it think I asked?" is the first question
+        # when an answer is wrong, and the kind decides whether the planner
+        # runs at all.
+        logger.info(
+            "Condenser: kind=%s fell_back=%s -> %r",
+            outcome["kind"],
+            outcome["fell_back"],
+            (outcome.get("question") or outcome.get("acknowledgement") or "")[:120],
+        )
+
         if outcome["kind"] == condenser.INSTRUCTION:
             # An instruction asks nothing, so there is nothing to plan or
             # explain: 1 LLM call instead of 3 (PLAN §6.4). It is persisted as
