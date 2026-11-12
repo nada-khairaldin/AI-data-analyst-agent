@@ -16,12 +16,14 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        # The project is tested on 3.14.5 (.python-version). 3.13 is pinned
-        # here for broader wheel coverage of pandas/pyarrow/asyncpg — a
-        # missing wheel means a source build that will not finish on a free
-        # instance. If the build fails, switch this to 3.14.5. See DEPLOY.md.
-        value: 3.13.4
+      # PYTHON_VERSION is deliberately NOT pinned here.
+      #
+      # A runtime.txt pinning 3.13.4 was added and then removed: Render reads
+      # that file automatically, so it changed the interpreter on a service
+      # whose /health was already green, and the service stopped responding.
+      # Letting Render keep its own default restores the selection that
+      # worked. Pin it only after checking a build log, and prefer 3.14.5 —
+      # the version all 390 tests actually run on.
       # Everything below is set in the dashboard, never committed.
       - key: DATABASE_URL
         sync: false

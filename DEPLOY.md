@@ -38,7 +38,7 @@ machine — copy them across; none of them are in the repo.
 
 | Name | Where it comes from |
 |---|---|
-| `PYTHON_VERSION` | set to `3.13.4` — see the note below |
+| `PYTHON_VERSION` | **leave unset** — see the note below |
 | `DATABASE_URL` | Neon **pooled** string (host contains `-pooler`) |
 | `DATABASE_URL_DIRECT` | Neon **direct** string (no `-pooler`) |
 | `AWS_ENDPOINT_URL_S3` | Neon Object Storage endpoint |
@@ -64,17 +64,21 @@ Two of these are easy to get wrong and both fail in confusing ways:
   a real user looks perfectly fine and was computed for someone else's
   dataset.
 
-### The Python version — read this if the build fails
+### The Python version — do not pin it unless a build log tells you to
 
-`PYTHON_VERSION=3.13.4`, while the project is developed and tested on
-**3.14.5** (`.python-version`, and all 390 local tests). This is deliberate:
-3.13 has the broader wheel coverage for the C extensions here (pandas,
-pyarrow, asyncpg), and a missing wheel means a source build that will not
-finish on a free instance.
+**Leave `PYTHON_VERSION` unset and do not add a `runtime.txt`.**
 
-If the build fails on a wheel or on an unsupported version, change
-`PYTHON_VERSION` to `3.14.5` and redeploy. That is the version everything is
-actually verified against.
+This was learned the hard way. A `runtime.txt` pinning 3.13.4 was committed,
+Render read it automatically on the next deploy, and the service — whose
+`/health` had been green minutes earlier — stopped answering entirely: TCP
+connected and TLS completed in 0.1s, but the app never replied, which is what
+a failed build or a crash-looping start looks like from outside.
+
+The project is developed and tested on **3.14.5** (`.python-version`, all 390
+tests). If you ever do need to pin, use that, and read the Render build log
+first — the failure mode to look for is a C extension (pandas, pyarrow,
+asyncpg) with no wheel for the chosen version, which falls back to a source
+build that will not finish on a free instance.
 
 ### Then
 
