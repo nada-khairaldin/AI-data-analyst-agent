@@ -1,0 +1,1501 @@
+OrderID,OrderDate,Product,Category,quantity,Price,Revenue,Country,customer_phone
+10001,2023-01-16,Docking Station,Accessories, 21 ,148.02,3108.42,Germany,+49-30-7359434
+10002,2023-01-31,Laptop,Electronics,22,1286.68,28306.96,France,
+10003,2023-01-04,Laptop,Electronics,23,1180.23,27145.29,Netherlands,
+10004,2023-01-05,Mouse,Accessories,25,26.75,668.75,Netherlands,
+10005,2023-01-13,Keyboard,Accessories,21,43.15,906.15,Belgium,+49-30-7444591
+10006,2023-01-05,Laptop,Electronics,15,1187.2,17808.0,Germany,+49-30-3579377
+10007,2023-01-25,Mouse,Accessories,6,25.59,153.54,Germany,
+10008,2023-01-09,Laptop,Electronics, 2 ,1142.6,2285.2,Belgium,
+10009,2023-01-09,Laptop,Electronics,5,1224.33,6121.65,Germany,
+10010,2023-01-15,Webcam,Accessories,22,65.74,1446.28,Germany,+49-30-7216673
+10011,2023-01-31,Mouse,Accessories,24,27.37,656.88,France,
+10012,2023-01-10,Mouse,Accessories,13,25.43,330.59,Belgium,
+10013,2023-01-19,Docking Station,Accessories,19,140.04,2660.76,Italy,
+10014,2023-01-24,Webcam,Accessories,17,66.47,1129.99,Italy,
+10015,2023-01-15,Webcam,Accessories, 21 ,66.67,1400.07,Italy,
+10016,2023-01-06,Keyboard,Accessories,twelve,48.16,240.8,Belgium,
+10017,2023-01-04,Headset,Accessories,19,90.85,1726.15,Netherlands,
+10018,2023-01-26,Headset,Accessories,2,91.47,182.94,Belgium,
+10019,2023-01-17,Laptop,Electronics,20,1238.96,24779.2,Spain,+49-30-2689494
+10020,2023-01-02,Mouse,Accessories,12,26.07,312.84,Italy,
+10021,2023-01-19,Headset,Accessories,10,89.5,895.0,France,+49-30-1527814
+10022,2023-01-23,Tablet,Electronics, 23 ,448.07,10305.61,Germany,
+10023,2023-01-04,Tablet,Electronics,9,466.65,4199.85,Spain,
+10024,2023-01-16,Keyboard,Accessories,20,45.14,902.8,France,
+10025,2023-01-01,Monitor,Electronics,3,320.82,962.46,Netherlands,+49-30-7827291
+10026,2023-01-06,Headset,Accessories,22,85.68,1884.96,Belgium,
+10027,2023-01-05,Webcam,Accessories,18,61.8,1112.4,Italy,
+10028,2023-01-05,Docking Station,Accessories,14,148.45,2078.3,France,
+10029,2023-01-26,Laptop,Electronics, 19 ,1276.49,24253.31,Spain,
+10030,2023-01-22,Keyboard,Accessories,18,46.17,831.06,Italy,
+10031,2023-01-25,Keyboard,Accessories,twelve,47.17,330.19,Italy,+49-30-5970283
+10032,2023-01-09,Mouse,Accessories,15,24.35,365.25,Netherlands,+49-30-8931338
+10033,2023-01-31,Tablet,Electronics,25,467.8,11695.0,Netherlands,
+10034,2023-01-07,Keyboard,Accessories,7,48.41,338.87,France,+49-30-5933825
+10035,2023-01-18,Mouse,Accessories,3,26.03,78.09,Spain,
+10036,2023-01-13,Keyboard,Accessories, 3 ,42.99,128.97,Germany,
+10037,2023-01-31,Docking Station,Accessories,23,155.82,3583.86,Spain,
+10038,2023-01-28,Keyboard,Accessories,15,43.28,649.2,Germany,
+10039,2023-01-04,Monitor,Electronics,11,306.88,3375.68,Spain,+49-30-3667992
+10040,2023-01-24,Webcam,Accessories,17,66.95,1138.15,Germany,+49-30-8320610
+10041,2023-01-30,Headset,Accessories,22,96.41,2121.02,Belgium,
+10042,2023-01-14,Monitor,Electronics,6,318.55,1911.3,Belgium,
+10043,2023-01-30,Webcam,Accessories, 6 ,67.92,407.52,Netherlands,
+10044,2023-01-04,Monitor,Electronics,17,307.08,5220.36,Spain,
+10045,2023-01-30,Webcam,Accessories,8,68.57,548.56,Germany,
+10046,2023-01-07,Laptop,Electronics,2,1167.59,2335.18,Germany,
+10047,2023-01-15,Tablet,Electronics,19,448.02,8512.38,Spain,
+10048,2023-01-30,Headset,Accessories,1,87.21,87.21,Germany,
+10049,2023-01-16,Headset,Accessories,6,90.31,541.86,Italy,
+10050,2023-01-30,Tablet,Electronics, 20 ,432.49,8649.8,Spain,
+10051,2023-01-17,Webcam,Accessories,3,68.66,205.98,Netherlands,
+10052,2023-01-17,Headset,Accessories,1,95.23,95.23,Germany,
+10053,2023-01-29,Tablet,Electronics,16,443.09,7089.44,Italy,
+10054,2023-01-25,Laptop,Electronics,3,1282.64,3847.92,Spain,
+10055,2023-01-17,Keyboard,Accessories,18,43.65,785.7,France,+49-30-6835398
+10056,2023-02-05,Tablet,Electronics,12,438.39,5260.68,Netherlands,
+10057,2023-02-08,Docking Station,Accessories, 24 ,155.66,3735.84,Germany,
+10058,2023-02-10,Webcam,Accessories,14,69.32,970.48,France,+49-30-6671416
+10059,2023-02-24,Webcam,Accessories,22,63.99,1407.78,Netherlands,
+10060,2023-02-16,Laptop,Electronics,4,1184.19,4736.76,France,
+10061,2023-02-14,Mouse,Accessories,10,27.42,274.2,Germany,
+10062,2023-02-09,Keyboard,Accessories,9,47.63,428.67,Spain,
+10063,2023-02-21,Monitor,Electronics,2,319.92,639.84,Italy,
+10064,2023-02-04,Webcam,Accessories, 1 ,65.15,65.15,Italy,
+10065,2023-02-24,Docking Station,Accessories,11,147.5,1622.5,France,+49-30-4720599
+10066,2023-02-14,Laptop,Electronics,14,1263.6,17690.4,Netherlands,
+10067,2023-02-28,Docking Station,Accessories,9,138.37,1245.33,Germany,
+10068,2023-02-18,Tablet,Electronics,14,434.73,6086.22,France,+49-30-7248853
+10069,2023-02-14,Headset,Accessories,10,89.04,890.4,France,+49-30-8727159
+10070,2023-02-21,Laptop,Electronics,23,1156.24,26593.52,Italy,+49-30-2194964
+10071,2023-02-02,Docking Station,Accessories, 15 ,138.45,2076.75,Germany,+49-30-7131497
+10072,2023-02-05,Keyboard,Accessories,16,47.02,752.32,France,
+10073,2023-02-03,Webcam,Accessories,25,67.49,1687.25,France,
+10074,2023-02-07,Webcam,Accessories,22,64.82,1426.04,Germany,
+10075,2023-02-06,Docking Station,Accessories,17,151.4,2573.8,Spain,
+10076,2023-02-13,Docking Station,Accessories,twelve,140.96,986.72,Italy,
+10077,2023-02-24,Tablet,Electronics,19,466.84,8869.96,Spain,
+10078,2023-02-18,Webcam,Accessories, 18 ,67.62,1217.16,Belgium,
+10079,2023-02-03,Keyboard,Accessories,15,45.35,680.25,Germany,
+10080,2023-02-19,Docking Station,Accessories,13,152.93,1988.09,France,
+10081,2023-02-04,Monitor,Electronics,13,298.48,3880.24,Germany,
+10082,2023-02-26,Mouse,Accessories,10,24.32,243.2,Italy,
+10083,2023-02-08,Headset,Accessories,19,89.68,1703.92,Spain,
+10084,2023-02-14,Keyboard,Accessories,10,43.41,434.1,Belgium,+49-30-8624444
+10085,2023-02-20,Keyboard,Accessories, 15 ,43.14,647.1,France,+49-30-5159274
+10086,2023-02-20,Webcam,Accessories,11,67.71,744.81,Netherlands,
+10087,2023-02-20,Mouse,Accessories,15,24.54,368.1,Belgium,+49-30-9274491
+10088,2023-02-24,Tablet,Electronics,11,473.67,5210.37,Germany,
+10089,2023-02-26,Laptop,Electronics,15,1179.22,17688.3,Belgium,
+10090,2023-02-16,Laptop,Electronics,23,1283.61,29523.03,Belgium,+49-30-4995191
+10091,2023-02-19,Keyboard,Accessories,23,44.22,1017.06,Germany,+49-30-6309326
+10092,2023-02-27,Webcam,Accessories, 18 ,69.17,1245.06,Germany,
+10093,2023-02-14,Laptop,Electronics,2,1179.6,2359.2,Italy,+49-30-5205557
+10094,2023-02-07,Tablet,Electronics,3,443.93,1331.79,Spain,
+10095,2023-02-25,Headset,Accessories,23,88.49,2035.27,Italy,
+10096,2023-02-18,Mouse,Accessories,2,26.91,53.82,Germany,
+10097,2023-02-13,Webcam,Accessories,14,63.42,887.88,Netherlands,+49-30-4128353
+10098,2023-02-22,Monitor,Electronics,11,328.31,3611.41,Netherlands,+49-30-2435760
+10099,2023-02-03,Keyboard,Accessories, 9 ,43.8,394.2,France,
+10100,2023-02-01,Monitor,Electronics,10,316.42,3164.2,France,
+10101,2023-02-15,Headset,Accessories,8,90.42,723.36,Netherlands,
+10102,2023-02-01,Monitor,Electronics,8,324.09,2592.72,Spain,+49-30-3257404
+10103,2023-02-19,Mouse,Accessories,11,26.65,293.15,Germany,
+10104,2023-02-10,Docking Station,Accessories,16,155.17,2482.72,Spain,
+10105,2023-02-17,Mouse,Accessories,16,26.88,430.08,Germany,
+10106,2023-02-13,Laptop,Electronics, 6 ,1287.57,7725.42,Germany,
+10107,2023-02-22,Mouse,Accessories,22,25.97,571.34,France,
+10108,2023-02-24,Webcam,Accessories,15,67.42,1011.3,Belgium,+49-30-6523166
+10109,2023-02-27,Mouse,Accessories,11,27.24,299.64,Spain,
+10110,2023-02-10,Docking Station,Accessories,5,152.78,763.9,Spain,
+10111,2023-03-06,Docking Station,Accessories,19,142.29,2703.51,France,
+10112,2023-03-05,Mouse,Accessories,17,27.32,464.44,Netherlands,
+10113,2023-03-29,Monitor,Electronics, 15 ,318.53,4777.95,Netherlands,
+10114,2023-03-27,Webcam,Accessories,9,62.96,566.64,Italy,
+10115,2023-03-29,Docking Station,Accessories,23,156.17,3591.91,Germany,
+10116,2023-03-21,Monitor,Electronics,4,325.08,1300.32,Spain,+49-30-1765254
+10117,2023-03-28,Webcam,Accessories,n/a,62.31,872.34,Germany,
+10118,2023-03-11,Docking Station,Accessories,20,141.41,2828.2,Belgium,
+10119,2023-03-02,Laptop,Electronics,1,1244.41,1244.41,Spain,
+10120,2023-03-27,Mouse,Accessories, 23 ,26.88,618.24,Belgium,
+10121,2023-03-07,Tablet,Electronics,10,446.59,4465.9,France,
+10122,2023-03-06,Monitor,Electronics,n/a,332.64,5987.52,Belgium,+49-30-5958294
+10123,2023-03-20,Keyboard,Accessories,12,44.32,531.84,Netherlands,
+10124,2023-03-15,Tablet,Electronics,8,438.7,3509.6,Italy,
+10125,2023-03-16,Keyboard,Accessories,5,46.25,231.25,Netherlands,+49-30-9274016
+10126,2023-03-16,Docking Station,Accessories,7,148.71,1040.97,Italy,
+10127,2023-03-25,Webcam,Accessories, 24 ,69.46,1667.04,Germany,
+10128,2023-03-04,Headset,Accessories,24,93.91,2253.84,Belgium,
+10129,2023-03-18,Tablet,Electronics,12,483.62,5803.44,France,
+10130,2023-03-24,Mouse,Accessories,2,25.58,51.16,Netherlands,+49-30-9390272
+10131,2023-03-18,Tablet,Electronics,20,451.84,9036.8,France,
+10132,2023-03-01,Laptop,Electronics,16,1257.78,20124.48,Germany,
+10133,2023-03-21,Monitor,Electronics,12,300.42,3605.04,Belgium,+49-30-7868341
+10134,2023-03-19,Headset,Accessories, 20 ,87.27,1745.4,Netherlands,
+10135,2023-03-12,Mouse,Accessories,9,24.85,223.65,Germany,
+10136,2023-03-08,Tablet,Electronics,1,455.33,455.33,Netherlands,
+10137,2023-03-29,Webcam,Accessories,24,64.5,1548.0,Netherlands,
+10138,2023-03-29,Laptop,Electronics,7,1183.53,8284.71,Germany,+49-30-4230125
+10139,2023-03-03,Tablet,Electronics,23,473.7,10895.1,Italy,
+10140,2023-03-23,Mouse,Accessories,TBC,27.52,605.44,Spain,
+10141,2023-03-03,Headset,Accessories, 12 ,91.4,1096.8,Germany,+49-30-4104928
+10142,2023-03-12,Monitor,Electronics,1,296.78,296.78,Belgium,
+10143,2023-03-05,Mouse,Accessories,20,24.87,497.4,Italy,
+10144,2023-03-21,Tablet,Electronics,3,455.7,1367.1,Spain,
+10145,2023-03-16,Docking Station,Accessories,8,146.67,1173.36,Germany,+49-30-9761479
+10146,2023-03-22,Monitor,Electronics,12,305.14,3661.68,Belgium,
+10147,2023-03-19,Webcam,Accessories,11,68.68,755.48,Belgium,
+10148,2023-03-18,Monitor,Electronics, 22 ,329.78,7255.16,Italy,
+10149,2023-03-02,Webcam,Accessories,9,66.23,596.07,Spain,+49-30-4931487
+10150,2023-03-27,Monitor,Electronics,22,304.27,6693.94,Italy,
+10151,2023-03-17,Laptop,Electronics,17,1229.06,20894.02,Netherlands,
+10152,2023-03-25,Tablet,Electronics,13,428.35,5568.55,Netherlands,
+10153,2023-03-03,Docking Station,Accessories,22,155.65,3424.3,France,+49-30-5815543
+10154,2023-03-17,Tablet,Electronics,10,475.88,4758.8,Netherlands,+49-30-7117521
+10155,2023-03-27,Webcam,Accessories, 14 ,68.53,959.42,Italy,
+10156,2023-03-30,Mouse,Accessories,3,25.24,75.72,Belgium,
+10157,2023-03-02,Monitor,Electronics,17,332.07,5645.19,Netherlands,
+10158,2023-03-20,Mouse,Accessories,18,25.06,451.08,Belgium,+49-30-6635138
+10159,2023-03-24,Headset,Accessories,12,93.27,1119.24,Netherlands,
+10160,2023-03-26,Keyboard,Accessories,22,45.2,994.4,Italy,
+10161,2023-03-31,Monitor,Electronics,25,295.21,7380.25,France,
+10162,2023-03-03,Docking Station,Accessories, 13 ,154.92,2013.96,Spain,
+10163,2023-03-10,Docking Station,Accessories,24,156.23,3749.52,Italy,
+10164,2023-03-14,Mouse,Accessories,6,24.71,148.26,Germany,+49-30-7557027
+10165,2023-03-10,Docking Station,Accessories,22,139.85,3076.7,Spain,+49-30-6526807
+10166,2023-04-01,Tablet,Electronics,25,447.24,11181.0,Spain,+49-30-4853151
+10167,2023-04-20,Laptop,Electronics,24,1205.85,28940.4,France,
+10168,2023-04-17,Monitor,Electronics,14,313.44,4388.16,Italy,
+10169,2023-04-14,Mouse,Accessories, 20 ,26.07,521.4,Netherlands,+49-30-4189571
+10170,2023-04-21,Laptop,Electronics,TBC,1178.23,11782.3,Germany,+49-30-5012995
+10171,2023-04-21,Headset,Accessories,7,86.45,605.15,Italy,
+10172,2023-04-21,Tablet,Electronics,15,459.78,6896.7,Netherlands,+49-30-6330883
+10173,2023-04-04,Tablet,Electronics,14,452.85,6339.9,Germany,
+10174,2023-04-12,Docking Station,Accessories,unknown,155.28,931.68,Italy,+49-30-9535283
+10175,2023-04-26,Webcam,Accessories,16,66.86,1069.76,Netherlands,+49-30-7731600
+10176,2023-04-04,Mouse,Accessories, 1 ,26.98,26.98,Spain,
+10177,2023-04-15,Keyboard,Accessories,23,47.85,1100.55,Italy,+49-30-8369446
+10178,2023-04-28,Docking Station,Accessories,4,153.86,615.44,Germany,
+10179,2023-04-11,Headset,Accessories,15,92.8,1392.0,Belgium,
+10180,2023-04-03,Tablet,Electronics,10,428.63,4286.3,Germany,
+10181,2023-04-03,Headset,Accessories,twelve,87.11,1655.09,France,
+10182,2023-04-13,Webcam,Accessories,19,62.91,1195.29,Spain,+49-30-4449189
+10183,2023-04-26,Headset,Accessories,two,90.62,1993.64,Belgium,+49-30-7518849
+10184,2023-04-30,Monitor,Electronics,8,308.4,2467.2,Belgium,
+10185,2023-04-05,Headset,Accessories,10,88.44,884.4,Germany,
+10186,2023-04-05,Webcam,Accessories,6,63.72,382.32,Belgium,+49-30-1828574
+10187,2023-04-14,Docking Station,Accessories,22,152.42,3353.24,Belgium,
+10188,2023-04-03,Webcam,Accessories,14,64.83,907.62,Spain,
+10189,2023-04-19,Webcam,Accessories,2,62.78,125.56,Italy,+49-30-6830725
+10190,2023-04-09,Laptop,Electronics, 14 ,1264.87,17708.18,Italy,
+10191,2023-04-17,Headset,Accessories,19,87.13,1655.47,France,
+10192,2023-04-17,Monitor,Electronics,12,334.49,4013.88,Netherlands,
+10193,2023-04-13,Headset,Accessories,24,86.13,2067.12,Germany,
+10194,2023-04-14,Laptop,Electronics,16,1211.16,19378.56,Italy,+49-30-1073111
+10195,2023-04-03,Keyboard,Accessories,18,46.76,841.68,Netherlands,
+10196,2023-04-07,Tablet,Electronics,20,430.4,8608.0,Belgium,
+10197,2023-04-17,Laptop,Electronics, 7 ,1152.61,8068.27,Spain,+49-30-2377957
+10198,2023-04-11,Docking Station,Accessories,23,142.36,3274.28,Belgium,
+10199,2023-04-09,Webcam,Accessories,3,66.68,200.04,France,
+10200,2023-04-05,Docking Station,Accessories,5,142.78,713.9,France,
+10201,2023-04-19,Webcam,Accessories,21,61.87,1299.27,France,
+10202,2023-04-22,Headset,Accessories,14,91.96,1287.44,Germany,
+10203,2023-04-07,Keyboard,Accessories,1,47.78,47.78,Italy,
+10204,2023-04-01,Keyboard,Accessories, 1 ,43.7,43.7,Spain,
+10205,2023-04-22,Mouse,Accessories,10,24.99,249.9,Germany,
+10206,2023-04-17,Webcam,Accessories,23,64.73,1488.79,France,
+10207,2023-04-26,Webcam,Accessories,19,67.58,1284.02,France,+49-30-1526815
+10208,2023-04-16,Monitor,Electronics,16,322.85,5165.6,Italy,+49-30-4408089
+10209,2023-04-05,Keyboard,Accessories,20,46.8,936.0,France,
+10210,2023-04-22,Mouse,Accessories,14,25.73,360.22,Spain,+49-30-2249198
+10211,2023-04-25,Laptop,Electronics, 11 ,1162.55,12788.05,Belgium,
+10212,2023-04-22,Keyboard,Accessories,10,46.3,463.0,Italy,
+10213,2023-04-05,Webcam,Accessories,24,69.02,1656.48,Italy,
+10214,2023-04-14,Headset,Accessories,10,94.79,947.9,France,+49-30-1085388
+10215,2023-04-07,Webcam,Accessories,15,63.87,958.05,Netherlands,
+10216,2023-04-18,Webcam,Accessories,19,65.58,1246.02,Italy,
+10217,2023-04-30,Mouse,Accessories,19,24.84,471.96,Netherlands,
+10218,2023-04-13,Monitor,Electronics, 16 ,298.17,4770.72,Belgium,
+10219,2023-04-30,Tablet,Electronics,4,469.46,1877.84,Belgium,+49-30-7707222
+10220,2023-04-10,Monitor,Electronics,8,315.41,2523.28,France,+49-30-2285208
+10221,2023-05-08,Headset,Accessories,5,92.87,464.35,France,
+10222,2023-05-07,Monitor,Electronics,15,316.68,4750.2,France,+49-30-3715840
+10223,2023-05-09,Headset,Accessories,16,95.38,1526.08,Netherlands,+49-30-2854756
+10224,2023-05-12,Keyboard,Accessories,14,44.21,618.94,Netherlands,
+10225,2023-05-18,Tablet,Electronics, 20 ,445.58,8911.6,Belgium,+49-30-3811417
+10226,2023-05-31,Headset,Accessories,14,93.44,1308.16,Netherlands,
+10227,2023-05-17,Docking Station,Accessories,12,147.58,1770.96,Germany,
+10228,2023-05-25,Headset,Accessories,17,87.84,1493.28,Germany,
+10229,2023-05-20,Laptop,Electronics,22,1224.55,26940.1,Netherlands,
+10230,2023-05-23,Webcam,Accessories,23,61.97,1425.31,Netherlands,
+10231,2023-05-16,Laptop,Electronics,20,1238.48,24769.6,Italy,
+10232,2023-05-02,Webcam,Accessories, 6 ,65.73,394.38,Netherlands,
+10233,2023-05-24,Webcam,Accessories,19,64.58,1227.02,Belgium,+49-30-6900558
+10234,2023-05-06,Docking Station,Accessories,12,145.32,1743.84,Spain,
+10235,2023-05-31,Laptop,Electronics,12,1259.85,15118.2,Spain,+49-30-9600020
+10236,2023-05-29,Monitor,Electronics,19,311.22,5913.18,Netherlands,
+10237,2023-05-20,Headset,Accessories,13,88.88,1155.44,Netherlands,+49-30-6257758
+10238,2023-05-04,Keyboard,Accessories,6,46.06,276.36,Netherlands,
+10239,2023-05-30,Docking Station,Accessories, 20 ,147.73,2954.6,Germany,
+10240,2023-05-30,Headset,Accessories,17,97.08,1650.36,France,+49-30-8522094
+10241,2023-05-11,Monitor,Electronics,24,308.44,7402.56,France,+49-30-3371642
+10242,2023-05-16,Monitor,Electronics,24,316.12,7586.88,Germany,
+10243,2023-05-24,Webcam,Accessories,7,64.0,448.0,Netherlands,
+10244,2023-05-01,Docking Station,Accessories,12,142.01,1704.12,Germany,+49-30-1546149
+10245,2023-05-06,Laptop,Electronics,10,1254.49,12544.9,Netherlands,+49-30-9017099
+10246,2023-05-24,Tablet,Electronics, 2 ,435.84,871.68,Netherlands,
+10247,2023-05-05,Headset,Accessories,17,91.44,1554.48,Italy,+49-30-5190046
+10248,2023-05-08,Tablet,Electronics,14,435.3,6094.2,Netherlands,
+10249,2023-05-31,Keyboard,Accessories,14,42.92,600.88,Belgium,+49-30-3219055
+10250,2023-05-02,Monitor,Electronics,22,297.65,6548.3,France,+49-30-7521462
+10251,2023-05-07,Docking Station,Accessories,2,146.98,293.96,Spain,
+10252,2023-05-30,Monitor,Electronics,20,314.1,6282.0,Belgium,
+10253,2023-05-06,Mouse,Accessories, 23 ,24.37,560.51,Germany,
+10254,2023-05-06,Keyboard,Accessories,6,43.09,258.54,Italy,+49-30-8667017
+10255,2023-05-24,Headset,Accessories,17,95.63,1625.71,Netherlands,
+10256,2023-05-22,Tablet,Electronics,7,451.58,3161.06,Netherlands,+49-30-6908801
+10257,2023-05-03,Keyboard,Accessories,16,47.1,753.6,Spain,
+10258,2023-05-15,Docking Station,Accessories,5,149.84,749.2,Belgium,
+10259,2023-05-24,Headset,Accessories,18,86.44,1555.92,Netherlands,
+10260,2023-05-28,Keyboard,Accessories, 23 ,46.65,1072.95,Germany,
+10261,2023-05-06,Monitor,Electronics,14,318.11,4453.54,Germany,
+10262,2023-05-24,Keyboard,Accessories,16,46.04,736.64,Belgium,+49-30-8764085
+10263,2023-05-21,Headset,Accessories,24,88.46,2123.04,Netherlands,
+10264,2023-05-07,Docking Station,Accessories,17,150.17,2552.89,Spain,+49-30-7099049
+10265,2023-05-15,Docking Station,Accessories,14,140.62,1968.68,Spain,+49-30-3065752
+10266,2023-05-19,Keyboard,Accessories,14,48.06,672.84,Germany,
+10267,2023-05-23,Webcam,Accessories, 16 ,67.39,1078.24,Belgium,
+10268,2023-05-06,Tablet,Electronics,9,464.1,4176.9,Spain,+49-30-3060128
+10269,2023-05-03,Headset,Accessories,11,90.42,994.62,Netherlands,+49-30-1068053
+10270,2023-05-03,Headset,Accessories,17,91.93,1562.81,Belgium,
+10271,2023-05-15,Laptop,Electronics,25,1219.43,30485.75,France,
+10272,2023-05-06,Monitor,Electronics,25,318.7,7967.5,Netherlands,
+10273,2023-05-14,Docking Station,Accessories,1,149.97,149.97,Germany,+49-30-3097482
+10274,2023-05-21,Webcam,Accessories, 14 ,70.03,980.42,Netherlands,
+10275,2023-05-30,Tablet,Electronics,17,470.78,8003.26,Italy,
+10276,2023-06-10,Webcam,Accessories,20,67.65,1353.0,Netherlands,
+10277,2023-06-15,Tablet,Electronics,11,443.5,4878.5,France,+49-30-6858972
+10278,2023-06-10,Tablet,Electronics,7,460.98,3226.86,France,
+10279,2023-06-12,Tablet,Electronics,unknown,470.13,11283.12,Germany,
+10280,2023-06-11,Docking Station,Accessories,16,145.61,2329.76,Italy,+49-30-5283645
+10281,2023-06-02,Webcam,Accessories,twelve,63.31,696.41,Italy,
+10282,2023-06-23,Monitor,Electronics,12,309.31,3711.72,Netherlands,
+10283,2023-06-27,Laptop,Electronics,3,1289.83,3869.49,Belgium,
+10284,2023-06-06,Mouse,Accessories,19,27.26,517.94,Netherlands,
+10285,2023-06-24,Tablet,Electronics,24,444.38,10665.12,Netherlands,
+10286,2023-06-25,Mouse,Accessories,14,26.07,364.98,Spain,
+10287,2023-06-18,Docking Station,Accessories,1,142.92,142.92,Italy,
+10288,2023-06-10,Headset,Accessories, 21 ,89.53,1880.13,Netherlands,
+10289,2023-06-22,Docking Station,Accessories,1,150.74,150.74,France,
+10290,2023-06-09,Keyboard,Accessories,22,48.08,1057.76,Italy,
+10291,2023-06-03,Headset,Accessories,8,86.71,693.68,Italy,
+10292,2023-06-21,Headset,Accessories,9,92.78,835.02,Germany,+49-30-6925962
+10293,2023-06-27,Docking Station,Accessories,20,137.94,2758.8,Spain,
+10294,2023-06-05,Docking Station,Accessories,15,140.05,2100.75,France,
+10295,2023-06-06,Headset,Accessories, 3 ,86.09,258.27,Italy,
+10296,2023-06-26,Webcam,Accessories,22,68.37,1504.14,Italy,
+10297,2023-06-28,Laptop,Electronics,4,1267.25,5069.0,Germany,+49-30-6339729
+10298,2023-06-17,Headset,Accessories,25,92.36,2309.0,Germany,
+10299,2023-06-13,Laptop,Electronics,15,1254.07,18811.05,France,
+10300,2023-06-18,Headset,Accessories,6,92.2,553.2,Italy,+49-30-5569607
+10301,2023-06-16,Headset,Accessories,7,96.81,677.67,Spain,
+10302,2023-06-26,Docking Station,Accessories, 10 ,138.0,1380.0,Netherlands,
+10303,2023-06-25,Webcam,Accessories,20,61.91,1238.2,France,+49-30-5785129
+10304,2023-06-17,Webcam,Accessories,1,62.41,62.41,Italy,
+10305,2023-06-23,Tablet,Electronics,25,469.89,11747.25,Spain,
+10306,2023-06-15,Headset,Accessories,25,85.59,2139.75,Belgium,
+10307,2023-06-25,Laptop,Electronics,n/a,1181.1,27165.3,Belgium,
+10308,2023-06-16,Keyboard,Accessories,two,44.8,1030.4,Italy,
+10309,2023-06-18,Tablet,Electronics, 21 ,464.16,9747.36,Italy,
+10310,2023-06-07,Headset,Accessories,23,97.15,2234.45,France,+49-30-5231621
+10311,2023-06-09,Docking Station,Accessories,11,145.37,1599.07,Germany,
+10312,2023-06-02,Keyboard,Accessories,20,46.66,933.2,Italy,
+10313,2023-06-21,Tablet,Electronics,17,483.91,8226.47,Germany,
+10314,2023-06-13,Monitor,Electronics,9,309.18,2782.62,Netherlands,+49-30-9750370
+10315,2023-06-28,Headset,Accessories,13,90.39,1175.07,Netherlands,
+10316,2023-06-08,Mouse,Accessories, 12 ,25.41,304.92,Italy,
+10317,2023-06-21,Laptop,Electronics,20,1216.31,24326.2,Germany,
+10318,2023-06-21,Laptop,Electronics,9,1288.49,11596.41,Germany,
+10319,2023-06-04,Laptop,Electronics,5,1161.28,5806.4,Italy,+49-30-4108459
+10320,2023-06-10,Docking Station,Accessories,25,151.06,3776.5,Spain,+49-30-6057432
+10321,2023-06-06,Mouse,Accessories,21,26.26,551.46,Germany,
+10322,2023-06-13,Webcam,Accessories,19,67.62,1284.78,Italy,+49-30-4895201
+10323,2023-06-24,Monitor,Electronics, 14 ,308.04,4312.56,Spain,
+10324,2023-06-27,Keyboard,Accessories,12,46.15,553.8,Belgium,
+10325,2023-06-08,Mouse,Accessories,6,25.28,151.68,Belgium,
+10326,2023-06-07,Docking Station,Accessories,7,149.87,1049.09,Germany,+49-30-5766394
+10327,2023-06-27,Monitor,Electronics,2,318.82,637.64,Belgium,
+10328,2023-06-28,Tablet,Electronics,19,482.89,9174.91,Germany,
+10329,2023-06-02,Headset,Accessories,7,95.25,666.75,Netherlands,
+10330,2023-06-13,Mouse,Accessories, 11 ,25.0,275.0,Netherlands,
+10331,2023-07-06,Webcam,Accessories,5,65.09,325.45,Belgium,+49-30-2634830
+10332,2023-07-13,Mouse,Accessories,14,24.32,340.48,Germany,
+10333,2023-07-14,Mouse,Accessories,1,24.71,24.71,Netherlands,
+10334,2023-07-19,Docking Station,Accessories,9,146.97,1322.73,Spain,
+10335,2023-07-05,Docking Station,Accessories,3,143.94,431.82,Spain,+49-30-3055370
+10336,2023-07-20,Keyboard,Accessories,twelve,48.5,1018.5,France,+49-30-1734385
+10337,2023-07-10,Keyboard,Accessories, 1 ,48.1,48.1,Spain,+49-30-5426833
+10338,2023-07-16,Headset,Accessories,17,90.74,1542.58,Italy,+49-30-9640218
+10339,2023-07-31,Tablet,Electronics,7,467.74,3274.18,Spain,+49-30-2707170
+10340,2023-07-14,Mouse,Accessories,22,26.15,575.3,Italy,
+10341,2023-07-26,Webcam,Accessories,23,61.85,1422.55,Germany,
+10342,2023-07-31,Keyboard,Accessories,13,43.49,565.37,France,+49-30-2432220
+10343,2023-07-11,Docking Station,Accessories,13,141.34,1837.42,France,
+10344,2023-07-28,Monitor,Electronics, 14 ,310.89,4352.46,Netherlands,
+10345,2023-07-10,Mouse,Accessories,21,24.77,520.17,Germany,
+10346,2023-07-31,Laptop,Electronics,11,1270.21,13972.31,Germany,
+10347,2023-07-14,Tablet,Electronics,21,454.46,9543.66,Spain,
+10348,2023-07-08,Monitor,Electronics,17,320.91,5455.47,Spain,+49-30-6745330
+10349,2023-07-17,Webcam,Accessories,4,62.89,251.56,France,+49-30-3732033
+10350,2023-07-28,Webcam,Accessories,13,68.09,885.17,Germany,
+10351,2023-07-23,Docking Station,Accessories, 2 ,146.83,293.66,Italy,
+10352,2023-07-16,Mouse,Accessories,11,24.36,267.96,Germany,+49-30-7910624
+10353,2023-07-27,Tablet,Electronics,3,439.88,1319.64,Netherlands,
+10354,2023-07-24,Docking Station,Accessories,12,141.5,1698.0,France,
+10355,2023-07-07,Docking Station,Accessories,8,149.44,1195.52,Germany,
+10356,2023-07-29,Mouse,Accessories,11,25.9,284.9,Germany,
+10357,2023-07-03,Headset,Accessories,4,92.33,369.32,Italy,+49-30-2914047
+10358,2023-07-22,Headset,Accessories, 12 ,86.62,1039.44,Netherlands,+49-30-6529547
+10359,2023-07-02,Webcam,Accessories,unknown,65.17,325.85,Belgium,+49-30-7286142
+10360,2023-07-27,Keyboard,Accessories,21,47.11,989.31,Spain,
+10361,2023-07-08,Mouse,Accessories,10,26.9,269.0,France,+49-30-8224547
+10362,2023-07-10,Docking Station,Accessories,25,142.32,3558.0,Netherlands,
+10363,2023-07-16,Monitor,Electronics,16,296.71,4747.36,France,
+10364,2023-07-16,Webcam,Accessories,23,69.49,1598.27,France,
+10365,2023-07-08,Webcam,Accessories, 4 ,64.25,257.0,Spain,
+10366,2023-07-21,Keyboard,Accessories,13,47.8,621.4,Italy,
+10367,2023-07-18,Webcam,Accessories,25,68.37,1709.25,Spain,
+10368,2023-07-21,Laptop,Electronics,23,1258.68,28949.64,France,+49-30-2696613
+10369,2023-07-28,Mouse,Accessories,7,26.89,188.23,France,
+10370,2023-07-28,Docking Station,Accessories,24,139.78,3354.72,Netherlands,
+10371,2023-07-10,Laptop,Electronics,14,1216.42,17029.88,Netherlands,
+10372,2023-07-10,Headset,Accessories, 1 ,87.12,87.12,Netherlands,+49-30-7640503
+10373,2023-07-01,Monitor,Electronics,20,333.54,6670.8,Netherlands,
+10374,2023-07-30,Laptop,Electronics,10,1268.05,12680.5,Germany,
+10375,2023-07-14,Headset,Accessories,13,85.75,1114.75,France,
+10376,2023-07-12,Mouse,Accessories,24,26.48,635.52,France,
+10377,2023-07-24,Keyboard,Accessories,14,46.09,645.26,Spain,+49-30-3816915
+10378,2023-07-31,Mouse,Accessories,11,26.62,292.82,Spain,
+10379,2023-07-15,Keyboard,Accessories, 10 ,47.26,472.6,Netherlands,+49-30-9005431
+10380,2023-07-05,Docking Station,Accessories,18,155.45,2798.1,Italy,
+10381,2023-07-10,Keyboard,Accessories,7,46.09,322.63,Netherlands,
+10382,2023-07-17,Headset,Accessories,18,87.73,1579.14,Germany,
+10383,2023-07-09,Monitor,Electronics,10,309.9,3099.0,Belgium,+49-30-6220372
+10384,2023-07-18,Headset,Accessories,18,96.98,1745.64,Spain,
+10385,2023-07-15,Mouse,Accessories,10,26.41,264.1,Italy,+49-30-9760596
+10386,2023-08-22,Keyboard,Accessories, 22 ,42.95,944.9,Netherlands,
+10387,2023-08-12,Tablet,Electronics,13,452.71,5885.23,Italy,
+10388,2023-08-03,Monitor,Electronics,6,320.38,1922.28,Germany,
+10389,2023-08-09,Docking Station,Accessories,15,156.01,2340.15,Germany,+49-30-4119944
+10390,2023-08-11,Keyboard,Accessories,9,44.84,403.56,Spain,
+10391,2023-08-16,Monitor,Electronics,17,326.83,5556.11,Spain,
+10392,2023-08-27,Keyboard,Accessories,24,43.76,1050.24,Italy,
+10393,2023-08-02,Tablet,Electronics, 10 ,477.47,4774.7,Spain,
+10394,2023-08-08,Tablet,Electronics,unknown,433.31,2166.55,Italy,
+10395,2023-08-17,Docking Station,Accessories,5,153.89,769.45,France,
+10396,2023-08-03,Tablet,Electronics,8,469.02,3752.16,Netherlands,
+10397,2023-08-30,Headset,Accessories,2,86.41,172.82,Italy,
+10398,2023-08-16,Docking Station,Accessories,6,146.63,879.78,Italy,
+10399,2023-08-08,Mouse,Accessories,21,25.8,541.8,Netherlands,
+10400,2023-08-18,Headset,Accessories, 5 ,93.22,466.1,Spain,
+10401,2023-08-13,Monitor,Electronics,19,329.2,6254.8,Spain,
+10402,2023-08-29,Tablet,Electronics,16,470.28,7524.48,Germany,+49-30-2412332
+10403,2023-08-02,Laptop,Electronics,4,1175.49,4701.96,France,
+10404,2023-08-30,Mouse,Accessories,unknown,24.8,322.4,France,
+10405,2023-08-06,Laptop,Electronics,4,1219.62,4878.48,Italy,
+10406,2023-08-29,Mouse,Accessories,7,27.07,189.49,Belgium,
+10407,2023-08-31,Docking Station,Accessories, 17 ,146.97,2498.49,Spain,+49-30-6321174
+10408,2023-08-12,Mouse,Accessories,19,26.0,494.0,Germany,+49-30-2405957
+10409,2023-08-05,Keyboard,Accessories,1,42.98,42.98,Netherlands,+49-30-9993485
+10410,2023-08-30,Mouse,Accessories,8,25.33,202.64,Belgium,
+10411,2023-08-18,Tablet,Electronics,22,442.0,9724.0,Netherlands,
+10412,2023-08-04,Headset,Accessories,10,94.14,941.4,Spain,+49-30-6803817
+10413,2023-08-13,Docking Station,Accessories,6,143.93,863.58,Belgium,
+10414,2023-08-18,Webcam,Accessories, 1 ,67.67,67.67,France,
+10415,2023-08-09,Monitor,Electronics,1,307.53,307.53,Belgium,
+10416,2023-08-23,Keyboard,Accessories,22,43.8,963.6,Germany,+49-30-5846009
+10417,2023-08-23,Mouse,Accessories,9,24.48,220.32,Germany,
+10418,2023-08-25,Monitor,Electronics,11,310.92,3420.12,Germany,
+10419,2023-08-31,Docking Station,Accessories,24,155.9,3741.6,Netherlands,
+10420,2023-08-01,Headset,Accessories,10,89.87,898.7,France,
+10421,2023-08-03,Tablet,Electronics, 8 ,462.83,3702.64,Netherlands,
+10422,2023-08-08,Headset,Accessories,10,87.37,873.7,Spain,
+10423,2023-08-13,Headset,Accessories,10,85.69,856.9,Belgium,
+10424,2023-08-12,Monitor,Electronics,5,305.4,1527.0,France,+49-30-7192248
+10425,2023-08-20,Headset,Accessories,10,86.59,865.9,Belgium,
+10426,2023-08-12,Monitor,Electronics,12,319.28,3831.36,Italy,
+10427,2023-08-14,Webcam,Accessories,18,65.99,1187.82,France,
+10428,2023-08-15,Tablet,Electronics, 9 ,478.19,4303.71,Belgium,
+10429,2023-08-08,Webcam,Accessories,14,68.13,953.82,Spain,
+10430,2023-08-02,Mouse,Accessories,21,26.63,559.23,France,
+10431,2023-08-10,Mouse,Accessories,25,25.79,644.75,Belgium,
+10432,2023-08-22,Keyboard,Accessories,13,43.41,564.33,Belgium,+49-30-6343155
+10433,2023-08-29,Mouse,Accessories,7,27.32,191.24,Germany,
+10434,2023-08-17,Keyboard,Accessories,19,42.84,813.96,Spain,+49-30-2365384
+10435,2023-08-18,Docking Station,Accessories, 6 ,140.99,845.94,Spain,+49-30-3112957
+10436,2023-08-10,Monitor,Electronics,17,295.42,5022.14,Germany,
+10437,2023-08-14,Mouse,Accessories,8,25.49,203.92,Netherlands,
+10438,2023-08-22,Laptop,Electronics,20,1253.16,25063.2,Netherlands,+49-30-4684611
+10439,2023-08-22,Keyboard,Accessories,25,44.11,1102.75,Netherlands,
+10440,2023-08-11,Keyboard,Accessories,7,48.11,336.77,Netherlands,
+10441,2023-09-16,Laptop,Electronics,10,1163.2,11632.0,France,
+10442,2023-09-09,Mouse,Accessories, 7 ,27.47,192.29,France,+49-30-7238965
+10443,2023-09-24,Headset,Accessories,18,88.44,1591.92,Germany,
+10444,2023-09-27,Keyboard,Accessories,3,44.79,134.37,France,
+10445,2023-09-28,Monitor,Electronics,2,305.49,610.98,Belgium,
+10446,2023-09-20,Mouse,Accessories,4,27.47,109.88,Italy,
+10447,2023-09-02,Mouse,Accessories,21,25.91,544.11,Italy,
+10448,2023-09-15,Mouse,Accessories,8,27.52,220.16,Germany,+49-30-2744769
+10449,2023-09-06,Docking Station,Accessories, 7 ,153.91,1077.37,France,
+10450,2023-09-28,Docking Station,Accessories,7,153.43,1074.01,France,
+10451,2023-09-10,Docking Station,Accessories,21,146.58,3078.18,Netherlands,
+10452,2023-09-28,Mouse,Accessories,23,25.68,590.64,Spain,+49-30-5655905
+10453,2023-09-10,Mouse,Accessories,6,25.99,155.94,Germany,+49-30-2581351
+10454,2023-09-21,Mouse,Accessories,8,24.96,199.68,Italy,
+10455,2023-09-02,Monitor,Electronics,18,300.24,5404.32,France,
+10456,2023-09-24,Mouse,Accessories, 13 ,26.25,341.25,Belgium,+49-30-5427345
+10457,2023-09-26,Mouse,Accessories,11,26.06,286.66,Italy,
+10458,2023-09-24,Keyboard,Accessories,11,43.94,483.34,Belgium,
+10459,2023-09-15,Laptop,Electronics,19,1196.18,22727.42,Netherlands,
+10460,2023-09-04,Headset,Accessories,1,96.83,96.83,France,
+10461,2023-09-29,Monitor,Electronics,6,315.78,1894.68,France,
+10462,2023-09-20,Monitor,Electronics,7,304.3,2130.1,Germany,
+10463,2023-09-09,Docking Station,Accessories, 24 ,150.93,3622.32,Germany,
+10464,2023-09-20,Headset,Accessories,16,85.7,1371.2,Italy,+49-30-9395390
+10465,2023-09-20,Docking Station,Accessories,16,150.32,2405.12,Germany,
+10466,2023-09-16,Tablet,Electronics,20,427.75,8555.0,Netherlands,
+10467,2023-09-29,Mouse,Accessories,23,27.44,631.12,France,
+10468,2023-09-23,Docking Station,Accessories,8,148.55,1188.4,France,
+10469,2023-09-21,Laptop,Electronics,22,1266.81,27869.82,Italy,
+10470,2023-09-28,Monitor,Electronics, 4 ,303.98,1215.92,Belgium,
+10471,2023-09-22,Keyboard,Accessories,2,43.87,87.74,France,
+10472,2023-09-27,Mouse,Accessories,13,25.05,325.65,Germany,
+10473,2023-09-27,Headset,Accessories,11,93.7,1030.7,Netherlands,
+10474,2023-09-20,Webcam,Accessories,13,64.94,844.22,France,
+10475,2023-09-30,Docking Station,Accessories,17,156.5,2660.5,Spain,
+10476,2023-09-09,Headset,Accessories,9,91.61,824.49,Spain,
+10477,2023-09-07,Laptop,Electronics, 8 ,1190.19,9521.52,Italy,+49-30-1953652
+10478,2023-09-09,Tablet,Electronics,23,427.79,9839.17,France,
+10479,2023-09-30,Keyboard,Accessories,11,43.41,477.51,France,+49-30-2225543
+10480,2023-09-11,Keyboard,Accessories,23,44.73,1028.79,Belgium,
+10481,2023-09-06,Tablet,Electronics,1,482.4,482.4,Spain,
+10482,2023-09-29,Laptop,Electronics,20,1157.61,23152.2,Belgium,
+10483,2023-09-03,Tablet,Electronics,5,453.38,2266.9,Spain,+49-30-2512175
+10484,2023-09-28,Keyboard,Accessories, 7 ,45.72,320.04,Netherlands,+49-30-6638225
+10485,2023-09-15,Docking Station,Accessories,11,149.85,1648.35,Netherlands,
+10486,2023-09-20,Keyboard,Accessories,13,47.76,620.88,Spain,+49-30-2857845
+10487,2023-09-10,Laptop,Electronics,13,1172.4,15241.2,Spain,
+10488,2023-09-28,Laptop,Electronics,19,1257.66,23895.54,Germany,+49-30-6360524
+10489,2023-09-29,Keyboard,Accessories,22,46.39,1020.58,Italy,
+10490,2023-09-09,Tablet,Electronics,3,441.78,1325.34,France,
+10491,2023-09-08,Headset,Accessories, 17 ,89.93,1528.81,Germany,+49-30-4670620
+10492,2023-09-22,Headset,Accessories,2,91.23,182.46,Italy,
+10493,2023-09-06,Monitor,Electronics,6,314.71,1888.26,France,
+10494,2023-09-28,Laptop,Electronics,5,1214.26,6071.3,Germany,+49-30-6243790
+10495,2023-09-03,Mouse,Accessories,10,26.18,261.8,Spain,
+10496,2023-10-30,Mouse,Accessories,22,24.55,540.1,France,
+10497,2023-10-24,Mouse,Accessories,9,25.5,229.5,Italy,
+10498,2023-10-21,Keyboard,Accessories, 12 ,46.21,554.52,France,
+10499,2023-10-29,Laptop,Electronics,24,1202.49,28859.76,Belgium,
+10500,2023-10-24,Keyboard,Accessories,15,46.62,699.3,Belgium,+49-30-7559573
+10501,2023-10-30,Laptop,Electronics,24,1228.78,29490.72,Belgium,+49-30-5173770
+10502,2023-10-15,Tablet,Electronics,7,428.35,2998.45,France,
+10503,2023-10-03,Mouse,Accessories,23,27.42,630.66,Spain,+49-30-3099582
+10504,2023-10-31,Docking Station,Accessories,11,146.31,1609.41,Belgium,
+10505,2023-10-23,Keyboard,Accessories, 13 ,47.33,615.29,Germany,
+10506,2023-10-07,Laptop,Electronics,6,1197.86,7187.16,France,
+10507,2023-10-02,Webcam,Accessories,n/a,63.79,574.11,Germany,
+10508,2023-10-22,Tablet,Electronics,8,453.93,3631.44,Germany,
+10509,2023-10-04,Webcam,Accessories,16,64.99,1039.84,Netherlands,
+10510,2023-10-26,Webcam,Accessories,19,63.95,1215.05,France,+49-30-4121760
+10511,2023-10-04,Webcam,Accessories,11,64.05,704.55,Belgium,+49-30-5862875
+10512,2023-10-08,Headset,Accessories, 13 ,87.52,1137.76,Spain,
+10513,2023-10-10,Mouse,Accessories,13,25.93,337.09,France,
+10514,2023-10-01,Keyboard,Accessories,8,47.71,381.68,Italy,
+10515,2023-10-08,Headset,Accessories,18,87.58,1576.44,Netherlands,
+10516,2023-10-14,Mouse,Accessories,4,26.22,104.88,Italy,+49-30-1567964
+10517,2023-10-04,Docking Station,Accessories,9,152.9,1376.1,Germany,
+10518,2023-10-26,Monitor,Electronics,2,327.46,654.92,Spain,
+10519,2023-10-24,Monitor,Electronics, 14 ,304.2,4258.8,Italy,
+10520,2023-10-31,Docking Station,Accessories,12,148.54,1782.48,Italy,
+10521,2023-10-10,Mouse,Accessories,17,25.7,436.9,Netherlands,+49-30-4080725
+10522,2023-10-04,Mouse,Accessories,22,24.38,536.36,France,
+10523,2023-10-09,Webcam,Accessories,8,67.34,538.72,Netherlands,
+10524,2023-10-09,Laptop,Electronics,1,1151.47,1151.47,Spain,
+10525,2023-10-11,Docking Station,Accessories,17,152.12,2586.04,Germany,
+10526,2023-10-17,Laptop,Electronics, 20 ,1229.39,24587.8,Italy,+49-30-5767563
+10527,2023-10-22,Monitor,Electronics,5,326.14,1630.7,Belgium,
+10528,2023-10-30,Docking Station,Accessories,8,138.99,1111.92,Belgium,
+10529,2023-10-21,Mouse,Accessories,21,26.86,564.06,France,
+10530,2023-10-27,Mouse,Accessories,TBC,24.86,447.48,Germany,
+10531,2023-10-01,Docking Station,Accessories,23,150.1,3452.3,France,
+10532,2023-10-22,Laptop,Electronics,23,1161.41,26712.43,Italy,
+10533,2023-10-27,Headset,Accessories, 1 ,96.45,96.45,Italy,+49-30-9766238
+10534,2023-10-13,Laptop,Electronics,22,1211.06,26643.32,Belgium,
+10535,2023-10-10,Keyboard,Accessories,20,48.07,961.4,Belgium,
+10536,2023-10-10,Docking Station,Accessories,6,153.34,920.04,Belgium,
+10537,2023-10-18,Docking Station,Accessories,13,149.06,1937.78,Belgium,
+10538,2023-10-08,Webcam,Accessories,24,68.01,1632.24,France,
+10539,2023-10-30,Webcam,Accessories,16,62.49,999.84,France,
+10540,2023-10-08,Laptop,Electronics, 10 ,1218.17,12181.7,Belgium,+49-30-6067236
+10541,2023-10-12,Headset,Accessories,24,94.85,2276.4,Netherlands,
+10542,2023-10-29,Keyboard,Accessories,6,43.05,258.3,Belgium,
+10543,2023-10-10,Webcam,Accessories,9,62.56,563.04,Italy,
+10544,2023-10-28,Tablet,Electronics,2,477.29,954.58,Netherlands,
+10545,2023-10-01,Keyboard,Accessories,23,43.2,993.6,Italy,
+10546,2023-10-12,Keyboard,Accessories,10,45.71,457.1,France,
+10547,2023-10-17,Laptop,Electronics, 13 ,1164.97,15144.61,France,
+10548,2023-10-21,Headset,Accessories,2,92.14,184.28,Netherlands,+49-30-5800772
+10549,2023-10-29,Mouse,Accessories,4,26.87,107.48,Italy,
+10550,2023-11-20,Tablet,Electronics,9,459.5,4135.5,Italy,
+10551,2023-11-26,Tablet,Electronics,5,476.14,2380.7,Belgium,+49-30-3418913
+10552,2023-11-12,Tablet,Electronics,8,458.96,3671.68,France,+49-30-6939661
+10553,2023-11-10,Headset,Accessories,13,95.69,1243.97,Italy,+49-30-5971946
+10554,2023-11-07,Keyboard,Accessories, 9 ,48.45,436.05,Netherlands,
+10555,2023-11-28,Docking Station,Accessories,13,155.37,2019.81,Spain,
+10556,2023-11-20,Tablet,Electronics,13,435.78,5665.14,France,
+10557,2023-11-05,Laptop,Electronics,21,1196.53,25127.13,Spain,
+10558,2023-11-11,Laptop,Electronics,5,1276.91,6384.55,Germany,+49-30-1012220
+10559,2023-11-19,Headset,Accessories,18,90.99,1637.82,Belgium,
+10560,2023-11-02,Laptop,Electronics,6,1246.2,7477.2,France,
+10561,2023-11-21,Keyboard,Accessories, 14 ,47.84,669.76,Netherlands,
+10562,2023-11-20,Docking Station,Accessories,5,138.1,690.5,Belgium,+49-30-2069593
+10563,2023-11-26,Mouse,Accessories,15,24.42,366.3,Netherlands,
+10564,2023-11-18,Keyboard,Accessories,5,44.03,220.15,France,
+10565,2023-11-03,Laptop,Electronics,TBC,1233.6,19737.6,Italy,+49-30-1477078
+10566,2023-11-24,Webcam,Accessories,1,68.2,68.2,Belgium,
+10567,2023-11-13,Mouse,Accessories,23,24.81,570.63,France,
+10568,2023-11-05,Mouse,Accessories, 1 ,25.04,25.04,Spain,+49-30-8550080
+10569,2023-11-24,Tablet,Electronics,14,445.82,6241.48,Belgium,+49-30-6516794
+10570,2023-11-13,Keyboard,Accessories,13,47.57,618.41,Spain,+49-30-2321181
+10571,2023-11-02,Mouse,Accessories,6,26.18,157.08,Germany,
+10572,2023-11-13,Headset,Accessories,21,96.32,2022.72,Germany,
+10573,2023-11-01,Laptop,Electronics,19,1215.77,23099.63,Spain,+49-30-8115378
+10574,2023-11-16,Monitor,Electronics,23,308.52,7095.96,France,
+10575,2023-11-10,Mouse,Accessories, 19 ,25.19,478.61,France,
+10576,2023-11-14,Mouse,Accessories,22,24.87,547.14,Belgium,+49-30-3921687
+10577,2023-11-16,Monitor,Electronics,7,296.85,2077.95,Netherlands,
+10578,2023-11-04,Headset,Accessories,2,89.9,179.8,Germany,
+10579,2023-11-30,Keyboard,Accessories,unknown,43.18,388.62,Germany,+49-30-9070161
+10580,2023-11-15,Tablet,Electronics,18,468.86,8439.48,Spain,+49-30-2906685
+10581,2023-11-29,Headset,Accessories,16,86.17,1378.72,Belgium,+49-30-3883829
+10582,2023-11-11,Mouse,Accessories, 8 ,27.21,217.68,Germany,
+10583,2023-11-16,Webcam,Accessories,4,68.96,275.84,Belgium,
+10584,2023-11-12,Headset,Accessories,7,89.48,626.36,Netherlands,
+10585,2023-11-07,Tablet,Electronics,19,450.29,8555.51,Italy,+49-30-4390141
+10586,2023-11-30,Docking Station,Accessories,16,145.98,2335.68,Germany,
+10587,2023-11-16,Headset,Accessories,2,92.49,184.98,Spain,+49-30-3349651
+10588,2023-11-18,Mouse,Accessories,12,24.48,293.76,France,
+10589,2023-11-05,Headset,Accessories, 13 ,89.2,1159.6,France,
+10590,2023-11-10,Mouse,Accessories,20,24.37,487.4,France,
+10591,2023-11-07,Webcam,Accessories,17,66.88,1136.96,Spain,+49-30-7149657
+10592,2023-11-29,Monitor,Electronics,1,302.65,302.65,Germany,+49-30-7397736
+10593,2023-11-27,Webcam,Accessories,20,69.88,1397.6,Spain,
+10594,2023-11-14,Mouse,Accessories,9,26.81,241.29,Spain,
+10595,2023-11-09,Keyboard,Accessories,25,44.77,1119.25,Spain,
+10596,2023-11-05,Tablet,Electronics, 9 ,439.4,3954.6,Netherlands,
+10597,2023-11-22,Keyboard,Accessories,3,45.41,136.23,Italy,
+10598,2023-11-11,Laptop,Electronics,25,1290.88,32272.0,Belgium,
+10599,2023-11-02,Webcam,Accessories,25,66.94,1673.5,Italy,
+10600,2023-11-19,Mouse,Accessories,4,24.33,97.32,Italy,
+10601,2023-11-08,Webcam,Accessories,21,69.13,1451.73,Spain,
+10602,2023-11-18,Docking Station,Accessories,18,146.88,2643.84,France,+49-30-3993068
+10603,2023-11-05,Monitor,Electronics, 6 ,325.49,1952.94,Belgium,
+10604,2023-12-30,Webcam,Accessories,19,64.58,1227.02,Italy,
+10605,2023-12-18,Keyboard,Accessories,20,47.26,945.2,Spain,
+10606,2023-12-19,Keyboard,Accessories,23,47.24,1086.52,Italy,
+10607,2023-12-15,Tablet,Electronics,23,446.72,10274.56,Italy,
+10608,2023-12-04,Webcam,Accessories,9,63.91,575.19,Netherlands,+49-30-8374538
+10609,2023-12-07,Mouse,Accessories,8,26.03,208.24,Netherlands,
+10610,2023-12-18,Webcam,Accessories, 14 ,69.63,974.82,France,
+10611,2023-12-06,Tablet,Electronics,1,449.74,449.74,Belgium,
+10612,2023-12-07,Headset,Accessories,16,92.01,1472.16,Germany,
+10613,2023-12-15,Headset,Accessories,17,92.23,1567.91,France,+49-30-2760011
+10614,2023-12-18,Keyboard,Accessories,10,46.37,463.7,Netherlands,+49-30-4777795
+10615,2023-12-07,Mouse,Accessories,23,24.4,561.2,France,
+10616,2023-12-25,Docking Station,Accessories,5,141.88,709.4,Spain,+49-30-3038716
+10617,2023-12-31,Tablet,Electronics, 12 ,469.7,5636.4,Spain,
+10618,2023-12-26,Headset,Accessories,8,95.55,764.4,Netherlands,
+10619,2023-12-16,Webcam,Accessories,9,66.56,599.04,Netherlands,+49-30-7212172
+10620,2023-12-01,Webcam,Accessories,21,69.29,1455.09,Netherlands,
+10621,2023-12-02,Tablet,Electronics,5,464.52,2322.6,Italy,
+10622,2023-12-09,Mouse,Accessories,7,27.08,189.56,Belgium,
+10623,2023-12-26,Docking Station,Accessories,16,150.14,2402.24,Italy,
+10624,2023-12-17,Webcam,Accessories, 14 ,70.13,981.82,France,
+10625,2023-12-14,Laptop,Electronics,9,1261.07,11349.63,Netherlands,
+10626,2023-12-23,Mouse,Accessories,16,24.87,397.92,France,
+10627,2023-12-02,Laptop,Electronics,11,1276.02,14036.22,Germany,+49-30-5376046
+10628,2023-12-23,Docking Station,Accessories,2,148.32,296.64,Italy,+49-30-9323474
+10629,2023-12-12,Webcam,Accessories,21,64.03,1344.63,Italy,
+10630,2023-12-11,Monitor,Electronics,21,320.31,6726.51,Belgium,
+10631,2023-12-20,Headset,Accessories, 22 ,93.02,2046.44,Germany,
+10632,2023-12-01,Headset,Accessories,9,88.25,794.25,Italy,+49-30-2799696
+10633,2023-12-21,Laptop,Electronics,9,1183.66,10652.94,Belgium,+49-30-6121179
+10634,2023-12-17,Tablet,Electronics,unknown,456.72,4567.2,France,
+10635,2023-12-14,Webcam,Accessories,2,66.5,133.0,Spain,+49-30-6361293
+10636,2023-12-17,Docking Station,Accessories,20,145.91,2918.2,France,
+10637,2023-12-27,Laptop,Electronics,19,1252.45,23796.55,Germany,+49-30-2473654
+10638,2023-12-05,Docking Station,Accessories, 5 ,146.41,732.05,Spain,
+10639,2023-12-25,Webcam,Accessories,18,64.64,1163.52,France,
+10640,2023-12-13,Headset,Accessories,11,89.64,986.04,Spain,
+10641,2023-12-20,Monitor,Electronics,23,311.53,7165.19,Netherlands,
+10642,2023-12-17,Docking Station,Accessories,6,145.32,871.92,Belgium,+49-30-2434036
+10643,2023-12-03,Mouse,Accessories,21,25.69,539.49,Belgium,
+10644,2023-12-28,Docking Station,Accessories,21,149.13,3131.73,Germany,
+10645,2023-12-12,Webcam,Accessories, 6 ,66.43,398.58,Germany,+49-30-2801826
+10646,2023-12-09,Keyboard,Accessories,2,47.63,95.26,Belgium,
+10647,2023-12-24,Keyboard,Accessories,15,42.84,642.6,Germany,+49-30-8414569
+10648,2023-12-25,Docking Station,Accessories,1,148.62,148.62,Italy,
+10649,2023-12-26,Monitor,Electronics,2,314.01,628.02,Netherlands,
+10650,2023-12-19,Mouse,Accessories,20,26.38,527.6,Germany,+49-30-5516056
+10651,2023-12-11,Mouse,Accessories,5,24.95,124.75,Belgium,
+10652,2023-12-03,Docking Station,Accessories, 4 ,146.46,585.84,Spain,
+10653,2023-12-21,Monitor,Electronics,24,334.34,8024.16,Netherlands,+49-30-7408623
+10654,2023-12-25,Docking Station,Accessories,12,143.27,1719.24,Netherlands,
+10655,2023-12-13,Keyboard,Accessories,12,46.96,563.52,Spain,
+10656,2023-12-11,Monitor,Electronics,9,327.58,2948.22,France,+49-30-7167256
+10657,2023-12-13,Monitor,Electronics,6,313.26,1879.56,Netherlands,
+10658,2024-01-15,Keyboard,Accessories,4,46.62,186.48,Germany,+49-30-5736149
+10659,2024-01-08,Monitor,Electronics, 11 ,322.08,3542.88,France,
+10660,2024-01-10,Monitor,Electronics,5,298.97,1494.85,France,
+10661,2024-01-04,Tablet,Electronics,7,481.96,3373.72,Spain,+49-30-8071468
+10662,2024-01-08,Docking Station,Accessories,25,153.46,3836.5,Germany,
+10663,2024-01-11,Monitor,Electronics,20,309.37,6187.4,Spain,
+10664,2024-01-15,Webcam,Accessories,22,68.99,1517.78,Netherlands,
+10665,2024-01-16,Headset,Accessories,3,89.23,267.69,France,
+10666,2024-01-28,Tablet,Electronics, 22 ,471.91,10382.02,Italy,+49-30-5142920
+10667,2024-01-01,Headset,Accessories,15,90.07,1351.05,France,
+10668,2024-01-22,Monitor,Electronics,17,311.73,5299.41,Belgium,+49-30-6889786
+10669,2024-01-18,Monitor,Electronics,11,323.7,3560.7,France,+49-30-9167284
+10670,2024-01-31,Headset,Accessories,1,93.77,93.77,Spain,
+10671,2024-01-16,Tablet,Electronics,3,432.44,1297.32,France,
+10672,2024-01-19,Tablet,Electronics,15,429.76,6446.4,Germany,
+10673,2024-01-29,Headset,Accessories, 5 ,96.21,481.05,Germany,
+10674,2024-01-14,Docking Station,Accessories,23,152.17,3499.91,Italy,
+10675,2024-01-03,Webcam,Accessories,11,66.15,727.65,Germany,+49-30-9868779
+10676,2024-01-03,Laptop,Electronics,10,1234.47,12344.7,France,
+10677,2024-01-02,Laptop,Electronics,2,1254.89,2509.78,Spain,
+10678,2024-01-02,Monitor,Electronics,9,309.2,2782.8,Belgium,
+10679,2024-01-20,Tablet,Electronics,21,450.93,9469.53,Belgium,
+10680,2024-01-13,Keyboard,Accessories, 2 ,43.79,87.58,Belgium,
+10681,2024-01-05,Mouse,Accessories,21,26.42,554.82,Belgium,+49-30-3119555
+10682,2024-01-09,Laptop,Electronics,n/a,1166.62,11666.2,Netherlands,
+10683,2024-01-09,Tablet,Electronics,3,443.45,1330.35,Belgium,
+10684,2024-01-19,Webcam,Accessories,14,65.9,922.6,Germany,+49-30-6894680
+10685,2024-01-19,Keyboard,Accessories,6,46.29,277.74,France,
+10686,2024-01-12,Keyboard,Accessories,15,47.13,706.95,Germany,
+10687,2024-01-18,Headset,Accessories, 7 ,92.59,648.13,Spain,
+10688,2024-01-14,Mouse,Accessories,20,27.03,540.6,France,+49-30-8245040
+10689,2024-01-24,Mouse,Accessories,21,25.65,538.65,France,
+10690,2024-01-12,Tablet,Electronics,2,428.87,857.74,Belgium,+49-30-7321229
+10691,2024-01-12,Mouse,Accessories,5,25.88,129.4,Italy,
+10692,2024-01-21,Headset,Accessories,8,89.64,717.12,Italy,
+10693,2024-01-07,Docking Station,Accessories,24,151.74,3641.76,Netherlands,
+10694,2024-01-09,Headset,Accessories, 17 ,92.25,1568.25,Spain,
+10695,2024-01-28,Keyboard,Accessories,25,47.13,1178.25,Italy,+49-30-1153017
+10696,2024-01-08,Keyboard,Accessories,6,43.17,259.02,Spain,
+10697,2024-01-13,Laptop,Electronics,22,1271.54,27973.88,Netherlands,
+10698,2024-01-04,Laptop,Electronics,15,1158.56,17378.4,Italy,
+10699,2024-01-24,Monitor,Electronics,1,304.23,304.23,Belgium,+49-30-2179084
+10700,2024-01-24,Mouse,Accessories,9,26.71,240.39,Netherlands,
+10701,2024-01-09,Monitor,Electronics, 7 ,309.39,2165.73,Italy,+49-30-3693823
+10702,2024-01-02,Mouse,Accessories,7,25.64,179.48,Germany,
+10703,2024-01-29,Webcam,Accessories,4,66.4,265.6,Spain,
+10704,2024-01-13,Webcam,Accessories,15,67.47,1012.05,Italy,
+10705,2024-01-02,Docking Station,Accessories,1,145.6,145.6,Spain,
+10706,2024-01-19,Laptop,Electronics,25,1275.55,31888.75,Germany,+49-30-7018711
+10707,2024-01-26,Webcam,Accessories,2,67.62,135.24,Spain,
+10708,2024-01-21,Mouse,Accessories, 14 ,26.45,370.3,Belgium,
+10709,2024-01-16,Mouse,Accessories,4,25.47,101.88,Germany,
+10710,2024-01-01,Laptop,Electronics,25,1151.41,28785.25,France,
+10711,2024-01-08,Keyboard,Accessories,2,48.45,96.9,Netherlands,+49-30-7903904
+10712,2024-02-20,Headset,Accessories,10,96.89,968.9,Netherlands,
+10713,2024-02-24,Mouse,Accessories,7,26.99,188.93,Netherlands,+49-30-4018136
+10714,2024-02-20,Mouse,Accessories,unknown,24.59,590.16,Spain,
+10715,2024-02-02,Monitor,Electronics, 13 ,314.92,4093.96,Belgium,
+10716,2024-02-29,Headset,Accessories,twelve,93.73,93.73,Spain,
+10717,2024-02-09,Monitor,Electronics,14,329.98,4619.72,Italy,
+10718,2024-02-20,Docking Station,Accessories,9,143.74,1293.66,France,
+10719,2024-02-09,Headset,Accessories,14,89.42,1251.88,Spain,
+10720,2024-02-02,Tablet,Electronics,12,465.2,5582.4,Belgium,
+10721,2024-02-06,Tablet,Electronics,9,436.6,3929.4,France,+49-30-1410946
+10722,2024-02-11,Monitor,Electronics, 3 ,325.03,975.09,Italy,
+10723,2024-02-10,Docking Station,Accessories,2,139.74,279.48,Spain,
+10724,2024-02-26,Tablet,Electronics,17,462.61,7864.37,Netherlands,
+10725,2024-02-22,Headset,Accessories,9,88.76,798.84,Spain,
+10726,2024-02-07,Laptop,Electronics,8,1268.57,10148.56,Germany,+49-30-5345634
+10727,2024-02-28,Headset,Accessories,1,91.59,91.59,Netherlands,
+10728,2024-02-11,Webcam,Accessories,23,62.61,1440.03,Belgium,
+10729,2024-02-03,Docking Station,Accessories, 6 ,142.34,854.04,Spain,+49-30-8810843
+10730,2024-02-21,Docking Station,Accessories,15,149.12,2236.8,Belgium,
+10731,2024-02-01,Mouse,Accessories,24,26.42,634.08,France,
+10732,2024-02-26,Keyboard,Accessories,1,46.24,46.24,Netherlands,
+10733,2024-02-11,Tablet,Electronics,19,441.05,8379.95,Spain,+49-30-5465819
+10734,2024-02-07,Mouse,Accessories,4,25.6,102.4,Italy,+49-30-5779501
+10735,2024-02-03,Webcam,Accessories,18,69.48,1250.64,Netherlands,+49-30-8124068
+10736,2024-02-02,Docking Station,Accessories, 8 ,141.91,1135.28,France,+49-30-6518727
+10737,2024-02-13,Laptop,Electronics,10,1236.89,12368.9,Netherlands,
+10738,2024-02-08,Docking Station,Accessories,5,151.31,756.55,Netherlands,
+10739,2024-02-26,Keyboard,Accessories,13,45.8,595.4,France,
+10740,2024-02-11,Keyboard,Accessories,14,47.89,670.46,Italy,+49-30-8067422
+10741,2024-02-05,Mouse,Accessories,9,26.54,238.86,France,+49-30-5334052
+10742,2024-02-11,Mouse,Accessories,6,24.79,148.74,Italy,+49-30-3521323
+10743,2024-02-19,Mouse,Accessories, 12 ,25.43,305.16,France,+49-30-9851401
+10744,2024-02-14,Keyboard,Accessories,19,48.41,919.79,Germany,
+10745,2024-02-29,Monitor,Electronics,12,309.79,3717.48,Spain,
+10746,2024-02-10,Mouse,Accessories,12,26.26,315.12,Netherlands,+49-30-3149591
+10747,2024-02-14,Docking Station,Accessories,10,156.02,1560.2,Spain,
+10748,2024-02-26,Headset,Accessories,13,94.67,1230.71,Germany,
+10749,2024-02-06,Tablet,Electronics,16,434.8,6956.8,Germany,
+10750,2024-02-06,Keyboard,Accessories, 20 ,44.21,884.2,France,
+10751,2024-02-07,Monitor,Electronics,1,312.03,312.03,France,+49-30-9398051
+10752,2024-02-25,Mouse,Accessories,1,27.45,27.45,Netherlands,
+10753,2024-02-28,Tablet,Electronics,6,482.03,2892.18,Netherlands,+49-30-6162275
+10754,2024-02-19,Laptop,Electronics,7,1293.96,9057.72,Italy,
+10755,2024-02-02,Headset,Accessories,4,94.21,376.84,Spain,
+10756,2024-02-07,Headset,Accessories,19,91.02,1729.38,France,
+10757,2024-02-26,Mouse,Accessories, 10 ,25.09,250.9,Netherlands,
+10758,2024-02-02,Laptop,Electronics,10,1291.64,12916.4,Germany,+49-30-5072413
+10759,2024-02-06,Keyboard,Accessories,10,47.0,470.0,Germany,
+10760,2024-02-06,Keyboard,Accessories,1,47.16,47.16,Germany,
+10761,2024-02-22,Laptop,Electronics,15,1185.79,17786.85,France,
+10762,2024-02-02,Monitor,Electronics,14,331.35,4638.9,Belgium,+49-30-9503047
+10763,2024-02-13,Docking Station,Accessories,22,146.7,3227.4,Spain,+49-30-4693811
+10764,2024-02-17,Docking Station,Accessories, 11 ,147.7,1624.7,Netherlands,
+10765,2024-02-27,Docking Station,Accessories,18,141.44,2545.92,Spain,+49-30-4861260
+10766,2024-03-03,Headset,Accessories,4,90.76,363.04,Belgium,+49-30-4955017
+10767,2024-03-07,Tablet,Electronics,16,470.52,7528.32,Germany,
+10768,2024-03-22,Tablet,Electronics,20,455.63,9112.6,Germany,
+10769,2024-03-02,Webcam,Accessories,18,65.27,1174.86,France,+49-30-3423750
+10770,2024-03-19,Tablet,Electronics,10,427.66,4276.6,Netherlands,
+10771,2024-03-04,Monitor,Electronics, 7 ,297.6,2083.2,Germany,+49-30-8388704
+10772,2024-03-22,Laptop,Electronics,7,1230.95,8616.65,Spain,+49-30-6735917
+10773,2024-03-03,Headset,Accessories,6,86.1,516.6,Netherlands,
+10774,2024-03-22,Headset,Accessories,8,86.38,691.04,Belgium,
+10775,2024-03-27,Tablet,Electronics,12,466.21,5594.52,Italy,+49-30-5267781
+10776,2024-03-12,Tablet,Electronics,17,460.8,7833.6,Netherlands,+49-30-6436152
+10777,2024-03-12,Laptop,Electronics,16,1187.81,19004.96,Spain,
+10778,2024-03-04,Keyboard,Accessories, 22 ,43.54,957.88,Spain,
+10779,2024-03-31,Laptop,Electronics,17,1180.43,20067.31,Belgium,
+10780,2024-03-14,Keyboard,Accessories,8,45.39,363.12,France,
+10781,2024-03-01,Mouse,Accessories,9,27.49,247.41,Netherlands,
+10782,2024-03-29,Laptop,Electronics,25,1162.99,29074.75,France,
+10783,2024-03-02,Laptop,Electronics,13,1258.94,16366.22,France,
+10784,2024-03-02,Tablet,Electronics,11,445.92,4905.12,Italy,
+10785,2024-03-04,Webcam,Accessories, 22 ,66.98,1473.56,Spain,+49-30-5357101
+10786,2024-03-14,Mouse,Accessories,13,24.85,323.05,Belgium,
+10787,2024-03-21,Keyboard,Accessories,5,47.07,235.35,Belgium,
+10788,2024-03-06,Laptop,Electronics,14,1261.05,17654.7,Italy,
+10789,2024-03-24,Webcam,Accessories,9,67.87,610.83,Belgium,
+10790,2024-03-30,Headset,Accessories,8,88.97,711.76,France,+49-30-5442085
+10791,2024-03-25,Mouse,Accessories,21,24.83,521.43,Belgium,+49-30-4621917
+10792,2024-03-14,Keyboard,Accessories, 9 ,43.75,393.75,Germany,
+10793,2024-03-12,Tablet,Electronics,2,454.69,909.38,Italy,+49-30-2417586
+10794,2024-03-27,Docking Station,Accessories,2,156.02,312.04,Italy,
+10795,2024-03-18,Webcam,Accessories,12,64.46,773.52,Netherlands,
+10796,2024-03-23,Monitor,Electronics,1,298.91,298.91,Germany,+49-30-8320082
+10797,2024-03-11,Laptop,Electronics,16,1154.43,18470.88,Germany,
+10798,2024-03-25,Docking Station,Accessories,8,148.7,1189.6,Germany,
+10799,2024-03-01,Mouse,Accessories, 13 ,25.69,333.97,Spain,
+10800,2024-03-11,Headset,Accessories,6,87.81,526.86,Belgium,
+10801,2024-03-29,Docking Station,Accessories,4,140.9,563.6,France,+49-30-5803756
+10802,2024-03-04,Laptop,Electronics,24,1163.89,27933.36,Belgium,
+10803,2024-03-06,Mouse,Accessories,2,24.54,49.08,Italy,
+10804,2024-03-26,Keyboard,Accessories,7,48.5,339.5,France,
+10805,2024-03-25,Headset,Accessories,1,91.92,91.92,Belgium,
+10806,2024-03-09,Tablet,Electronics, 5 ,482.13,2410.65,Spain,
+10807,2024-03-07,Monitor,Electronics,13,325.91,4236.83,Netherlands,
+10808,2024-03-22,Tablet,Electronics,1,448.91,448.91,Germany,
+10809,2024-03-01,Docking Station,Accessories,23,144.23,3317.29,Germany,
+10810,2024-03-21,Docking Station,Accessories,13,144.52,1878.76,France,
+10811,2024-03-16,Laptop,Electronics,12,1227.82,14733.84,Netherlands,+49-30-3149079
+10812,2024-03-17,Docking Station,Accessories,18,152.77,2749.86,Germany,
+10813,2024-03-24,Laptop,Electronics,two,1257.22,6286.1,Germany,+49-30-2371114
+10814,2024-03-16,Webcam,Accessories,12,69.37,832.44,Spain,
+10815,2024-03-10,Webcam,Accessories,25,65.91,1647.75,France,
+10816,2024-03-16,Tablet,Electronics,3,436.42,1309.26,Germany,+49-30-6144976
+10817,2024-03-29,Keyboard,Accessories,20,45.98,919.6,Belgium,
+10818,2024-03-10,Mouse,Accessories,17,25.45,432.65,Netherlands,+49-30-7454793
+10819,2024-03-17,Keyboard,Accessories,7,46.57,325.99,Italy,+49-30-4345056
+10820,2024-04-26,Headset,Accessories, 13 ,93.85,1220.05,Germany,
+10821,2024-04-04,Webcam,Accessories,7,67.94,475.58,Netherlands,
+10822,2024-04-20,Tablet,Electronics,1,428.23,428.23,Germany,+49-30-2445332
+10823,2024-04-12,Monitor,Electronics,15,330.48,4957.2,Belgium,+49-30-3358446
+10824,2024-04-17,Mouse,Accessories,2,27.17,54.34,Netherlands,
+10825,2024-04-02,Laptop,Electronics,7,1178.47,8249.29,France,
+10826,2024-04-10,Headset,Accessories,2,91.88,183.76,Germany,
+10827,2024-04-12,Docking Station,Accessories, 19 ,149.98,2849.62,Belgium,
+10828,2024-04-10,Webcam,Accessories,4,64.79,259.16,Italy,+49-30-4335219
+10829,2024-04-22,Mouse,Accessories,18,25.81,464.58,Spain,
+10830,2024-04-26,Tablet,Electronics,5,468.79,2343.95,Netherlands,
+10831,2024-04-03,Headset,Accessories,18,89.23,1606.14,Belgium,
+10832,2024-04-02,Monitor,Electronics,13,296.19,3850.47,Netherlands,+49-30-6773152
+10833,2024-04-14,Laptop,Electronics,7,1235.72,8650.04,Italy,+49-30-7070659
+10834,2024-04-06,Docking Station,Accessories, 20 ,145.87,2917.4,Spain,
+10835,2024-04-22,Tablet,Electronics,12,443.02,5316.24,Spain,
+10836,2024-04-05,Keyboard,Accessories,24,46.46,1115.04,France,
+10837,2024-04-22,Headset,Accessories,14,96.49,1350.86,Germany,+49-30-3561237
+10838,2024-04-13,Tablet,Electronics,16,480.11,7681.76,Belgium,+49-30-6702390
+10839,2024-04-04,Mouse,Accessories,23,25.49,586.27,Netherlands,
+10840,2024-04-05,Mouse,Accessories,TBC,25.21,504.2,Belgium,
+10841,2024-04-07,Headset,Accessories, 11 ,96.9,1065.9,Italy,
+10842,2024-04-20,Headset,Accessories,8,93.39,747.12,Italy,
+10843,2024-04-09,Keyboard,Accessories,25,45.3,1132.5,Belgium,
+10844,2024-04-17,Headset,Accessories,2,94.32,188.64,Belgium,+49-30-8224813
+10845,2024-04-25,Headset,Accessories,23,96.83,2227.09,Spain,
+10846,2024-04-30,Webcam,Accessories,4,66.45,265.8,Italy,
+10847,2024-04-12,Mouse,Accessories,11,24.57,270.27,Spain,+49-30-7036600
+10848,2024-04-21,Mouse,Accessories, 12 ,24.24,290.88,Italy,
+10849,2024-04-23,Tablet,Electronics,19,480.76,9134.44,Germany,
+10850,2024-04-05,Webcam,Accessories,7,64.74,453.18,Italy,
+10851,2024-04-19,Laptop,Electronics,1,1159.94,1159.94,Netherlands,
+10852,2024-04-09,Headset,Accessories,11,87.29,960.19,Netherlands,
+10853,2024-04-18,Monitor,Electronics,20,312.58,6251.6,Spain,
+10854,2024-04-03,Monitor,Electronics,11,306.01,3366.11,Netherlands,
+10855,2024-04-27,Headset,Accessories, 8 ,85.56,684.48,Germany,
+10856,2024-04-05,Webcam,Accessories,16,67.36,1077.76,Spain,
+10857,2024-04-13,Webcam,Accessories,18,64.41,1159.38,Belgium,
+10858,2024-04-19,Docking Station,Accessories,2,152.04,304.08,Italy,
+10859,2024-04-09,Keyboard,Accessories,unknown,44.62,1070.88,France,+49-30-5588239
+10860,2024-04-02,Tablet,Electronics,15,475.64,7134.6,Netherlands,
+10861,2024-04-10,Tablet,Electronics,23,430.78,9907.94,Italy,
+10862,2024-04-03,Keyboard,Accessories, 18 ,47.37,852.66,France,
+10863,2024-04-21,Keyboard,Accessories,21,45.86,963.06,France,
+10864,2024-04-09,Docking Station,Accessories,23,148.7,3420.1,Spain,+49-30-3070630
+10865,2024-04-03,Webcam,Accessories,14,68.71,961.94,Italy,+49-30-1565495
+10866,2024-04-04,Mouse,Accessories,17,26.17,444.89,France,
+10867,2024-04-22,Monitor,Electronics,17,299.19,5086.23,France,
+10868,2024-04-21,Docking Station,Accessories,2,155.49,310.98,Spain,
+10869,2024-04-20,Mouse,Accessories, 9 ,25.53,229.77,Netherlands,+49-30-5507290
+10870,2024-04-23,Laptop,Electronics,22,1215.86,26748.92,Italy,
+10871,2024-04-24,Mouse,Accessories,4,27.38,109.52,Italy,
+10872,2024-04-21,Docking Station,Accessories,12,138.99,1667.88,Belgium,
+10873,2024-04-01,Tablet,Electronics,15,462.77,6941.55,Spain,
+10874,2024-05-26,Tablet,Electronics,25,437.37,10934.25,France,+49-30-8789790
+10875,2024-05-21,Tablet,Electronics,4,481.73,1926.92,Italy,
+10876,2024-05-31,Mouse,Accessories, 12 ,26.96,323.52,Belgium,
+10877,2024-05-27,Laptop,Electronics,5,1168.93,5844.65,Spain,+49-30-4800462
+10878,2024-05-15,Docking Station,Accessories,14,138.62,1940.68,France,
+10879,2024-05-04,Webcam,Accessories,1,63.02,63.02,France,
+10880,2024-05-28,Docking Station,Accessories,1,140.33,140.33,Germany,
+10881,2024-05-02,Monitor,Electronics,21,318.3,6684.3,Spain,+49-30-4228415
+10882,2024-05-19,Headset,Accessories,13,86.73,1127.49,Spain,
+10883,2024-05-28,Monitor,Electronics, 18 ,325.47,5858.46,France,
+10884,2024-05-09,Monitor,Electronics,6,326.56,1959.36,France,
+10885,2024-05-26,Keyboard,Accessories,8,46.27,370.16,Belgium,+49-30-6517089
+10886,2024-05-18,Tablet,Electronics,twelve,441.82,11045.5,Netherlands,+49-30-7450959
+10887,2024-05-02,Mouse,Accessories,4,24.71,98.84,Italy,
+10888,2024-05-24,Laptop,Electronics,17,1280.77,21773.09,Belgium,
+10889,2024-05-08,Webcam,Accessories,15,63.95,959.25,Germany,
+10890,2024-05-03,Docking Station,Accessories, 20 ,140.17,2803.4,Spain,
+10891,2024-05-31,Headset,Accessories,8,89.44,715.52,France,
+10892,2024-05-16,Headset,Accessories,2,92.28,184.56,Germany,+49-30-9470162
+10893,2024-05-12,Headset,Accessories,9,95.91,863.19,Italy,
+10894,2024-05-08,Tablet,Electronics,12,471.3,5655.6,Italy,
+10895,2024-05-18,Monitor,Electronics,7,313.1,2191.7,Belgium,+49-30-3837609
+10896,2024-05-30,Docking Station,Accessories,13,156.34,2032.42,France,
+10897,2024-05-20,Docking Station,Accessories, 14 ,148.81,2083.34,Spain,
+10898,2024-05-22,Laptop,Electronics,12,1199.32,14391.84,Spain,
+10899,2024-05-28,Docking Station,Accessories,14,142.14,1989.96,Italy,
+10900,2024-05-24,Mouse,Accessories,15,25.12,376.8,France,
+10901,2024-05-29,Docking Station,Accessories,20,140.49,2809.8,France,
+10902,2024-05-16,Laptop,Electronics,5,1211.53,6057.65,Italy,+49-30-8021863
+10903,2024-05-11,Laptop,Electronics,18,1261.76,22711.68,Germany,+49-30-8835216
+10904,2024-05-31,Webcam,Accessories, 16 ,67.86,1085.76,Italy,
+10905,2024-05-04,Docking Station,Accessories,7,139.24,974.68,Germany,
+10906,2024-05-11,Keyboard,Accessories,15,44.06,660.9,Netherlands,+49-30-3688291
+10907,2024-05-28,Webcam,Accessories,23,68.49,1575.27,Spain,+49-30-3504534
+10908,2024-05-07,Docking Station,Accessories,21,137.98,2897.58,Spain,
+10909,2024-05-13,Monitor,Electronics,6,316.83,1900.98,Italy,
+10910,2024-05-13,Webcam,Accessories,5,69.81,349.05,Netherlands,+49-30-9871721
+10911,2024-05-01,Docking Station,Accessories, 19 ,156.51,2973.69,Germany,+49-30-5974667
+10912,2024-05-03,Tablet,Electronics,n/a,464.97,4649.7,Belgium,
+10913,2024-05-22,Laptop,Electronics,14,1222.96,17121.44,Italy,
+10914,2024-05-27,Webcam,Accessories,8,65.42,523.36,Germany,+49-30-4755667
+10915,2024-05-05,Webcam,Accessories,22,65.41,1439.02,France,
+10916,2024-05-07,Keyboard,Accessories,11,45.64,502.04,Germany,+49-30-2380469
+10917,2024-05-10,Headset,Accessories,8,87.4,699.2,Spain,
+10918,2024-05-14,Laptop,Electronics, 9 ,1231.2,11080.8,Italy,+49-30-4558786
+10919,2024-05-18,Tablet,Electronics,22,473.75,10422.5,France,
+10920,2024-05-29,Docking Station,Accessories,24,150.83,3619.92,France,
+10921,2024-05-06,Mouse,Accessories,15,27.38,410.7,Germany,
+10922,2024-05-18,Docking Station,Accessories,21,139.89,2937.69,Germany,
+10923,2024-05-04,Tablet,Electronics,2,462.74,925.48,France,
+10924,2024-05-28,Keyboard,Accessories,21,43.37,910.77,France,+49-30-8142252
+10925,2024-05-31,Tablet,Electronics, 15 ,443.0,6645.0,Netherlands,+49-30-5113065
+10926,2024-05-21,Webcam,Accessories,11,64.0,704.0,France,+49-30-2529272
+10927,2024-05-09,Webcam,Accessories,14,63.36,887.04,Belgium,
+10928,2024-06-18,Docking Station,Accessories,22,146.64,3226.08,Italy,
+10929,2024-06-04,Laptop,Electronics,19,1246.04,23674.76,Netherlands,
+10930,2024-06-12,Keyboard,Accessories,11,47.73,525.03,Netherlands,
+10931,2024-06-16,Docking Station,Accessories,17,155.79,2648.43,Belgium,+49-30-7802676
+10932,2024-06-23,Webcam,Accessories, 23 ,68.56,1576.88,Belgium,
+10933,2024-06-15,Keyboard,Accessories,16,46.25,740.0,Italy,+49-30-3521038
+10934,2024-06-02,Laptop,Electronics,16,1231.36,19701.76,Italy,+49-30-3436937
+10935,2024-06-15,Monitor,Electronics,11,314.56,3460.16,France,+49-30-1312576
+10936,2024-06-23,Keyboard,Accessories,8,46.11,368.88,Germany,
+10937,2024-06-11,Laptop,Electronics,22,1273.15,28009.3,Belgium,
+10938,2024-06-13,Laptop,Electronics,21,1243.14,26105.94,Spain,+49-30-3510499
+10939,2024-06-21,Mouse,Accessories, 22 ,27.26,599.72,Italy,
+10940,2024-06-17,Laptop,Electronics,9,1207.57,10868.13,Italy,
+10941,2024-06-21,Monitor,Electronics,13,312.8,4066.4,Netherlands,
+10942,2024-06-06,Headset,Accessories,5,92.02,460.1,Italy,
+10943,2024-06-07,Keyboard,Accessories,8,42.99,343.92,Italy,
+10944,2024-06-23,Monitor,Electronics,21,312.36,6559.56,France,
+10945,2024-06-30,Headset,Accessories,11,86.26,948.86,Belgium,+49-30-7420669
+10946,2024-06-03,Headset,Accessories, 3 ,87.83,263.49,Germany,
+10947,2024-06-21,Docking Station,Accessories,24,155.42,3730.08,Germany,
+10948,2024-06-13,Monitor,Electronics,3,332.7,998.1,Spain,
+10949,2024-06-20,Docking Station,Accessories,5,152.08,760.4,Belgium,+49-30-8289742
+10950,2024-06-23,Monitor,Electronics,24,318.93,7654.32,Netherlands,
+10951,2024-06-12,Keyboard,Accessories,21,46.44,975.24,Spain,
+10952,2024-06-29,Headset,Accessories,24,93.03,2232.72,Germany,
+10953,2024-06-18,Laptop,Electronics, 18 ,1243.55,22383.9,Belgium,
+10954,2024-06-05,Mouse,Accessories,9,26.72,240.48,Italy,
+10955,2024-06-19,Monitor,Electronics,22,297.67,6548.74,Spain,
+10956,2024-06-29,Docking Station,Accessories,19,141.27,2684.13,Spain,
+10957,2024-06-18,Headset,Accessories,10,86.81,868.1,Italy,
+10958,2024-06-04,Laptop,Electronics,19,1238.43,23530.17,Netherlands,
+10959,2024-06-27,Keyboard,Accessories,24,44.13,1059.12,Belgium,+49-30-9206654
+10960,2024-06-04,Monitor,Electronics, 5 ,305.03,1525.15,Italy,
+10961,2024-06-27,Mouse,Accessories,21,27.43,576.03,Belgium,
+10962,2024-06-01,Laptop,Electronics,24,1150.9,27621.6,Germany,
+10963,2024-06-19,Laptop,Electronics,16,1243.32,19893.12,Belgium,
+10964,2024-06-14,Keyboard,Accessories,6,45.4,272.4,Belgium,
+10965,2024-06-12,Tablet,Electronics,TBC,458.63,5044.93,Italy,+49-30-2701045
+10966,2024-06-12,Tablet,Electronics,twelve,472.81,9456.2,France,
+10967,2024-06-17,Monitor,Electronics, 2 ,333.79,667.58,Belgium,+49-30-4154256
+10968,2024-06-23,Mouse,Accessories,20,25.64,512.8,Italy,
+10969,2024-06-25,Monitor,Electronics,6,327.0,1962.0,Italy,
+10970,2024-06-08,Mouse,Accessories,7,24.94,174.58,France,
+10971,2024-06-27,Tablet,Electronics,24,435.5,10452.0,Spain,
+10972,2024-06-08,Tablet,Electronics,11,451.78,4969.58,France,
+10973,2024-06-22,Mouse,Accessories,19,26.08,495.52,Spain,+49-30-4670425
+10974,2024-06-19,Mouse,Accessories, 2 ,26.7,53.4,Italy,+49-30-4308874
+10975,2024-06-22,Monitor,Electronics,17,299.68,5094.56,Italy,
+10976,2024-06-02,Laptop,Electronics,4,1175.91,4703.64,Italy,
+10977,2024-06-14,Laptop,Electronics,16,1170.93,18734.88,Italy,+49-30-4588467
+10978,2024-06-01,Monitor,Electronics,22,300.83,6618.26,Belgium,
+10979,2024-06-29,Keyboard,Accessories,21,45.92,964.32,Netherlands,
+10980,2024-06-21,Mouse,Accessories,14,25.05,350.7,Netherlands,
+10981,2024-06-22,Webcam,Accessories, 10 ,64.31,643.1,France,+49-30-1551669
+10982,2024-07-01,Keyboard,Accessories,23,45.3,1041.9,Spain,
+10983,2024-07-13,Docking Station,Accessories,11,147.74,1625.14,Belgium,
+10984,2024-07-09,Tablet,Electronics,15,437.71,6565.65,Italy,+49-30-3714511
+10985,2024-07-05,Mouse,Accessories,6,27.24,163.44,Germany,
+10986,2024-07-01,Monitor,Electronics,4,332.15,1328.6,Netherlands,
+10987,2024-07-25,Keyboard,Accessories,25,45.7,1142.5,Italy,
+10988,2024-07-23,Monitor,Electronics, 15 ,295.97,4439.55,Belgium,
+10989,2024-07-17,Monitor,Electronics,16,303.6,4857.6,Spain,
+10990,2024-07-20,Mouse,Accessories,2,25.02,50.04,Italy,+49-30-7961558
+10991,2024-07-07,Tablet,Electronics,16,478.77,7660.32,Spain,
+10992,2024-07-23,Monitor,Electronics,5,315.99,1579.95,Germany,
+10993,2024-07-30,Headset,Accessories,3,95.71,287.13,Spain,
+10994,2024-07-14,Headset,Accessories,3,93.05,279.15,Spain,+49-30-3129286
+10995,2024-07-31,Webcam,Accessories, 21 ,64.33,1350.93,France,
+10996,2024-07-10,Keyboard,Accessories,11,44.38,488.18,France,
+10997,2024-07-07,Monitor,Electronics,2,301.34,602.68,Germany,
+10998,2024-07-18,Mouse,Accessories,10,25.37,253.7,Belgium,
+10999,2024-07-06,Laptop,Electronics,8,1199.47,9595.76,Italy,+49-30-1756614
+11000,2024-07-12,Laptop,Electronics,24,1238.17,29716.08,Germany,
+11001,2024-07-25,Laptop,Electronics,14,1216.15,17026.1,Spain,+49-30-3567616
+11002,2024-07-03,Tablet,Electronics, 18 ,473.19,8517.42,France,
+11003,2024-07-20,Mouse,Accessories,8,25.61,204.88,Italy,+49-30-5985592
+11004,2024-07-22,Laptop,Electronics,25,1159.68,28992.0,Belgium,+49-30-1949539
+11005,2024-07-08,Tablet,Electronics,13,434.13,5643.69,Italy,
+11006,2024-07-24,Tablet,Electronics,20,445.0,8900.0,Belgium,
+11007,2024-07-19,Tablet,Electronics,13,443.56,5766.28,Netherlands,
+11008,2024-07-08,Tablet,Electronics,25,436.61,10915.25,Belgium,
+11009,2024-07-16,Docking Station,Accessories, 21 ,141.47,2970.87,Netherlands,+49-30-7836465
+11010,2024-07-28,Webcam,Accessories,15,62.04,930.6,Netherlands,
+11011,2024-07-12,Tablet,Electronics,13,443.02,5759.26,Germany,
+11012,2024-07-21,Webcam,Accessories,9,70.19,631.71,Germany,
+11013,2024-07-04,Mouse,Accessories,9,24.29,218.61,France,
+11014,2024-07-23,Docking Station,Accessories,6,155.62,933.72,Belgium,+49-30-2697865
+11015,2024-07-09,Webcam,Accessories,5,67.22,336.1,Netherlands,
+11016,2024-07-21,Monitor,Electronics, 6 ,310.04,1860.24,Italy,
+11017,2024-07-24,Webcam,Accessories,2,69.01,138.02,Netherlands,+49-30-8281447
+11018,2024-07-13,Tablet,Electronics,13,471.43,6128.59,Germany,
+11019,2024-07-06,Docking Station,Accessories,24,147.71,3545.04,Belgium,
+11020,2024-07-02,Mouse,Accessories,12,26.54,318.48,Belgium,
+11021,2024-07-22,Webcam,Accessories,23,62.6,1439.8,Belgium,
+11022,2024-07-17,Monitor,Electronics,16,332.99,5327.84,Belgium,
+11023,2024-07-16,Mouse,Accessories,two,27.26,81.78,Germany,
+11024,2024-07-30,Mouse,Accessories,12,25.08,300.96,France,
+11025,2024-07-26,Docking Station,Accessories,22,154.41,3397.02,Netherlands,
+11026,2024-07-27,Monitor,Electronics,17,302.81,5147.77,Netherlands,
+11027,2024-07-29,Laptop,Electronics,7,1265.78,8860.46,Netherlands,
+11028,2024-07-07,Mouse,Accessories,6,26.59,159.54,Italy,
+11029,2024-07-05,Laptop,Electronics,13,1251.47,16269.11,Netherlands,
+11030,2024-07-27,Keyboard,Accessories, 6 ,42.92,257.52,Germany,+49-30-8720126
+11031,2024-07-08,Mouse,Accessories,11,26.87,295.57,Spain,
+11032,2024-07-01,Laptop,Electronics,3,1203.67,3611.01,Germany,
+11033,2024-07-02,Mouse,Accessories,17,24.92,423.64,Germany,+49-30-2939239
+11034,2024-07-25,Docking Station,Accessories,13,137.82,1791.66,France,
+11035,2024-07-25,Webcam,Accessories,18,65.12,1172.16,Netherlands,+49-30-1738010
+11036,2024-08-20,Keyboard,Accessories,7,46.01,322.07,Spain,
+11037,2024-08-19,Tablet,Electronics, 19 ,480.03,9120.57,Italy,
+11038,2024-08-28,Monitor,Electronics,15,333.7,5005.5,Germany,+49-30-8899599
+11039,2024-08-09,Keyboard,Accessories,5,45.55,227.75,Germany,
+11040,2024-08-04,Monitor,Electronics,21,309.2,6493.2,France,+49-30-1273048
+11041,2024-08-15,Laptop,Electronics,20,1203.68,24073.6,France,
+11042,2024-08-10,Webcam,Accessories,18,67.27,1210.86,Italy,
+11043,2024-08-23,Monitor,Electronics,10,315.59,3155.9,France,
+11044,2024-08-25,Keyboard,Accessories, 16 ,44.16,706.56,Netherlands,+49-30-6810570
+11045,2024-08-04,Mouse,Accessories,17,24.45,415.65,Belgium,
+11046,2024-08-11,Webcam,Accessories,21,63.78,1339.38,Germany,
+11047,2024-08-31,Monitor,Electronics,8,329.38,2635.04,Spain,
+11048,2024-08-29,Mouse,Accessories,22,24.82,546.04,Netherlands,
+11049,2024-08-31,Laptop,Electronics,7,1221.37,8549.59,Belgium,
+11050,2024-08-08,Monitor,Electronics,6,308.26,1849.56,Netherlands,+49-30-9072094
+11051,2024-08-12,Laptop,Electronics, 16 ,1212.71,19403.36,Germany,+49-30-2702103
+11052,2024-08-26,Laptop,Electronics,6,1291.48,7748.88,Italy,+49-30-9507701
+11053,2024-08-27,Headset,Accessories,12,87.72,1052.64,France,
+11054,2024-08-23,Docking Station,Accessories,1,152.67,152.67,Netherlands,
+11055,2024-08-21,Mouse,Accessories,1,26.66,26.66,Italy,
+11056,2024-08-16,Monitor,Electronics,19,332.45,6316.55,Germany,
+11057,2024-08-08,Headset,Accessories,10,92.64,926.4,France,
+11058,2024-08-26,Monitor,Electronics, 6 ,306.29,1837.74,France,
+11059,2024-08-09,Monitor,Electronics,23,327.45,7531.35,Germany,+49-30-7565896
+11060,2024-08-29,Tablet,Electronics,7,437.13,3059.91,Netherlands,+49-30-6944129
+11061,2024-08-27,Webcam,Accessories,11,68.88,757.68,Italy,
+11062,2024-08-12,Laptop,Electronics,n/a,1156.75,11567.5,Spain,
+11063,2024-08-15,Keyboard,Accessories,22,47.92,1054.24,Belgium,
+11064,2024-08-07,Headset,Accessories,20,95.33,1906.6,Belgium,
+11065,2024-08-31,Tablet,Electronics, 3 ,475.63,1426.89,France,+49-30-4912646
+11066,2024-08-27,Docking Station,Accessories,15,143.59,2153.85,Belgium,
+11067,2024-08-28,Headset,Accessories,5,87.23,436.15,Spain,
+11068,2024-08-28,Headset,Accessories,14,95.98,1343.72,Belgium,
+11069,2024-08-07,Monitor,Electronics,7,324.32,2270.24,Italy,+49-30-5389188
+11070,2024-08-15,Laptop,Electronics,20,1156.21,23124.2,Germany,
+11071,2024-08-07,Tablet,Electronics,13,484.91,6303.83,Spain,
+11072,2024-08-15,Docking Station,Accessories, 3 ,155.71,467.13,France,+49-30-4198547
+11073,2024-08-02,Monitor,Electronics,18,306.78,5522.04,France,+49-30-1526976
+11074,2024-08-22,Tablet,Electronics,7,428.95,3002.65,Spain,
+11075,2024-08-11,Keyboard,Accessories,4,46.28,185.12,France,
+11076,2024-08-10,Mouse,Accessories,12,25.21,302.52,Spain,+49-30-5138075
+11077,2024-08-13,Mouse,Accessories,1,26.43,26.43,Belgium,
+11078,2024-08-28,Tablet,Electronics,11,463.86,5102.46,France,
+11079,2024-08-19,Tablet,Electronics, 6 ,474.4,2846.4,France,
+11080,2024-08-20,Mouse,Accessories,24,24.83,595.92,Germany,
+11081,2024-08-14,Monitor,Electronics,10,297.96,2979.6,Netherlands,
+11082,2024-08-14,Docking Station,Accessories,15,142.78,2141.7,France,+49-30-6112587
+11083,2024-08-19,Tablet,Electronics,9,430.07,3870.63,Belgium,+49-30-5974473
+11084,2024-08-22,Tablet,Electronics,3,452.86,1358.58,Belgium,
+11085,2024-08-10,Webcam,Accessories,20,66.36,1327.2,Netherlands,+49-30-9816471
+11086,2024-08-18,Keyboard,Accessories, 1 ,44.95,44.95,Spain,
+11087,2024-08-24,Docking Station,Accessories,8,145.66,1165.28,France,
+11088,2024-08-15,Keyboard,Accessories,19,43.74,831.06,Belgium,
+11089,2024-08-06,Laptop,Electronics,1,1141.18,1141.18,Belgium,
+11090,2024-09-10,Headset,Accessories,3,86.36,259.08,France,+49-30-8517109
+11091,2024-09-04,Laptop,Electronics,11,1200.25,13202.75,Belgium,
+11092,2024-09-10,Monitor,Electronics,10,331.95,3319.5,Spain,
+11093,2024-09-28,Tablet,Electronics,two,473.02,4730.2,France,
+11094,2024-09-15,Webcam,Accessories,unknown,63.87,766.44,Germany,
+11095,2024-09-03,Monitor,Electronics,1,298.16,298.16,Germany,
+11096,2024-09-16,Mouse,Accessories,15,25.35,380.25,Spain,
+11097,2024-09-17,Webcam,Accessories,12,67.33,807.96,Italy,
+11098,2024-09-19,Docking Station,Accessories,6,142.67,856.02,Spain,
+11099,2024-09-23,Docking Station,Accessories,1,140.68,140.68,Germany,
+11100,2024-09-28,Headset,Accessories, 3 ,93.86,281.58,Belgium,
+11101,2024-09-08,Docking Station,Accessories,17,146.42,2489.14,Spain,
+11102,2024-09-15,Laptop,Electronics,7,1176.43,8235.01,Spain,
+11103,2024-09-11,Laptop,Electronics,17,1202.32,20439.44,Netherlands,
+11104,2024-09-07,Mouse,Accessories,19,26.64,506.16,Belgium,
+11105,2024-09-23,Docking Station,Accessories,23,153.55,3531.65,Germany,
+11106,2024-09-16,Webcam,Accessories,24,64.3,1543.2,Spain,
+11107,2024-09-29,Headset,Accessories, 10 ,92.93,929.3,Italy,+49-30-2288755
+11108,2024-09-24,Headset,Accessories,6,94.71,568.26,Netherlands,
+11109,2024-09-10,Docking Station,Accessories,12,154.28,1851.36,Germany,
+11110,2024-09-17,Monitor,Electronics,16,295.68,4730.88,Germany,
+11111,2024-09-18,Monitor,Electronics,12,296.59,3559.08,Spain,+49-30-4602305
+11112,2024-09-11,Mouse,Accessories,21,27.05,568.05,Belgium,+49-30-8190353
+11113,2024-09-21,Docking Station,Accessories,21,143.2,3007.2,France,
+11114,2024-09-21,Laptop,Electronics, 14 ,1246.42,17449.88,Belgium,
+11115,2024-09-10,Laptop,Electronics,4,1248.61,4994.44,Italy,
+11116,2024-09-27,Keyboard,Accessories,10,46.96,469.6,France,+49-30-4262868
+11117,2024-09-03,Monitor,Electronics,12,326.72,3920.64,Netherlands,+49-30-5144675
+11118,2024-09-06,Tablet,Electronics,6,444.69,2668.14,Belgium,+49-30-9072153
+11119,2024-09-28,Tablet,Electronics,22,470.11,10342.42,Germany,
+11120,2024-09-10,Keyboard,Accessories,7,46.1,322.7,Spain,
+11121,2024-09-25,Docking Station,Accessories, 24 ,150.59,3614.16,Netherlands,
+11122,2024-09-16,Monitor,Electronics,23,319.62,7351.26,Belgium,
+11123,2024-09-14,Laptop,Electronics,21,1243.15,26106.15,France,
+11124,2024-09-15,Headset,Accessories,16,86.81,1388.96,Belgium,+49-30-7944047
+11125,2024-09-24,Keyboard,Accessories,2,45.39,90.78,Italy,+49-30-5414053
+11126,2024-09-29,Laptop,Electronics,1,1223.94,1223.94,Germany,
+11127,2024-09-03,Laptop,Electronics,1,1225.29,1225.29,Italy,+49-30-7993892
+11128,2024-09-25,Webcam,Accessories, 12 ,69.67,836.04,Netherlands,
+11129,2024-09-04,Keyboard,Accessories,20,43.9,878.0,Spain,
+11130,2024-09-05,Docking Station,Accessories,12,145.33,1743.96,Spain,
+11131,2024-09-25,Tablet,Electronics,13,455.44,5920.72,Germany,+49-30-3914671
+11132,2024-09-25,Tablet,Electronics,9,474.91,4274.19,Italy,
+11133,2024-09-22,Tablet,Electronics,2,475.65,951.3,Germany,
+11134,2024-09-02,Headset,Accessories,8,94.46,755.68,Germany,
+11135,2024-09-13,Tablet,Electronics, 13 ,475.65,6183.45,Belgium,+49-30-5000923
+11136,2024-09-29,Webcam,Accessories,3,69.22,207.66,Netherlands,+49-30-9643610
+11137,2024-09-20,Tablet,Electronics,17,484.56,8237.52,Italy,
+11138,2024-09-03,Monitor,Electronics,3,300.07,900.21,Belgium,
+11139,2024-09-19,Mouse,Accessories,24,26.38,633.12,Germany,
+11140,2024-09-06,Mouse,Accessories,23,24.85,571.55,Germany,
+11141,2024-09-04,Keyboard,Accessories,1,43.75,43.75,Spain,
+11142,2024-09-13,Webcam,Accessories, 6 ,63.24,379.44,Belgium,
+11143,2024-09-06,Keyboard,Accessories,20,47.77,955.4,Belgium,
+11144,2024-10-10,Docking Station,Accessories,14,150.94,2113.16,Netherlands,
+11145,2024-10-05,Webcam,Accessories,3,70.02,210.06,Germany,
+11146,2024-10-01,Laptop,Electronics,24,1228.25,29478.0,Belgium,+49-30-9541876
+11147,2024-10-26,Webcam,Accessories,17,69.8,1186.6,France,
+11148,2024-10-10,Tablet,Electronics,24,436.85,10484.4,Spain,
+11149,2024-10-12,Mouse,Accessories, 11 ,24.68,271.48,Italy,
+11150,2024-10-07,Tablet,Electronics,2,482.86,965.72,France,+49-30-7192735
+11151,2024-10-23,Keyboard,Accessories,1,45.8,45.8,Spain,
+11152,2024-10-06,Laptop,Electronics,19,1157.8,21998.2,Spain,+49-30-6671437
+11153,2024-10-28,Webcam,Accessories,10,61.96,619.6,Spain,
+11154,2024-10-20,Monitor,Electronics,22,327.05,7195.1,Germany,
+11155,2024-10-23,Monitor,Electronics,7,322.24,2255.68,Italy,+49-30-1549704
+11156,2024-10-15,Docking Station,Accessories, 2 ,143.5,287.0,Netherlands,
+11157,2024-10-12,Tablet,Electronics,23,438.14,10077.22,France,+49-30-9706907
+11158,2024-10-31,Webcam,Accessories,14,69.24,969.36,France,+49-30-2926207
+11159,2024-10-14,Docking Station,Accessories,18,139.63,2513.34,Germany,
+11160,2024-10-20,Docking Station,Accessories,21,155.74,3270.54,Italy,
+11161,2024-10-13,Headset,Accessories,7,87.03,609.21,Belgium,
+11162,2024-10-14,Docking Station,Accessories,3,155.89,467.67,Belgium,
+11163,2024-10-22,Keyboard,Accessories, 14 ,48.58,680.12,Belgium,
+11164,2024-10-01,Webcam,Accessories,16,69.97,1119.52,Germany,+49-30-2646511
+11165,2024-10-30,Keyboard,Accessories,9,43.33,389.97,Spain,+49-30-7513384
+11166,2024-10-03,Headset,Accessories,1,96.37,96.37,Netherlands,
+11167,2024-10-14,Webcam,Accessories,1,63.79,63.79,Italy,+49-30-3425573
+11168,2024-10-08,Headset,Accessories,22,87.33,1921.26,France,
+11169,2024-10-29,Headset,Accessories,18,90.4,1627.2,Netherlands,
+11170,2024-10-28,Docking Station,Accessories, 15 ,150.74,2261.1,France,
+11171,2024-10-13,Monitor,Electronics,1,305.46,305.46,Italy,
+11172,2024-10-13,Docking Station,Accessories,24,138.32,3319.68,Belgium,
+11173,2024-10-12,Laptop,Electronics,22,1211.45,26651.9,France,+49-30-9972903
+11174,2024-10-25,Monitor,Electronics,4,320.28,1281.12,Belgium,
+11175,2024-10-22,Webcam,Accessories,25,66.15,1653.75,France,
+11176,2024-10-09,Webcam,Accessories,2,69.86,139.72,Belgium,+49-30-2974573
+11177,2024-10-22,Tablet,Electronics, 15 ,436.19,6542.85,France,+49-30-1821653
+11178,2024-10-18,Webcam,Accessories,23,65.44,1505.12,Spain,+49-30-8205765
+11179,2024-10-11,Keyboard,Accessories,12,44.65,535.8,France,+49-30-6894295
+11180,2024-10-17,Mouse,Accessories,20,25.91,518.2,France,
+11181,2024-10-05,Webcam,Accessories,21,68.09,1429.89,Italy,
+11182,2024-10-14,Keyboard,Accessories,7,43.32,303.24,Netherlands,
+11183,2024-10-30,Monitor,Electronics,5,314.43,1572.15,Italy,
+11184,2024-10-29,Headset,Accessories, 18 ,86.06,1549.08,Belgium,
+11185,2024-10-28,Webcam,Accessories,18,67.29,1211.22,Spain,+49-30-8638375
+11186,2024-10-26,Tablet,Electronics,8,480.08,3840.64,Spain,
+11187,2024-10-13,Webcam,Accessories,19,61.93,1176.67,France,+49-30-2598060
+11188,2024-10-10,Webcam,Accessories,18,66.11,1189.98,France,
+11189,2024-10-07,Webcam,Accessories,20,64.44,1288.8,Netherlands,
+11190,2024-10-09,Laptop,Electronics,21,1230.61,25842.81,Italy,
+11191,2024-10-13,Laptop,Electronics, 7 ,1141.46,7990.22,Netherlands,
+11192,2024-10-21,Tablet,Electronics,23,442.3,10172.9,Belgium,
+11193,2024-10-16,Mouse,Accessories,6,24.35,146.1,Germany,
+11194,2024-10-07,Keyboard,Accessories,8,46.02,368.16,Spain,
+11195,2024-10-26,Mouse,Accessories,17,26.97,458.49,Germany,+49-30-8811442
+11196,2024-10-23,Docking Station,Accessories,8,137.81,1102.48,Germany,
+11197,2024-10-26,Monitor,Electronics,8,324.64,2597.12,Italy,
+11198,2024-11-04,Docking Station,Accessories, 20 ,156.11,3122.2,Belgium,
+11199,2024-11-09,Monitor,Electronics,6,300.88,1805.28,Belgium,
+11200,2024-11-21,Monitor,Electronics,4,301.3,1205.2,France,+49-30-6027534
+11201,2024-11-26,Mouse,Accessories,twelve,26.7,480.6,France,
+11202,2024-11-15,Keyboard,Accessories,8,42.88,343.04,France,+49-30-9650088
+11203,2024-11-29,Docking Station,Accessories,8,146.68,1173.44,Germany,+49-30-8550980
+11204,2024-11-02,Webcam,Accessories,12,69.7,836.4,Germany,
+11205,2024-11-07,Monitor,Electronics, 17 ,300.86,5114.62,Netherlands,
+11206,2024-11-28,Monitor,Electronics,6,297.84,1787.04,France,+49-30-7729074
+11207,2024-11-08,Laptop,Electronics,n/a,1142.51,22850.2,Italy,
+11208,2024-11-19,Headset,Accessories,9,90.92,818.28,Italy,
+11209,2024-11-30,Headset,Accessories,25,87.44,2186.0,Germany,
+11210,2024-11-27,Keyboard,Accessories,6,43.65,261.9,Belgium,+49-30-7817139
+11211,2024-11-14,Monitor,Electronics,11,313.46,3448.06,Spain,
+11212,2024-11-18,Headset,Accessories, 15 ,89.14,1337.1,Belgium,
+11213,2024-11-16,Webcam,Accessories,14,65.67,919.38,Netherlands,
+11214,2024-11-20,Webcam,Accessories,unknown,67.7,270.8,Netherlands,
+11215,2024-11-03,Monitor,Electronics,2,331.16,662.32,France,
+11216,2024-11-24,Headset,Accessories,20,89.8,1796.0,Italy,
+11217,2024-11-06,Mouse,Accessories,2,25.82,51.64,Spain,+49-30-6861276
+11218,2024-11-01,Monitor,Electronics,15,318.97,4784.55,Germany,+49-30-5868679
+11219,2024-11-05,Tablet,Electronics, 21 ,468.37,9835.77,Spain,
+11220,2024-11-16,Keyboard,Accessories,22,46.07,1013.54,Belgium,
+11221,2024-11-11,Monitor,Electronics,12,300.63,3607.56,Germany,+49-30-9120815
+11222,2024-11-17,Laptop,Electronics,17,1149.73,19545.41,Germany,
+11223,2024-11-15,Laptop,Electronics,24,1242.29,29814.96,France,
+11224,2024-11-28,Monitor,Electronics,24,323.14,7755.36,Belgium,+49-30-3362598
+11225,2024-11-16,Mouse,Accessories,15,25.78,386.7,France,+49-30-5002531
+11226,2024-11-04,Laptop,Electronics, 19 ,1263.48,24006.12,Belgium,
+11227,2024-11-04,Monitor,Electronics,8,302.52,2420.16,Germany,+49-30-4940439
+11228,2024-11-06,Keyboard,Accessories,18,47.59,856.62,Netherlands,+49-30-4022669
+11229,2024-11-13,Tablet,Electronics,4,480.0,1920.0,Netherlands,+49-30-7599737
+11230,2024-11-22,Tablet,Electronics,10,476.76,4767.6,Netherlands,+49-30-7395847
+11231,2024-11-12,Headset,Accessories,16,91.55,1464.8,Netherlands,
+11232,2024-11-15,Headset,Accessories,13,89.34,1161.42,Spain,
+11233,2024-11-15,Mouse,Accessories, 15 ,24.37,365.55,Spain,
+11234,2024-11-02,Headset,Accessories,19,88.93,1689.67,Belgium,+49-30-2637780
+11235,2024-11-03,Headset,Accessories,9,95.49,859.41,Spain,
+11236,2024-11-26,Keyboard,Accessories,6,43.41,260.46,Italy,
+11237,2024-11-15,Webcam,Accessories,11,63.23,695.53,Netherlands,
+11238,2024-11-02,Keyboard,Accessories,9,44.42,399.78,Netherlands,
+11239,2024-11-05,Webcam,Accessories,15,68.36,1025.4,France,+49-30-7761967
+11240,2024-11-28,Keyboard,Accessories,TBC,44.18,397.62,Spain,+49-30-7356675
+11241,2024-11-30,Headset,Accessories,16,90.27,1444.32,Belgium,
+11242,2024-11-22,Keyboard,Accessories,23,44.31,1019.13,Italy,
+11243,2024-11-09,Monitor,Electronics,14,304.29,4260.06,Spain,
+11244,2024-11-03,Webcam,Accessories,16,68.66,1098.56,Italy,
+11245,2024-11-29,Docking Station,Accessories,2,144.92,289.84,Germany,
+11246,2024-11-09,Laptop,Electronics,4,1282.32,5129.28,Spain,
+11247,2024-11-01,Laptop,Electronics, 25 ,1295.35,32383.75,Italy,+49-30-9191672
+11248,2024-11-15,Tablet,Electronics,two,479.94,10558.68,Germany,
+11249,2024-11-03,Tablet,Electronics,8,478.65,3829.2,Netherlands,
+11250,2024-11-24,Docking Station,Accessories,19,151.53,2879.07,Germany,
+11251,2024-11-26,Tablet,Electronics,16,473.65,7578.4,Netherlands,
+11252,2024-12-31,Keyboard,Accessories,20,46.18,923.6,Spain,+49-30-6852317
+11253,2024-12-24,Mouse,Accessories,8,24.23,193.84,Germany,+49-30-1384075
+11254,2024-12-28,Headset,Accessories, 4 ,90.35,361.4,Netherlands,+49-30-4824673
+11255,2024-12-15,Tablet,Electronics,22,439.54,9669.88,Belgium,
+11256,2024-12-30,Docking Station,Accessories,17,143.49,2439.33,Spain,
+11257,2024-12-27,Keyboard,Accessories,12,48.06,576.72,Spain,
+11258,2024-12-16,Mouse,Accessories,24,25.6,614.4,Netherlands,
+11259,2024-12-06,Keyboard,Accessories,17,47.16,801.72,Netherlands,
+11260,2024-12-14,Tablet,Electronics,23,478.82,11012.86,Spain,
+11261,2024-12-03,Keyboard,Accessories, 17 ,46.72,794.24,Spain,+49-30-6239748
+11262,2024-12-03,Laptop,Electronics,18,1204.23,21676.14,Spain,
+11263,2024-12-04,Mouse,Accessories,20,26.02,520.4,Belgium,
+11264,2024-12-31,Tablet,Electronics,11,432.61,4758.71,France,
+11265,2024-12-10,Headset,Accessories,16,85.94,1375.04,Spain,
+11266,2024-12-02,Headset,Accessories,15,87.17,1307.55,Netherlands,
+11267,2024-12-22,Mouse,Accessories,24,24.88,597.12,Germany,
+11268,2024-12-07,Keyboard,Accessories, 21 ,43.84,920.64,Spain,+49-30-4991890
+11269,2024-12-12,Monitor,Electronics,17,331.44,5634.48,Belgium,
+11270,2024-12-08,Keyboard,Accessories,12,48.2,578.4,Germany,
+11271,2024-12-24,Mouse,Accessories,9,27.18,244.62,Italy,
+11272,2024-12-04,Monitor,Electronics,19,317.11,6025.09,France,+49-30-8395868
+11273,2024-12-07,Mouse,Accessories,7,27.04,189.28,Italy,
+11274,2024-12-13,Mouse,Accessories,19,27.46,521.74,Spain,
+11275,2024-12-10,Webcam,Accessories, 19 ,63.77,1211.63,Germany,+49-30-1159593
+11276,2024-12-27,Headset,Accessories,1,91.57,91.57,France,+49-30-9534659
+11277,2024-12-15,Headset,Accessories,3,93.7,281.1,France,+49-30-6663660
+11278,2024-12-23,Monitor,Electronics,15,331.57,4973.55,France,+49-30-4013819
+11279,2024-12-09,Monitor,Electronics,18,306.51,5517.18,Spain,
+11280,2024-12-29,Keyboard,Accessories,19,48.36,918.84,France,
+11281,2024-12-09,Tablet,Electronics,17,457.57,7778.69,Belgium,
+11282,2024-12-12,Mouse,Accessories,n/a,25.73,51.46,Italy,
+11283,2024-12-21,Webcam,Accessories,two,68.19,1091.04,Netherlands,+49-30-2853915
+11284,2024-12-20,Laptop,Electronics,22,1157.23,25459.06,Germany,
+11285,2024-12-11,Headset,Accessories,TBC,85.95,859.5,France,
+11286,2024-12-27,Mouse,Accessories,15,24.71,370.65,France,
+11287,2024-12-03,Tablet,Electronics,21,474.24,9959.04,Germany,
+11288,2024-12-04,Laptop,Electronics,13,1286.65,16726.45,France,
+11289,2024-12-14,Mouse,Accessories, 23 ,26.01,598.23,Italy,
+11290,2024-12-11,Laptop,Electronics,14,1162.58,16276.12,Germany,
+11291,2024-12-19,Monitor,Electronics,23,318.57,7327.11,Germany,
+11292,2024-12-26,Monitor,Electronics,8,311.48,2491.84,Germany,
+11293,2024-12-16,Tablet,Electronics,22,453.84,9984.48,Spain,+49-30-4743718
+11294,2024-12-25,Tablet,Electronics,23,455.14,10468.22,Germany,
+11295,2024-12-02,Keyboard,Accessories,4,47.15,188.6,Germany,
+11296,2024-12-08,Keyboard,Accessories, 24 ,46.92,1126.08,France,
+11297,2024-12-23,Mouse,Accessories,19,26.38,501.22,Germany,
+11298,2024-12-08,Mouse,Accessories,6,26.85,161.1,Germany,
+11299,2024-12-06,Headset,Accessories,12,92.55,1110.6,France,
+11300,2024-12-26,Docking Station,Accessories,9,153.19,1378.71,France,
+11301,2024-12-16,Docking Station,Accessories,5,139.88,699.4,Belgium,
+11302,2024-12-16,Laptop,Electronics,2,1188.7,2377.4,Italy,
+11303,2024-12-13,Headset,Accessories, 17 ,93.55,1590.35,Belgium,
+11304,2024-12-04,Mouse,Accessories,17,27.47,466.99,Netherlands,
+11305,2024-12-26,Laptop,Electronics,15,1227.21,18408.15,Spain,+49-30-9861763
+10191,2023-04-17,Headset,Accessories,19,87.13,1655.47,France,
+10190,2023-04-09,Laptop,Electronics, 14 ,1264.87,17708.18,Italy,
+10682,2024-01-09,Laptop,Electronics,n/a,1166.62,11666.2,Netherlands,
+10560,2023-11-02,Laptop,Electronics,6,1246.2,7477.2,France,
+10611,2023-12-06,Tablet,Electronics,1,449.74,449.74,Belgium,
+11194,2024-10-07,Keyboard,Accessories,8,46.02,368.16,Spain,
+11129,2024-09-04,Keyboard,Accessories,20,43.9,878.0,Spain,
+10962,2024-06-01,Laptop,Electronics,24,1150.9,27621.6,Germany,
+10076,2023-02-13,Docking Station,Accessories,twelve,140.96,986.72,Italy,
+10732,2024-02-26,Keyboard,Accessories,1,46.24,46.24,Netherlands,
+10485,2023-09-15,Docking Station,Accessories,11,149.85,1648.35,Netherlands,
+10923,2024-05-04,Tablet,Electronics,2,462.74,925.48,France,
+11209,2024-11-30,Headset,Accessories,25,87.44,2186.0,Germany,
+10185,2023-04-05,Headset,Accessories,10,88.44,884.4,Germany,
+10693,2024-01-07,Docking Station,Accessories,24,151.74,3641.76,Netherlands,
+10406,2023-08-29,Mouse,Accessories,7,27.07,189.49,Belgium,
+11028,2024-07-07,Mouse,Accessories,6,26.59,159.54,Italy,
+10928,2024-06-18,Docking Station,Accessories,22,146.64,3226.08,Italy,
+10571,2023-11-02,Mouse,Accessories,6,26.18,157.08,Germany,
+10600,2023-11-19,Mouse,Accessories,4,24.33,97.32,Italy,
+10270,2023-05-03,Headset,Accessories,17,91.93,1562.81,Belgium,
+10074,2023-02-07,Webcam,Accessories,22,64.82,1426.04,Germany,
+10431,2023-08-10,Mouse,Accessories,25,25.79,644.75,Belgium,
+11106,2024-09-16,Webcam,Accessories,24,64.3,1543.2,Spain,
+10846,2024-04-30,Webcam,Accessories,4,66.45,265.8,Italy,
+10663,2024-01-11,Monitor,Electronics,20,309.37,6187.4,Spain,
+10253,2023-05-06,Mouse,Accessories, 23 ,24.37,560.51,Germany,
+10609,2023-12-07,Mouse,Accessories,8,26.03,208.24,Netherlands,
+10531,2023-10-01,Docking Station,Accessories,23,150.1,3452.3,France,
+10101,2023-02-15,Headset,Accessories,8,90.42,723.36,Netherlands,
+10738,2024-02-08,Docking Station,Accessories,5,151.31,756.55,Netherlands,
+11154,2024-10-20,Monitor,Electronics,22,327.05,7195.1,Germany,
+10975,2024-06-22,Monitor,Electronics,17,299.68,5094.56,Italy,
+10781,2024-03-01,Mouse,Accessories,9,27.49,247.41,Netherlands,
+10773,2024-03-03,Headset,Accessories,6,86.1,516.6,Netherlands,
+10287,2023-06-18,Docking Station,Accessories,1,142.92,142.92,Italy,
+10853,2024-04-18,Monitor,Electronics,20,312.58,6251.6,Spain,
+11022,2024-07-17,Monitor,Electronics,16,332.99,5327.84,Belgium,
+10274,2023-05-21,Webcam,Accessories, 14 ,70.03,980.42,Netherlands,
+10904,2024-05-31,Webcam,Accessories, 16 ,67.86,1085.76,Italy,
+11235,2024-11-03,Headset,Accessories,9,95.49,859.41,Spain,
+11245,2024-11-29,Docking Station,Accessories,2,144.92,289.84,Germany,
+11086,2024-08-18,Keyboard,Accessories, 1 ,44.95,44.95,Spain,
+10719,2024-02-09,Headset,Accessories,14,89.42,1251.88,Spain,
+10528,2023-10-30,Docking Station,Accessories,8,138.99,1111.92,Belgium,
+10899,2024-05-28,Docking Station,Accessories,14,142.14,1989.96,Italy,
+10993,2024-07-30,Headset,Accessories,3,95.71,287.13,Spain,
+11238,2024-11-02,Keyboard,Accessories,9,44.42,399.78,Netherlands,
+10622,2023-12-09,Mouse,Accessories,7,27.08,189.56,Belgium,
+10404,2023-08-30,Mouse,Accessories,unknown,24.8,322.4,France,
+10537,2023-10-18,Docking Station,Accessories,13,149.06,1937.78,Belgium,
+10849,2024-04-23,Tablet,Electronics,19,480.76,9134.44,Germany,
+10066,2023-02-14,Laptop,Electronics,14,1263.6,17690.4,Netherlands,
+10506,2023-10-07,Laptop,Electronics,6,1197.86,7187.16,France,
+10866,2024-04-04,Mouse,Accessories,17,26.17,444.89,France,
+11108,2024-09-24,Headset,Accessories,6,94.71,568.26,Netherlands,
+10889,2024-05-08,Webcam,Accessories,15,63.95,959.25,Germany,
+11183,2024-10-30,Monitor,Electronics,5,314.43,1572.15,Italy,
+11119,2024-09-28,Tablet,Electronics,22,470.11,10342.42,Germany,
+10852,2024-04-09,Headset,Accessories,11,87.29,960.19,Netherlands,
+11273,2024-12-07,Mouse,Accessories,7,27.04,189.28,Italy,
+11139,2024-09-19,Mouse,Accessories,24,26.38,633.12,Germany,
+11180,2024-10-17,Mouse,Accessories,20,25.91,518.2,France,
+10306,2023-06-15,Headset,Accessories,25,85.59,2139.75,Belgium,
+11011,2024-07-12,Tablet,Electronics,13,443.02,5759.26,Germany,
+11070,2024-08-15,Laptop,Electronics,20,1156.21,23124.2,Germany,
+10927,2024-05-09,Webcam,Accessories,14,63.36,887.04,Belgium,
+10854,2024-04-03,Monitor,Electronics,11,306.01,3366.11,Netherlands,
+10939,2024-06-21,Mouse,Accessories, 22 ,27.26,599.72,Italy,
+10950,2024-06-23,Monitor,Electronics,24,318.93,7654.32,Netherlands,
+11132,2024-09-25,Tablet,Electronics,9,474.91,4274.19,Italy,
+10783,2024-03-02,Laptop,Electronics,13,1258.94,16366.22,France,
+11250,2024-11-24,Docking Station,Accessories,19,151.53,2879.07,Germany,
+10267,2023-05-23,Webcam,Accessories, 16 ,67.39,1078.24,Belgium,
+10017,2023-01-04,Headset,Accessories,19,90.85,1726.15,Netherlands,
+11303,2024-12-13,Headset,Accessories, 17 ,93.55,1590.35,Belgium,
+10037,2023-01-31,Docking Station,Accessories,23,155.82,3583.86,Spain,
+10545,2023-10-01,Keyboard,Accessories,23,43.2,993.6,Italy,
+10880,2024-05-28,Docking Station,Accessories,1,140.33,140.33,Germany,
+11204,2024-11-02,Webcam,Accessories,12,69.7,836.4,Germany,
+10798,2024-03-25,Docking Station,Accessories,8,148.7,1189.6,Germany,
+11304,2024-12-04,Mouse,Accessories,17,27.47,466.99,Netherlands,
+10106,2023-02-13,Laptop,Electronics, 6 ,1287.57,7725.42,Germany,
+11156,2024-10-15,Docking Station,Accessories, 2 ,143.5,287.0,Netherlands,
+10554,2023-11-07,Keyboard,Accessories, 9 ,48.45,436.05,Netherlands,
+10129,2023-03-18,Tablet,Electronics,12,483.62,5803.44,France,
+10167,2023-04-20,Laptop,Electronics,24,1205.85,28940.4,France,
+10332,2023-07-13,Mouse,Accessories,14,24.32,340.48,Germany,
+10648,2023-12-25,Docking Station,Accessories,1,148.62,148.62,Italy,
+10394,2023-08-08,Tablet,Electronics,unknown,433.31,2166.55,Italy,
+10810,2024-03-21,Docking Station,Accessories,13,144.52,1878.76,France,
+10271,2023-05-15,Laptop,Electronics,25,1219.43,30485.75,France,
+11084,2024-08-22,Tablet,Electronics,3,452.86,1358.58,Belgium,
+10272,2023-05-06,Monitor,Electronics,25,318.7,7967.5,Netherlands,
+11121,2024-09-25,Docking Station,Accessories, 24 ,150.59,3614.16,Netherlands,
+11301,2024-12-16,Docking Station,Accessories,5,139.88,699.4,Belgium,
+10617,2023-12-31,Tablet,Electronics, 12 ,469.7,5636.4,Spain,
+11292,2024-12-26,Monitor,Electronics,8,311.48,2491.84,Germany,
+10851,2024-04-19,Laptop,Electronics,1,1159.94,1159.94,Netherlands,
+10499,2023-10-29,Laptop,Electronics,24,1202.49,28859.76,Belgium,
+11056,2024-08-16,Monitor,Electronics,19,332.45,6316.55,Germany,
+11077,2024-08-13,Mouse,Accessories,1,26.43,26.43,Belgium,
+11123,2024-09-14,Laptop,Electronics,21,1243.15,26106.15,France,
+10932,2024-06-23,Webcam,Accessories, 23 ,68.56,1576.88,Belgium,
+10689,2024-01-24,Mouse,Accessories,21,25.65,538.65,France,
+10502,2023-10-15,Tablet,Electronics,7,428.35,2998.45,France,
+10749,2024-02-06,Tablet,Electronics,16,434.8,6956.8,Germany,
+10470,2023-09-28,Monitor,Electronics, 4 ,303.98,1215.92,Belgium,
+10946,2024-06-03,Headset,Accessories, 3 ,87.83,263.49,Germany,
+10850,2024-04-05,Webcam,Accessories,7,64.74,453.18,Italy,
+11005,2024-07-08,Tablet,Electronics,13,434.13,5643.69,Italy,
+10709,2024-01-16,Mouse,Accessories,4,25.47,101.88,Germany,
+11062,2024-08-12,Laptop,Electronics,n/a,1156.75,11567.5,Spain,
+11092,2024-09-10,Monitor,Electronics,10,331.95,3319.5,Spain,
+11042,2024-08-10,Webcam,Accessories,18,67.27,1210.86,Italy,
+10261,2023-05-06,Monitor,Electronics,14,318.11,4453.54,Germany,
+10302,2023-06-26,Docking Station,Accessories, 10 ,138.0,1380.0,Netherlands,
+11249,2024-11-03,Tablet,Electronics,8,478.65,3829.2,Netherlands,
+10814,2024-03-16,Webcam,Accessories,12,69.37,832.44,Spain,
+10007,2023-01-25,Mouse,Accessories,6,25.59,153.54,Germany,
+10381,2023-07-10,Keyboard,Accessories,7,46.09,322.63,Netherlands,
+10232,2023-05-02,Webcam,Accessories, 6 ,65.73,394.38,Netherlands,
+10257,2023-05-03,Keyboard,Accessories,16,47.1,753.6,Spain,
+10324,2023-06-27,Keyboard,Accessories,12,46.15,553.8,Belgium,
+10559,2023-11-19,Headset,Accessories,18,90.99,1637.82,Belgium,
+10535,2023-10-10,Keyboard,Accessories,20,48.07,961.4,Belgium,
+10112,2023-03-05,Mouse,Accessories,17,27.32,464.44,Netherlands,
+11140,2024-09-06,Mouse,Accessories,23,24.85,571.55,Germany,
+10922,2024-05-18,Docking Station,Accessories,21,139.89,2937.69,Germany,
+11241,2024-11-30,Headset,Accessories,16,90.27,1444.32,Belgium,
+11171,2024-10-13,Monitor,Electronics,1,305.46,305.46,Italy,
+10495,2023-09-03,Mouse,Accessories,10,26.18,261.8,Spain,
+10387,2023-08-12,Tablet,Electronics,13,452.71,5885.23,Italy,
+11080,2024-08-20,Mouse,Accessories,24,24.83,595.92,Germany,
+10876,2024-05-31,Mouse,Accessories, 12 ,26.96,323.52,Belgium,
+10646,2023-12-09,Keyboard,Accessories,2,47.63,95.26,Belgium,
+10449,2023-09-06,Docking Station,Accessories, 7 ,153.91,1077.37,France,
+10704,2024-01-13,Webcam,Accessories,15,67.47,1012.05,Italy,
+10767,2024-03-07,Tablet,Electronics,16,470.52,7528.32,Germany,
+10679,2024-01-20,Tablet,Electronics,21,450.93,9469.53,Belgium,
+10677,2024-01-02,Laptop,Electronics,2,1254.89,2509.78,Spain,
+10202,2023-04-22,Headset,Accessories,14,91.96,1287.44,Germany,
+10498,2023-10-21,Keyboard,Accessories, 12 ,46.21,554.52,France,
+10056,2023-02-05,Tablet,Electronics,12,438.39,5260.68,Netherlands,
+10871,2024-04-24,Mouse,Accessories,4,27.38,109.52,Italy,
+10841,2024-04-07,Headset,Accessories, 11 ,96.9,1065.9,Italy,
+10079,2023-02-03,Keyboard,Accessories,15,45.35,680.25,Germany,
+11013,2024-07-04,Mouse,Accessories,9,24.29,218.61,France,
+10242,2023-05-16,Monitor,Electronics,24,316.12,7586.88,Germany,
+10496,2023-10-30,Mouse,Accessories,22,24.55,540.1,France,
+10137,2023-03-29,Webcam,Accessories,24,64.5,1548.0,Netherlands,
+10992,2024-07-23,Monitor,Electronics,5,315.99,1579.95,Germany,
+10181,2023-04-03,Headset,Accessories,twelve,87.11,1655.09,France,
+10875,2024-05-21,Tablet,Electronics,4,481.73,1926.92,Italy,
+10621,2023-12-02,Tablet,Electronics,5,464.52,2322.6,Italy,
+10179,2023-04-11,Headset,Accessories,15,92.8,1392.0,Belgium,
+10634,2023-12-17,Tablet,Electronics,unknown,456.72,4567.2,France,
+10983,2024-07-13,Docking Station,Accessories,11,147.74,1625.14,Belgium,
+10440,2023-08-11,Keyboard,Accessories,7,48.11,336.77,Netherlands,
+10744,2024-02-14,Keyboard,Accessories,19,48.41,919.79,Germany,
+10028,2023-01-05,Docking Station,Accessories,14,148.45,2078.3,France,
+10788,2024-03-06,Laptop,Electronics,14,1261.05,17654.7,Italy,
+10919,2024-05-18,Tablet,Electronics,22,473.75,10422.5,France,
+10159,2023-03-24,Headset,Accessories,12,93.27,1119.24,Netherlands,
+10754,2024-02-19,Laptop,Electronics,7,1293.96,9057.72,Italy,
+10566,2023-11-24,Webcam,Accessories,1,68.2,68.2,Belgium,
+11259,2024-12-06,Keyboard,Accessories,17,47.16,801.72,Netherlands,
+11115,2024-09-10,Laptop,Electronics,4,1248.61,4994.44,Italy,
+10176,2023-04-04,Mouse,Accessories, 1 ,26.98,26.98,Spain,
+10258,2023-05-15,Docking Station,Accessories,5,149.84,749.2,Belgium,
+10266,2023-05-19,Keyboard,Accessories,14,48.06,672.84,Germany,
+10295,2023-06-06,Headset,Accessories, 3 ,86.09,258.27,Italy,
+10411,2023-08-18,Tablet,Electronics,22,442.0,9724.0,Netherlands,
+10662,2024-01-08,Docking Station,Accessories,25,153.46,3836.5,Germany,
+10641,2023-12-20,Monitor,Electronics,23,311.53,7165.19,Netherlands,
+10386,2023-08-22,Keyboard,Accessories, 22 ,42.95,944.9,Netherlands,
+10360,2023-07-27,Keyboard,Accessories,21,47.11,989.31,Spain,
+10524,2023-10-09,Laptop,Electronics,1,1151.47,1151.47,Spain,
+10147,2023-03-19,Webcam,Accessories,11,68.68,755.48,Belgium,
+10825,2024-04-02,Laptop,Electronics,7,1178.47,8249.29,France,
+10173,2023-04-04,Tablet,Electronics,14,452.85,6339.9,Germany,
+10659,2024-01-08,Monitor,Electronics, 11 ,322.08,3542.88,France,
+11068,2024-08-28,Headset,Accessories,14,95.98,1343.72,Belgium,
+11300,2024-12-26,Docking Station,Accessories,9,153.19,1378.71,France,
+11219,2024-11-05,Tablet,Electronics, 21 ,468.37,9835.77,Spain,
+10888,2024-05-24,Laptop,Electronics,17,1280.77,21773.09,Belgium,
+10610,2023-12-18,Webcam,Accessories, 14 ,69.63,974.82,France,
+10131,2023-03-18,Tablet,Electronics,20,451.84,9036.8,France,
+10604,2023-12-30,Webcam,Accessories,19,64.58,1227.02,Italy,
+10522,2023-10-04,Mouse,Accessories,22,24.38,536.36,France,
+10024,2023-01-16,Keyboard,Accessories,20,45.14,902.8,France,
+10231,2023-05-16,Laptop,Electronics,20,1238.48,24769.6,Italy,
+10042,2023-01-14,Monitor,Electronics,6,318.55,1911.3,Belgium,
+10444,2023-09-27,Keyboard,Accessories,3,44.79,134.37,France,
+11232,2024-11-15,Headset,Accessories,13,89.34,1161.42,Spain,
