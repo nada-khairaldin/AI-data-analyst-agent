@@ -67,9 +67,13 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
       <div className="min-h-full flex flex-col px-4 sm:px-6 py-8">
         <div className="max-w-2xl w-full mx-auto my-auto text-center space-y-6">
           <div className="space-y-4">
-            <div className="w-14 h-14 bg-blue-100 dark:bg-primary/20 text-blue-600 dark:text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-              <BarChart2 size={28} />
-            </div>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.png`}
+              alt=""
+              width="64"
+              height="64"
+              className="w-16 h-16 mx-auto mb-4"
+            />
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Analyse your data with AI
             </h2>

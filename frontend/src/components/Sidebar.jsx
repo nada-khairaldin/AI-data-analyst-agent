@@ -6,7 +6,6 @@ import {
   ChevronRight,
   MessageSquare,
   UploadCloud,
-  Database,
   Trash2,
 } from 'lucide-react';
 import { SidebarSkeleton } from './Skeleton';
@@ -65,9 +64,13 @@ export default function Sidebar({
             sidebar traps the wheel and is why long lists felt stuck. */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-5 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
-              <Database size={18} />
-            </div>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.png`}
+              alt=""
+              width="32"
+              height="32"
+              className="w-8 h-8 shrink-0"
+            />
             <div>
               <h1 className="text-white font-semibold text-lg leading-tight">AI Data Analyst</h1>
               <p className="text-xs text-slate-400">Your data. Just ask.</p>
