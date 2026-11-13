@@ -182,7 +182,7 @@ export default function App() {
     activeDataset?.conversations?.find((c) => c.id === activeConversationId) || null;
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-dark-bg font-sans overflow-hidden">
+    <div className="flex h-screen bg-paper font-sans overflow-hidden">
       <Sidebar
         datasets={datasets}
         activeDatasetId={activeDatasetId}
@@ -199,28 +199,28 @@ export default function App() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-dark-sidebar border-b border-slate-200 dark:border-dark-border z-10">
+        <div className="lg:hidden flex items-center justify-between p-4 bg-surface border-b border-rule z-10">
           <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-2 -ml-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            className="p-2 -ml-2 text-graphite hover:text-ink"
           >
-            <Menu size={24} />
+            <Menu size={20} strokeWidth={1.5} />
           </button>
-          <div className="font-semibold text-slate-800 dark:text-white">AI Data Analyst</div>
+          <div className="text-ink">Data analyst</div>
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            className="w-10 h-10 flex items-center justify-center -mr-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
+            className="w-10 h-10 flex items-center justify-center -mr-2 text-graphite hover:text-ink"
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
           </button>
         </div>
 
         <button
           onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-          className="hidden lg:flex absolute top-4 right-6 z-50 w-10 h-10 items-center justify-center bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full shadow-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
+          className="hidden lg:flex absolute top-3 right-5 z-50 w-9 h-9 items-center justify-center rounded-md text-graphite hover:text-ink hover:bg-surface"
           title="Toggle Theme"
         >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
         </button>
 
         {error && (
@@ -279,7 +279,7 @@ export default function App() {
         body={
           pendingDelete?.kind === 'dataset' ? (
             <>
-              <strong className="text-slate-800 dark:text-slate-200">{pendingDelete?.name}</strong>{' '}
+              <strong className="text-ink">{pendingDelete?.name}</strong>{' '}
               and its stored file will be deleted.
               {pendingDelete?.conversationCount > 0 && (
                 <>
@@ -292,7 +292,7 @@ export default function App() {
             </>
           ) : (
             <>
-              <strong className="text-slate-800 dark:text-slate-200">{pendingDelete?.name}</strong>{' '}
+              <strong className="text-ink">{pendingDelete?.name}</strong>{' '}
               and all of its messages will be deleted. This cannot be undone.
             </>
           )

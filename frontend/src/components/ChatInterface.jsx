@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessagesSkeleton } from './Skeleton';
 import { suggestQuestions } from '../lib/suggestions';
-import { Send, CheckCircle2, ChevronRight, BarChart2, AlertTriangle, Lightbulb } from 'lucide-react';
+import { splitOnFigure } from '../lib/highlight';
+import { Send, ChevronRight } from 'lucide-react';
 import ResultBlock from './ResultBlock';
 import { api, ApiError } from '../api/client';
 import { streamMessage } from '../api/stream';
@@ -10,56 +11,66 @@ import { streamMessage } from '../api/stream';
 // change without a frontend deploy.
 const STAGE_ORDER = ['condensing', 'planning', 'validating', 'executing', 'explaining'];
 
-function StageList({ stages, current }) {
+// One thin line and the current stage, in place of a checklist of spinners.
+// Progress is a fact the server already tells us; it does not need five rows
+// of chrome to say it.
+function StageLine({ stages, current }) {
+  const label = stages.find((s) => s.stage === current)?.label ?? 'Working';
+  const step = STAGE_ORDER.indexOf(current) + 1;
+  const progress = step > 0 ? (step / STAGE_ORDER.length) * 100 : 8;
+
   return (
-    <div className="flex flex-col gap-2">
-      {stages.map(({ stage, label }) => {
-        const done = STAGE_ORDER.indexOf(stage) < STAGE_ORDER.indexOf(current);
-        return (
-          <div key={stage} className="flex items-center gap-2">
-            {done ? (
-              <CheckCircle2 size={14} className="text-success" />
-            ) : (
-              <div className="w-3.5 h-3.5 rounded-full border-[1.5px] border-primary border-t-transparent animate-spin ml-0.5 mr-[1px]" />
-            )}
-            <span className={done ? 'text-slate-700 dark:text-slate-300' : 'text-primary font-medium'}>
-              {label}
-            </span>
-          </div>
-        );
-      })}
+    <div className="max-w-md">
+      <div className="h-px w-full bg-rule">
+        <div
+          className="h-px bg-verdigris transition-[width] duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="mt-2 text-sm text-graphite">{label}</div>
+    </div>
+  );
+}
+
+// The one bold moment in the interface.
+function Answer({ text, resultData, highlight }) {
+  const split = highlight ? splitOnFigure(text, resultData) : null;
+
+  return (
+    <div className="text-[15px] leading-relaxed text-ink whitespace-pre-wrap">
+      {split ? (
+        <>
+          {split.before}
+          <mark className="marker">{split.figure}</mark>
+          {split.after}
+        </>
+      ) : (
+        text
+      )}
     </div>
   );
 }
 
 function AgentMessage({ message }) {
   const failed = message.status === 'failed';
-  const advisory = message.status === 'needs_clarification' || message.status === 'cannot_answer';
+  const advisory =
+    message.status === 'needs_clarification' || message.status === 'cannot_answer';
 
   return (
     <div className="space-y-4">
-      {/* "Understood as", only when the condenser actually resolved something */}
       {message.condensedQuestion && (
-        <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg px-3 py-2 max-w-2xl">
-          <Lightbulb size={14} className="text-primary shrink-0 mt-0.5" />
-          <span>
-            <span className="font-medium">Understood as:</span> {message.condensedQuestion}
-          </span>
-        </div>
+        <p className="text-sm text-graphite">
+          Understood as: {message.condensedQuestion}
+        </p>
       )}
 
-      <div
-        className={`text-[15px] leading-relaxed whitespace-pre-wrap ${
-          failed
-            ? 'text-error'
-            : advisory
-              ? 'text-amber-600 dark:text-amber-400'
-              : 'text-slate-800 dark:text-slate-200'
-        }`}
-      >
-        {failed && <AlertTriangle size={16} className="inline mr-1.5 -mt-0.5" />}
-        {message.content}
-      </div>
+      {failed || advisory ? (
+        <div className="text-[15px] leading-relaxed whitespace-pre-wrap text-graphite border-l-2 border-rule pl-3">
+          {message.content}
+        </div>
+      ) : (
+        <Answer text={message.content} resultData={message.resultData} highlight />
+      )}
 
       <ResultBlock
         resultData={message.resultData}
@@ -69,39 +80,36 @@ function AgentMessage({ message }) {
       />
 
       {message.plan && (
-        <details className="group bg-slate-50 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg overflow-hidden max-w-2xl">
-          <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-card transition-colors">
-            <ChevronRight size={16} className="text-slate-400 group-open:rotate-90 transition-transform" />
-            <span className="flex items-center gap-2">
-              <BarChart2 size={16} className="text-primary" />
-              Analysis performed
-              <span className="text-slate-400 font-normal text-xs ml-1">(click to expand)</span>
-            </span>
+        <details className="group max-w-2xl border-t border-rule pt-3">
+          <summary className="flex items-center gap-1.5 cursor-pointer select-none text-sm text-graphite hover:text-ink">
+            <ChevronRight
+              size={15}
+              strokeWidth={1.5}
+              className="group-open:rotate-90 transition-transform"
+            />
+            How this was worked out
           </summary>
-          <div className="px-5 py-4 border-t border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card space-y-4 text-sm">
+
+          <div className="mt-3 pl-[22px] space-y-3 text-sm text-graphite">
             <div>
-              <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Question</h5>
-              <p className="text-slate-600 dark:text-slate-400">{message.plan.question}</p>
+              <div className="text-ink">Question</div>
+              <p>{message.plan.question}</p>
             </div>
             <div>
-              <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Analysis Steps</h5>
-              <ol className="list-decimal pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+              <div className="text-ink">Steps</div>
+              <ol className="list-decimal pl-5 space-y-0.5">
                 {message.plan.steps?.map((step, i) => <li key={i}>{step}</li>)}
               </ol>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Used</h5>
-                <p className="text-slate-600 dark:text-slate-400">{message.plan.columnsUsed?.join(', ')}</p>
+                <div className="text-ink">Columns used</div>
+                <p>{message.plan.columnsUsed?.join(', ')}</p>
               </div>
               <div>
-                <h5 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Filters</h5>
-                <p className="text-slate-600 dark:text-slate-400">{message.plan.filters || 'None'}</p>
+                <div className="text-ink">Filters</div>
+                <p>{message.plan.filters || 'None'}</p>
               </div>
-            </div>
-            <div className="pt-2 flex items-center gap-1.5 text-success font-medium text-xs bg-success/10 w-fit px-2 py-1 rounded-full">
-              <CheckCircle2 size={14} />
-              Plan validated
             </div>
           </div>
         </details>
@@ -231,76 +239,63 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
   if (!dataset || !conversation) return null;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-dark-bg">
-      <header className="bg-white/80 dark:bg-dark-sidebar/80 backdrop-blur-md border-b border-slate-200 dark:border-dark-border px-6 py-4 flex items-center shrink-0 min-h-[72px]">
-        <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <span className="text-slate-500 font-normal">{dataset.name}</span>
-          <span className="text-slate-400">/</span>
+    <div className="flex-1 flex flex-col h-full bg-paper">
+      <header className="border-b border-rule px-6 py-4 flex items-center shrink-0 min-h-[64px]">
+        <h2 className="text-sm text-ink">
+          <span className="text-graphite">{dataset.name}</span>
+          <span className="text-graphite mx-2">/</span>
           {conversation.title}
         </h2>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-        {isLoading && (
-          <MessagesSkeleton />
-        )}
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6">
+        <div className="max-w-3xl mx-auto space-y-8">
+          {isLoading && <MessagesSkeleton />}
 
-        {!isLoading && messages.length === 0 && !isStreaming && (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2">
-              <BarChart2 size={32} />
+          {!isLoading && messages.length === 0 && !isStreaming && (
+            <div className="py-8">
+              <h3 className="text-lg text-ink">Ask a question about your data</h3>
+              <p className="text-sm text-graphite mt-1">
+                {dataset.rowCount?.toLocaleString()} rows, {dataset.colCount} columns.
+              </p>
+              {suggestions.length > 0 && (
+                <ul className="mt-5 border-t border-rule">
+                  {suggestions.map((suggestion) => (
+                    <li key={suggestion} className="border-b border-rule">
+                      <button
+                        onClick={() => setInput(suggestion)}
+                        className="w-full text-left py-2.5 text-[15px] text-ink hover:text-verdigris"
+                      >
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200">Start your analysis</h3>
-            <div className="flex flex-wrap justify-center gap-2 max-w-md">
-              {suggestions.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => setInput(suggestion)}
-                  className="px-3 py-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full text-sm hover:border-primary/50 transition-colors"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-            {msg.role === 'agent' && (
-              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shrink-0 mt-1">
-                <BarChart2 size={16} />
-              </div>
-            )}
-            <div
-              className={
-                msg.role === 'user'
-                  ? 'max-w-[85%] bg-slate-200/50 dark:bg-white/10 text-slate-800 dark:text-white px-4 py-3 rounded-2xl rounded-tr-sm text-[15px]'
-                  : 'max-w-[85%] min-w-0'
-              }
-            >
-              {msg.role === 'user' ? msg.content : <AgentMessage message={msg} />}
-            </div>
-          </div>
-        ))}
-
-        {/* The live turn */}
-        {isStreaming && (
-          <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1 border border-primary/30">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-            <div className="max-w-[85%] min-w-0 space-y-4">
-              {condensed && (
-                <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg px-3 py-2">
-                  <Lightbulb size={14} className="text-primary shrink-0 mt-0.5" />
-                  <span><span className="font-medium">Understood as:</span> {condensed}</span>
+          {messages.map((msg, idx) =>
+            msg.role === 'user' ? (
+              <div key={idx} className="flex justify-end">
+                <div className="max-w-[85%] bg-surface border border-rule rounded-md px-4 py-2.5 text-[15px] text-ink">
+                  {msg.content}
                 </div>
+              </div>
+            ) : (
+              <div key={idx} className="max-w-full min-w-0">
+                <AgentMessage message={msg} />
+              </div>
+            ),
+          )}
+
+          {isStreaming && (
+            <div className="space-y-4 min-w-0">
+              {condensed && (
+                <p className="text-sm text-graphite">Understood as: {condensed}</p>
               )}
 
-              <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow-sm min-w-[220px] w-fit">
-                <StageList stages={stages} current={stage} />
-              </div>
+              <StageLine stages={stages} current={stage} />
 
               {/* result arrives BEFORE the first token: the table is the
                   answer, the sentence is commentary */}
@@ -312,42 +307,42 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
                 />
               )}
 
+              {/* No marker while streaming: the sweep belongs to the finished
+                  reply, and a half-written sentence has no figure yet. */}
               {tokens && (
-                <div className="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed whitespace-pre-wrap">
+                <div className="text-[15px] leading-relaxed text-ink whitespace-pre-wrap">
                   {tokens}
-                  <span className="inline-block w-1.5 h-4 bg-primary/70 ml-0.5 align-middle animate-pulse" />
+                  <span className="inline-block w-[2px] h-4 bg-graphite ml-0.5 align-middle animate-pulse" />
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {turnError && (
-          <div className="flex items-start gap-2 text-sm bg-error/10 border border-error/30 rounded-lg px-4 py-3 text-slate-700 dark:text-slate-200">
-            <AlertTriangle size={16} className="text-error shrink-0 mt-0.5" />
-            <span>{turnError}</span>
-          </div>
-        )}
+          {turnError && (
+            <p className="text-sm text-ink border-l-2 border-rule pl-3">{turnError}</p>
+          )}
 
-        <div ref={endRef} />
+          <div ref={endRef} />
+        </div>
       </div>
 
-      <div className="p-4 md:p-6 bg-white dark:bg-dark-sidebar border-t border-slate-200 dark:border-dark-border">
-        <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center">
+      <div className="border-t border-rule px-4 md:px-6 py-4">
+        <form onSubmit={handleSend} className="max-w-3xl mx-auto flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}
-            placeholder={isStreaming ? 'Analysing…' : 'Ask a question about your data...'}
-            className="w-full bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-800 dark:text-white rounded-full py-3.5 pl-6 pr-14 focus:outline-none focus:border-primary/50 transition-colors shadow-sm disabled:opacity-50"
+            placeholder={isStreaming ? 'Analysing' : 'Ask a question about your data'}
+            className="flex-1 bg-surface border border-rule rounded-md px-4 py-2.5 text-[15px] text-ink placeholder:text-graphite focus:border-verdigris focus:outline-none disabled:opacity-50"
           />
           <button
             type="submit"
+            aria-label="Send"
             disabled={!input.trim() || isStreaming}
-            className="absolute right-2 top-1.5 bottom-1.5 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            className="shrink-0 w-10 h-10 bg-verdigris text-paper rounded-md flex items-center justify-center hover:brightness-110 disabled:opacity-40"
           >
-            <Send size={18} className="ml-1" />
+            <Send size={17} strokeWidth={1.5} />
           </button>
         </form>
       </div>
