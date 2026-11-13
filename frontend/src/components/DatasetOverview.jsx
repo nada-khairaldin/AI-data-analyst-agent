@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, FileText, CheckCircle2, MessageSquare, AlertCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import DataPreparation from './DataPreparation';
 import ColumnsTable from './ColumnsTable';
 import PreviewTable from './PreviewTable';
@@ -7,7 +7,16 @@ import { Bar } from './Skeleton';
 import QualityRing from './QualityRing';
 import { api, ApiError } from '../api/client';
 
-const TABS = ['Overview', 'Data Preparation', 'Columns & Types', 'Preview'];
+const TABS = ['Overview', 'Data preparation', 'Columns', 'Preview'];
+
+function Stat({ label, value }) {
+  return (
+    <div>
+      <div className="text-2xl text-ink tabular">{value}</div>
+      <div className="text-sm text-graphite mt-0.5">{label}</div>
+    </div>
+  );
+}
 
 export default function DatasetOverview({
   dataset,
@@ -37,7 +46,7 @@ export default function DatasetOverview({
   // free instance where each request costs a round trip to the other coast.
   useEffect(() => {
     if (!datasetId) return undefined;
-    const wantsColumns = activeTab === 'Columns & Types' && !columns;
+    const wantsColumns = activeTab === 'Columns' && !columns;
     const wantsPreview = activeTab === 'Preview' && !preview;
     if (!wantsColumns && !wantsPreview) return undefined;
 
@@ -65,56 +74,36 @@ export default function DatasetOverview({
   if (!dataset) return null;
 
   const conversations = dataset.conversations || [];
-
   const score = report ? parseFloat(report.qualityScore) : null;
-  const scoreColor =
-    report?.qualityLabel === 'Good'
-      ? 'text-success'
-      : report?.qualityLabel === 'Fair'
-        ? 'text-warning'
-        : 'text-error';
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary overflow-hidden">
-      <header className="bg-white dark:bg-dark-sidebar border-b border-slate-200 dark:border-dark-border px-6 py-4 shrink-0">
+    <div className="flex-1 flex flex-col h-full bg-paper text-ink overflow-hidden">
+      <header className="border-b border-rule px-6 pt-4 shrink-0">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 mb-4 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-graphite hover:text-ink"
         >
-          <ArrowLeft size={16} />
-          Back to datasets
+          <ArrowLeft size={15} strokeWidth={1.5} />
+          All datasets
         </button>
 
-        <div className="flex items-center gap-4 min-w-0">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
-              <FileText size={24} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-white truncate">
-                {dataset.name}
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
-                {dataset.rowCount?.toLocaleString()} rows &middot; {dataset.colCount} columns
-                &middot; {dataset.size}
-              </p>
-            </div>
-        </div>
+        <h2 className="text-xl text-ink mt-3">{dataset.name}</h2>
+        <p className="text-sm text-graphite mt-0.5 tabular">
+          {dataset.rowCount?.toLocaleString()} rows · {dataset.colCount} columns · {dataset.size}
+        </p>
 
-        <div className="flex items-center gap-6 mt-6 overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-6 mt-5 overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-sm font-medium whitespace-nowrap transition-colors relative ${
+              className={`pb-2.5 text-sm whitespace-nowrap border-b-2 -mb-px ${
                 activeTab === tab
-                  ? 'text-primary'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                  ? 'text-ink border-verdigris'
+                  : 'text-graphite border-transparent hover:text-ink'
               }`}
             >
               {tab}
-              {activeTab === tab && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full" />
-              )}
             </button>
           ))}
         </div>
@@ -122,49 +111,26 @@ export default function DatasetOverview({
 
       <div className="flex-1 overflow-y-auto p-6">
         {tabError && activeTab !== 'Overview' && (
-          <div className="max-w-6xl mx-auto mb-4 text-sm text-rose-700 dark:text-error bg-rose-50 dark:bg-error/10 border border-rose-200 dark:border-error/30 rounded-lg px-4 py-3">
+          <p className="max-w-6xl mx-auto mb-4 text-sm text-ink border-l-2 border-rule pl-3">
             {tabError}
-          </div>
+          </p>
         )}
 
         {activeTab === 'Overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <div className="lg:col-span-2 flex flex-col gap-6">
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border p-5 shadow-sm">
-                <h3 className="text-base font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                  Dataset Summary
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[
-                    ['Rows', dataset.rowCount?.toLocaleString()],
-                    ['Columns', dataset.colCount],
-                    ['Missing values', dataset.missingRate],
-                    ['Duplicate rows', dataset.duplicateRate],
-                  ].map(([label, value], index) => (
-                    <div
-                      key={label}
-                      className={`space-y-1 ${index ? 'border-l border-slate-100 dark:border-dark-border pl-4' : ''}`}
-                    >
-                      <div className="text-2xl font-bold text-slate-800 dark:text-white">
-                        {value}
-                      </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                        {label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="lg:col-span-2 flex flex-col gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                <Stat label="Rows" value={dataset.rowCount?.toLocaleString()} />
+                <Stat label="Columns" value={dataset.colCount} />
+                <Stat label="Missing values" value={dataset.missingRate} />
+                <Stat label="Duplicate rows" value={dataset.duplicateRate} />
               </div>
 
-              <div className="flex-1 min-h-0 flex flex-col bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
-                <div className="shrink-0 flex items-center justify-between p-5 border-b border-slate-100 dark:border-dark-border">
-                  <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                    All conversations
-                  </h3>
+              <div className="flex-1 min-h-0 flex flex-col border-t border-rule pt-4">
+                <div className="shrink-0 flex items-baseline justify-between pb-3">
+                  <h3 className="text-ink">All conversations</h3>
                   {conversations.length > 0 && (
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg px-2.5 py-1 rounded-full">
-                      {conversations.length}
-                    </span>
+                    <span className="text-sm text-graphite tabular">{conversations.length}</span>
                   )}
                 </div>
 
@@ -173,73 +139,56 @@ export default function DatasetOverview({
                     growable flex item still reports its full content height,
                     so the grid row grew with the list instead of the list
                     scrolling. Out of flow, it contributes nothing, the row is
-                    sized by the Quality + Quick Actions column, and this card
-                    stretches to match it. */}
-                <div className="relative flex-1 min-h-[12rem]">
-                  <div className="absolute inset-0 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-dark-border">
+                    sized by the right column, and this box stretches to it. */}
+                <div className="relative flex-1 min-h-48">
+                  <div className="absolute inset-0 overflow-y-auto border-t border-rule">
                     {conversations.map((conv) => (
                       <button
                         key={conv.id}
                         onClick={() => onSelectConversation(dataset.id, conv.id)}
-                        className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-dark-elevated transition-colors flex items-start gap-3"
+                        className="w-full text-left py-2.5 border-b border-rule hover:bg-surface"
                       >
-                        <div className="mt-0.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg p-2 rounded-lg">
-                          <MessageSquare size={16} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-medium text-slate-800 dark:text-slate-200 truncate">
-                            {conv.title}
-                          </div>
-                          <div className="text-sm text-slate-600 dark:text-slate-400 flex gap-2">
-                            <span>{conv.date}</span>
-                            <span>&middot;</span>
-                            <span>
-                              {conv.messageCount} message{conv.messageCount === 1 ? '' : 's'}
-                            </span>
-                          </div>
+                        <div className="text-ink truncate">{conv.title}</div>
+                        <div className="text-sm text-graphite">
+                          {conv.date} · {conv.messageCount} message
+                          {conv.messageCount === 1 ? '' : 's'}
                         </div>
                       </button>
                     ))}
                     {conversations.length === 0 && (
-                      <div className="p-8 text-center text-slate-600 dark:text-slate-400">
-                        No conversations yet. Start one to analyse this data.
-                      </div>
+                      <p className="py-6 text-sm text-graphite">
+                        No conversations yet.
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-6">
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border p-5 shadow-sm">
-                <h3 className="text-base font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                  Data Quality
-                </h3>
+            <div className="flex flex-col gap-8">
+              <div>
+                <h3 className="text-ink mb-3">Data quality</h3>
 
                 {isReportLoading || !report ? (
-                  <div className="flex flex-col items-center p-4">
-                    <Bar className="w-32 h-32 rounded-full mb-6" />
+                  <div className="flex flex-col items-center">
+                    <Bar className="w-32 h-32 rounded-full mb-5" />
                     <Bar className="h-3 w-40 mb-2.5" />
                     <Bar className="h-3 w-36" />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center p-4">
+                  <div className="flex flex-col items-center">
                     <QualityRing
                       score={score}
                       scoreText={report.qualityScore}
                       label={report.qualityLabel}
-                      colorClass={scoreColor}
                       animationKey={datasetId}
                     />
-
-                    <div className="w-full space-y-2 mt-2 text-sm">
-                      <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                        <AlertCircle size={14} className="text-warning shrink-0" />
+                    <div className="w-full mt-4 text-sm text-graphite space-y-1">
+                      <div>
                         {report.excludedColumnCount} column
                         {report.excludedColumnCount === 1 ? '' : 's'} excluded
                       </div>
-                      <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                        <CheckCircle2 size={14} className="text-success shrink-0" />
+                      <div>
                         {report.convertedColumnCount} column
                         {report.convertedColumnCount === 1 ? '' : 's'} converted
                       </div>
@@ -248,36 +197,31 @@ export default function DatasetOverview({
                 )}
               </div>
 
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border p-5 shadow-sm">
-                <h3 className="text-base font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                  Quick Actions
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => onNewConversation(dataset.id)}
-                    className="w-full py-2.5 px-4 bg-primary hover:brightness-110 text-slate-900 rounded-lg font-semibold transition-all shadow-sm"
-                  >
-                    Start new conversation
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('Data Preparation')}
-                    className="w-full py-2.5 px-4 bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border hover:bg-slate-50 dark:hover:bg-dark-elevated text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors"
-                  >
-                    View preprocessing report
-                  </button>
-                </div>
+              <div className="border-t border-rule pt-4 space-y-2">
+                <button
+                  onClick={() => onNewConversation(dataset.id)}
+                  className="w-full py-2.5 px-4 bg-verdigris text-paper rounded-md hover:brightness-110"
+                >
+                  Ask a question
+                </button>
+                <button
+                  onClick={() => setActiveTab('Data preparation')}
+                  className="w-full py-2.5 px-4 border border-rule rounded-md text-ink hover:border-graphite"
+                >
+                  See what was cleaned
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === 'Data Preparation' && (
+        {activeTab === 'Data preparation' && (
           <div className="max-w-3xl mx-auto">
             <DataPreparation report={report} isLoading={isReportLoading} />
           </div>
         )}
 
-        {activeTab === 'Columns & Types' && (
+        {activeTab === 'Columns' && (
           <div className="max-w-5xl mx-auto">
             <ColumnsTable columns={columns} report={report} isLoading={!columns && !tabError} />
           </div>
