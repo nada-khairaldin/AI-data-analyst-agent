@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
+import { Download, Loader2 } from 'lucide-react';
 
-// Served from public/, so the path is the URL.
+// Served from public/, so the path is the URL. Kept deliberately plain: a
+// visual pass comes later and card styling would only be thrown away.
 const SAMPLES = [
   {
     file: 'orders.csv',
     name: 'Sales orders',
-    rows: '1,500 rows',
-    period: '2023–2024',
+    description: '1,500 orders, 2023-2024',
   },
   {
     file: 'customers.csv',
     name: 'Customers',
-    rows: '15 rows',
-    period: 'profiles and spending',
+    description: 'Customer profiles and spending',
   },
   {
     file: 'bad.csv',
     name: 'Messy data',
-    rows: '20 rows',
-    period: 'rejected on upload',
+    description: 'See how poor-quality data is rejected',
     // Downloading a file whose whole purpose is to be refused is not useful.
     downloadable: false,
   },
@@ -52,48 +51,58 @@ export default function SampleDatasets({ onFileUpload, isUploading }) {
   const busy = isUploading || loadingFile !== null;
 
   return (
-    <div>
-      <h3 className="text-ink">Or try a sample</h3>
+    <div className="text-left">
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+        Or try a sample dataset
+      </h3>
 
-      <ul className="mt-3 border-t border-rule">
+      <ul className="divide-y divide-slate-200 dark:divide-dark-border border-y border-slate-200 dark:border-dark-border">
         {SAMPLES.map((sample) => {
           const isThisOne = loadingFile === sample.file;
           return (
             <li
               key={sample.file}
-              className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-2.5 border-b border-rule"
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3"
             >
-              <span className="text-ink">{sample.name}</span>
-              <span className="text-sm text-graphite tabular">
-                {sample.rows} · {sample.period}
-              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                  {sample.name}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  {sample.description}
+                </div>
+              </div>
 
-              <span className="ml-auto flex items-baseline gap-4 shrink-0">
+              <div className="flex items-center gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => tryIt(sample)}
                   disabled={busy}
-                  className="text-sm text-verdigris hover:underline disabled:opacity-40 disabled:no-underline"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
                 >
-                  {isThisOne ? 'Loading' : 'Try it'}
+                  {isThisOne && <Loader2 size={14} className="animate-spin" />}
+                  {isThisOne ? 'Loading…' : 'Try it'}
                 </button>
 
                 {sample.downloadable !== false && (
                   <a
                     href={url(sample.file)}
                     download={sample.file}
-                    className="text-sm text-graphite hover:text-ink"
+                    className="inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   >
+                    <Download size={14} />
                     Download
                   </a>
                 )}
-              </span>
+              </div>
             </li>
           );
         })}
       </ul>
 
-      {error && <p className="mt-3 text-sm text-ink border-l-2 border-rule pl-3">{error}</p>}
+      {error && (
+        <p className="mt-3 text-sm text-rose-700 dark:text-error">{error}</p>
+      )}
     </div>
   );
 }

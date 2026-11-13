@@ -1,108 +1,52 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
-/* The palette is six tokens that flip with the theme, so components name a
-   role (paper, ink, rule) once instead of carrying a dark: variant for every
-   colour. `surface` is the one addition: inputs, the sidebar and the few
-   remaining cards need to sit a step off the page or they disappear into it. */
 @theme {
-  --color-paper: var(--c-paper);
-  --color-surface: var(--c-surface);
-  --color-ink: var(--c-ink);
-  --color-graphite: var(--c-graphite);
-  --color-rule: var(--c-rule);
-  --color-verdigris: var(--c-verdigris);
-  --color-marker: var(--c-marker);
+  --color-primary: #38BDF8;
+  --color-secondary: #2DD4BF;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-error: #FB7185;
 
-  /* Multi-series charts only. Single series is verdigris + rule. */
-  --color-series-2: #3A5A8C;
-  --color-series-3: #B8862B;
-  --color-series-4: #7A4E7E;
+  --color-dark-bg: #0B1220;
+  --color-dark-sidebar: #08101D;
+  --color-dark-card: #111C2E;
+  --color-dark-elevated: #16243A;
+  --color-dark-border: #24344D;
 
-  --font-sans: 'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-dark-text-primary: #F1F5F9;
+  --color-dark-text-secondary: #94A3B8;
+
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 @layer base {
   :root {
-    color-scheme: light;
-    --c-paper: #F7F8F6;
-    --c-surface: #FFFFFF;
-    --c-ink: #1D2321;
-    --c-graphite: #5E6762;
-    --c-rule: #DCE1DD;
-    --c-verdigris: #127A6B;
-    --c-marker: #F2D45C;
+    color-scheme: light dark;
   }
-
-  .dark {
-    color-scheme: dark;
-    --c-paper: #151A18;
-    --c-surface: #1B211F;
-    --c-ink: #E8ECE9;
-    --c-graphite: #9AA39E;
-    --c-rule: #2A322F;
-    --c-verdigris: #3FB59F;
-    --c-marker: #E8C547;
-  }
-
+  
   body {
-    @apply bg-paper text-ink font-sans antialiased;
+    @apply bg-slate-50 text-slate-900 dark:bg-dark-bg dark:text-dark-text-primary font-sans antialiased;
   }
-
-  /* Figures line up in columns whether or not they are in a table. */
-  table,
-  .tabular {
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* One visible focus treatment, everywhere, in both themes. */
-  :focus-visible {
-    outline: 2px solid var(--c-verdigris);
-    outline-offset: 2px;
-    border-radius: 2px;
+  
+  *, ::before, ::after {
+    transition-property: background-color, border-color, text-decoration-color, fill, stroke, color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 400ms;
   }
 }
 
-/* The highlighter. The only bold element in the interface: a marker stroke
-   swept across the figure that answers the question. Yellow stays yellow in
-   both themes, so the text on it is always dark. */
-@keyframes marker-sweep {
-  from {
-    background-size: 0% 100%;
-  }
-  to {
-    background-size: 100% 100%;
-  }
-}
-
-.marker {
-  background-image: linear-gradient(var(--c-marker), var(--c-marker));
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-size: 100% 100%;
-  color: #1D2321;
-  padding: 0.05em 0.2em;
-  border-radius: 2px;
-  animation: marker-sweep 400ms cubic-bezier(0.22, 0.61, 0.36, 1) 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marker {
-    animation: none;
-  }
-}
-
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--c-rule);
-  border-radius: 4px;
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--c-graphite);
+  @apply bg-slate-400 dark:bg-slate-600;
 }

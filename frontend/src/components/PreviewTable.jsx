@@ -8,15 +8,17 @@ const ISO_DATETIME = /^\d{4}-\d{2}-\d{2}T[\d:.]+$/;
 // string, and the whole point of this app is data quality.
 function Cell({ value }) {
   if (value === null || value === undefined) {
-    return <span className="text-graphite">missing</span>;
+    return <span className="text-slate-400 dark:text-slate-500 italic">missing</span>;
   }
-  if (typeof value === 'string' && ISO_DATETIME.test(value)) return value.slice(0, 10);
-  if (typeof value === 'number') return value.toLocaleString();
+  if (typeof value === 'string' && ISO_DATETIME.test(value)) {
+    return <span className="tabular-nums">{value.slice(0, 10)}</span>;
+  }
+  if (typeof value === 'number') {
+    return <span className="tabular-nums">{value.toLocaleString()}</span>;
+  }
   if (typeof value === 'boolean') return String(value);
   return String(value);
 }
-
-const isNumeric = (rows, key) => rows.some((row) => typeof row[key] === 'number');
 
 export default function PreviewTable({ preview, isLoading }) {
   if (isLoading || !preview) return <TableSkeleton rows={10} cols={6} />;
@@ -30,36 +32,36 @@ export default function PreviewTable({ preview, isLoading }) {
       : Object.keys(rows[0] || {});
 
   if (rows.length === 0) {
-    return <p className="text-sm text-graphite">This dataset has no rows to preview.</p>;
+    return (
+      <div className="bg-white dark:bg-dark-card rounded-xl border border-slate-200 dark:border-dark-border p-8 text-center text-slate-600 dark:text-slate-400">
+        This dataset has no rows to preview.
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div className="overflow-x-auto border-t border-b border-rule">
-        <table className="w-full text-sm text-left border-collapse">
-          <thead>
-            <tr className="border-b border-rule text-graphite">
+    <div className="bg-white dark:bg-dark-card rounded-xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
+      <div className="overflow-x-auto custom-scrollbar">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 dark:bg-dark-bg border-b border-slate-200 dark:border-dark-border">
+            <tr className="text-left text-xs uppercase tracking-wider text-slate-600 dark:text-slate-400">
               {columns.map((name) => (
-                <th
-                  key={name}
-                  className={`px-3 py-1.5 font-normal whitespace-nowrap ${
-                    isNumeric(rows, name) ? 'text-right' : ''
-                  }`}
-                >
+                <th key={name} className="px-4 py-3 font-semibold whitespace-nowrap font-mono normal-case">
                   {name}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100 dark:divide-dark-border">
             {rows.map((row, index) => (
-              <tr key={index} className="border-b border-rule last:border-b-0">
+              <tr
+                key={index}
+                className="hover:bg-slate-50 dark:hover:bg-dark-elevated transition-colors"
+              >
                 {columns.map((name) => (
                   <td
                     key={name}
-                    className={`px-3 py-1.5 whitespace-nowrap text-ink ${
-                      isNumeric(rows, name) ? 'text-right tabular' : ''
-                    }`}
+                    className="px-4 py-2.5 whitespace-nowrap text-slate-700 dark:text-slate-300"
                   >
                     <Cell value={row[name]} />
                   </td>
@@ -69,9 +71,9 @@ export default function PreviewTable({ preview, isLoading }) {
           </tbody>
         </table>
       </div>
-      <p className="text-sm text-graphite mt-2 tabular">
+      <div className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-dark-border">
         First {rows.length} of {preview.totalRows?.toLocaleString()} rows
-      </p>
+      </div>
     </div>
   );
 }

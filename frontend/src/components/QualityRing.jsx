@@ -17,7 +17,7 @@ const easeOutCubic = (t) => 1 - (1 - t) ** 3;
  * change the key leave the ring alone — otherwise every unrelated state
  * change in the parent would replay the animation.
  */
-export default function QualityRing({ score, scoreText, label, animationKey }) {
+export default function QualityRing({ score, scoreText, label, colorClass, animationKey }) {
   const [shown, setShown] = useState(0);
 
   useEffect(() => {
@@ -45,23 +45,35 @@ export default function QualityRing({ score, scoreText, label, animationKey }) {
   const offset = Math.max(0, CIRCUMFERENCE - (CIRCUMFERENCE * shown) / 100);
 
   return (
-    <div className="relative w-32 h-32">
+    <div className="relative w-32 h-32 mb-4">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
         <circle
-          cx="50" cy="50" r="45" fill="none"
-          stroke="currentColor" className="text-rule" strokeWidth="6"
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          stroke="currentColor"
+          className="text-slate-100 dark:text-dark-border"
+          strokeWidth="8"
         />
         <circle
-          cx="50" cy="50" r="45" fill="none"
-          stroke="currentColor" className="text-verdigris" strokeWidth="6"
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          stroke="currentColor"
+          className={colorClass}
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={offset}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-2xl text-ink tabular">{shown.toFixed(decimals)}%</span>
-        <span className="text-sm text-graphite">{label}</span>
+        <span className="text-2xl font-bold text-slate-800 dark:text-white tabular-nums">
+          {shown.toFixed(decimals)}%
+        </span>
+        <span className={`text-xs font-medium ${colorClass}`}>{label}</span>
       </div>
     </div>
   );
