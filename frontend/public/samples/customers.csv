@@ -1,0 +1,16 @@
+CustomerID,CustomerName,Country,SignupDate,Age,TotalSpent,Segment
+C001,Acme Industrial,Germany,2023-02-14,41,18400.0,Enterprise
+C002,Blue Harbour Ltd,France,2023-03-02,35,7250.5,Mid-Market
+C003,Cedar Analytics,Spain,2023-04-19,29,3120.0,SMB
+C004,Delta Freight,Germany,2023-05-07,52,22850.75,Enterprise
+C005,Evergreen Foods,Italy,2023-06-23,44,5600.0,Mid-Market
+C006,Fjord Systems,Netherlands,2023-07-11,38,9900.0,Mid-Market
+C007,Granite Partners,Germany,2023-08-05,47,31200.0,Enterprise
+C008,Harbour Lights,France,2023-09-17,31,2480.0,SMB
+C009,Ironwood Supply,Spain,2023-10-02,55,14300.25,Enterprise
+C010,Juniper Retail,Italy,2023-11-21,27,1950.0,SMB
+C011,Kestrel Media,Germany,2024-01-09,33,6700.0,Mid-Market
+C012,Lantern Health,Netherlands,2024-02-13,49,17450.0,Enterprise
+C013,Meridian Labs,France,2024-03-04,36,4200.0,SMB
+C014,Northgate Energy,Germany,2024-04-18,58,28900.5,Enterprise
+C015,Orchard Textiles,Spain,2024-05-26,42,8150.0,Mid-Market

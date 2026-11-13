@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, ShieldCheck, Lock, BarChart2, AlertTriangle } from 'lucide-react';
+import SampleDatasets from './SampleDatasets';
 
 // Matches the server's limit. Checking here too turns a 5 MB upload over a
 // slow connection, answered with a 413, into an instant, specific message.
@@ -31,15 +32,17 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
   // flickers. Counting enters and leaves does not.
   const dragDepth = useRef(0);
 
+  // Returns the upload's promise so a caller can keep a spinner up until it
+  // finishes -- the sample list needs that.
   const accept = (file) => {
-    if (!file) return;
+    if (!file) return undefined;
     const reason = rejectionReason(file);
     if (reason) {
       setLocalError(reason);
-      return;
+      return undefined;
     }
     setLocalError(null);
-    onFileUpload(file);
+    return onFileUpload(file);
   };
 
   const onDrop = (event) => {
@@ -143,6 +146,10 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
               <span>{localError}</span>
             </div>
           )}
+
+          <div className="mt-6">
+            <SampleDatasets onFileUpload={accept} isUploading={isUploading} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 max-w-3xl mx-auto border-t border-slate-200 dark:border-dark-border">
