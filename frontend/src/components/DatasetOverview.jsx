@@ -64,7 +64,8 @@ export default function DatasetOverview({
 
   if (!dataset) return null;
 
-  // The circle is a 283-unit circumference; the offset is the unfilled part.
+  const conversations = dataset.conversations || [];
+
   const score = report ? parseFloat(report.qualityScore) : null;
   const scoreColor =
     report?.qualityLabel === 'Good'
@@ -84,8 +85,7 @@ export default function DatasetOverview({
           Back to datasets
         </button>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
             <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
               <FileText size={24} />
             </div>
@@ -98,12 +98,6 @@ export default function DatasetOverview({
                 &middot; {dataset.size}
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 text-success border border-success/20 rounded-full text-sm font-medium shrink-0">
-            <CheckCircle2 size={16} />
-            Ready for analysis
-          </div>
         </div>
 
         <div className="flex items-center gap-6 mt-6 overflow-x-auto custom-scrollbar">
@@ -165,12 +159,19 @@ export default function DatasetOverview({
               <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-dark-border">
                   <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                    Recent Conversations
+                    All conversations
                   </h3>
+                  {conversations.length > 0 && (
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg px-2.5 py-1 rounded-full">
+                      {conversations.length}
+                    </span>
+                  )}
                 </div>
 
-                <div className="divide-y divide-slate-100 dark:divide-dark-border">
-                  {dataset.conversations?.slice(0, 3).map((conv) => (
+                {/* A fixed box that scrolls inside itself: the list is complete
+                    but cannot push the quality card off the page. */}
+                <div className="max-h-[22rem] overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-dark-border">
+                  {conversations.map((conv) => (
                     <button
                       key={conv.id}
                       onClick={() => onSelectConversation(dataset.id, conv.id)}
@@ -193,7 +194,7 @@ export default function DatasetOverview({
                       </div>
                     </button>
                   ))}
-                  {(!dataset.conversations || dataset.conversations.length === 0) && (
+                  {conversations.length === 0 && (
                     <div className="p-8 text-center text-slate-600 dark:text-slate-400">
                       No conversations yet. Start one to analyse this data.
                     </div>
