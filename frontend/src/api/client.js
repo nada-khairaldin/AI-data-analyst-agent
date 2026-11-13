@@ -35,6 +35,17 @@ async function toError(response) {
   }
   const error = body?.error;
 
+  // The path exists but not this method: the deployed API is older than this
+  // frontend. Worth saying outright — "Request failed (405)" sends you
+  // looking for a bug in code that is already correct.
+  if (response.status === 405) {
+    return new ApiError(
+      'The API does not support this action yet. The backend is running an '
+        + 'older build than this page — redeploy it and try again.',
+      { status: 405, code: 'API_OUT_OF_DATE' },
+    );
+  }
+
   if (!error && GATEWAY_STATUSES.has(response.status)) {
     return new ApiError(
       'The API is not responding yet. A free instance sleeps after 15 minutes '
