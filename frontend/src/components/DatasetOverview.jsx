@@ -168,37 +168,44 @@ export default function DatasetOverview({
                   )}
                 </div>
 
-                {/* A fixed box that scrolls inside itself: the list is complete
-                    but cannot push the quality card off the page. */}
-                <div className="flex-1 min-h-[12rem] overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-dark-border">
-                  {conversations.map((conv) => (
-                    <button
-                      key={conv.id}
-                      onClick={() => onSelectConversation(dataset.id, conv.id)}
-                      className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-dark-elevated transition-colors flex items-start gap-3"
-                    >
-                      <div className="mt-0.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg p-2 rounded-lg">
-                        <MessageSquare size={16} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-medium text-slate-800 dark:text-slate-200 truncate">
-                          {conv.title}
+                {/* The scroller is absolutely positioned on purpose.
+                    overflow-y-auto does NOT constrain intrinsic sizing: a
+                    growable flex item still reports its full content height,
+                    so the grid row grew with the list instead of the list
+                    scrolling. Out of flow, it contributes nothing, the row is
+                    sized by the Quality + Quick Actions column, and this card
+                    stretches to match it. */}
+                <div className="relative flex-1 min-h-[12rem]">
+                  <div className="absolute inset-0 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-dark-border">
+                    {conversations.map((conv) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => onSelectConversation(dataset.id, conv.id)}
+                        className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-dark-elevated transition-colors flex items-start gap-3"
+                      >
+                        <div className="mt-0.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg p-2 rounded-lg">
+                          <MessageSquare size={16} />
                         </div>
-                        <div className="text-sm text-slate-600 dark:text-slate-400 flex gap-2">
-                          <span>{conv.date}</span>
-                          <span>&middot;</span>
-                          <span>
-                            {conv.messageCount} message{conv.messageCount === 1 ? '' : 's'}
-                          </span>
+                        <div className="min-w-0">
+                          <div className="font-medium text-slate-800 dark:text-slate-200 truncate">
+                            {conv.title}
+                          </div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400 flex gap-2">
+                            <span>{conv.date}</span>
+                            <span>&middot;</span>
+                            <span>
+                              {conv.messageCount} message{conv.messageCount === 1 ? '' : 's'}
+                            </span>
+                          </div>
                         </div>
+                      </button>
+                    ))}
+                    {conversations.length === 0 && (
+                      <div className="p-8 text-center text-slate-600 dark:text-slate-400">
+                        No conversations yet. Start one to analyse this data.
                       </div>
-                    </button>
-                  ))}
-                  {conversations.length === 0 && (
-                    <div className="p-8 text-center text-slate-600 dark:text-slate-400">
-                      No conversations yet. Start one to analyse this data.
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
