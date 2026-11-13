@@ -129,7 +129,7 @@ export default function DatasetOverview({
 
         {activeTab === 'Overview' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 flex flex-col gap-6">
               <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border p-5 shadow-sm">
                 <h3 className="text-base font-semibold mb-4 text-slate-800 dark:text-slate-200">
                   Dataset Summary
@@ -156,8 +156,8 @@ export default function DatasetOverview({
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-dark-border">
+              <div className="flex-1 min-h-0 flex flex-col bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
+                <div className="shrink-0 flex items-center justify-between p-5 border-b border-slate-100 dark:border-dark-border">
                   <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
                     All conversations
                   </h3>
@@ -170,7 +170,7 @@ export default function DatasetOverview({
 
                 {/* A fixed box that scrolls inside itself: the list is complete
                     but cannot push the quality card off the page. */}
-                <div className="max-h-[22rem] overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-dark-border">
+                <div className="flex-1 min-h-[12rem] overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-dark-border">
                   {conversations.map((conv) => (
                     <button
                       key={conv.id}
@@ -203,7 +203,7 @@ export default function DatasetOverview({
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="flex flex-col gap-6">
               <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border p-5 shadow-sm">
                 <h3 className="text-base font-semibold mb-4 text-slate-800 dark:text-slate-200">
                   Data Quality
