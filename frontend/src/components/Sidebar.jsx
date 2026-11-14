@@ -9,6 +9,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { SidebarSkeleton } from './Skeleton';
+import Logo from './Logo';
 
 // Conversations arrive ordered by last_message_at DESC, so the newest few are
 // simply the first few.
@@ -64,13 +65,7 @@ export default function Sidebar({
             sidebar traps the wheel and is why long lists felt stuck. */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-5 flex items-center gap-3">
-            <img
-              src={`${import.meta.env.BASE_URL}logo.png`}
-              alt=""
-              width="32"
-              height="32"
-              className="w-8 h-8 shrink-0"
-            />
+            <Logo size={32} className="shrink-0 text-slate-100" />
             <div>
               <h1 className="text-white font-semibold text-lg leading-tight">AI Data Analyst</h1>
               <p className="text-xs text-slate-400">Your data. Just ask.</p>

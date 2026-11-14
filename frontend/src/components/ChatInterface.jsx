@@ -3,6 +3,7 @@ import { MessagesSkeleton } from './Skeleton';
 import { suggestQuestions } from '../lib/suggestions';
 import { Send, CheckCircle2, ChevronRight, BarChart2, AlertTriangle, Lightbulb } from 'lucide-react';
 import ResultBlock from './ResultBlock';
+import Logo from './Logo';
 import { api, ApiError } from '../api/client';
 import { streamMessage } from '../api/stream';
 
@@ -247,9 +248,7 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
 
         {!isLoading && messages.length === 0 && !isStreaming && (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2">
-              <BarChart2 size={32} />
-            </div>
+            <Logo size={48} className="text-slate-800 dark:text-slate-100 mb-2" />
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200">Start your analysis</h3>
             <div className="flex flex-wrap justify-center gap-2 max-w-md">
               {suggestions.map((suggestion) => (
@@ -268,8 +267,8 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'agent' && (
-              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shrink-0 mt-1">
-                <BarChart2 size={16} />
+              <div className="w-8 h-8 rounded-lg bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border flex items-center justify-center shrink-0 mt-1">
+                <Logo size={18} className="text-slate-800 dark:text-slate-100" />
               </div>
             )}
             <div
@@ -287,8 +286,8 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
         {/* The live turn */}
         {isStreaming && (
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1 border border-primary/30">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 rounded-lg bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border flex items-center justify-center shrink-0 mt-1">
+              <Logo size={18} className="text-slate-800 dark:text-slate-100" />
             </div>
             <div className="max-w-[85%] min-w-0 space-y-4">
               {condensed && (

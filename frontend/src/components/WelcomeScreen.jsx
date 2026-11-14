@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, ShieldCheck, Lock, BarChart2, AlertTriangle } from 'lucide-react';
 import SampleDatasets from './SampleDatasets';
+import Logo from './Logo';
 
 // Matches the server's limit. Checking here too turns a 5 MB upload over a
 // slow connection, answered with a 413, into an instant, specific message.
@@ -67,13 +68,7 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
       <div className="min-h-full flex flex-col px-4 sm:px-6 py-8">
         <div className="max-w-2xl w-full mx-auto my-auto text-center space-y-6">
           <div className="space-y-4">
-            <img
-              src={`${import.meta.env.BASE_URL}logo.png`}
-              alt=""
-              width="64"
-              height="64"
-              className="w-16 h-16 mx-auto mb-4"
-            />
+            <Logo size={56} className="mx-auto mb-4 text-slate-800 dark:text-slate-100" />
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Analyse your data with AI
             </h2>
