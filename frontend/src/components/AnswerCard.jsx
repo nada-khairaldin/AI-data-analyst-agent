@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
+import {
+  BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip as RechartsTooltip, ResponsiveContainer,
+} from 'recharts';
+import { useIsDark, chartColors, MARKER_YELLOW } from '../lib/useIsDark';
 import { splitOnValue, formatNumber } from '../lib/figure';
 import { readShape, rowLabel, topRows, chartCaption, MAX_BARS } from '../lib/resultShape';
 
@@ -51,79 +56,95 @@ function Sentence({ text, fullText, figureValue }) {
 }
 
 function Bars({ rows, shape, hidden }) {
-  const max = Math.max(...rows.map((row) => row[shape.measure] ?? 0), 0) || 1;
+  const colors = chartColors(useIsDark());
+  // Recharts needs one field to label a bar, and a grouped result names a
+  // row with several columns at once.
+  const data = rows.map((row) => ({ ...row, __label: rowLabel(row, shape.groupColumns) }));
+  const longest = Math.max(...data.map((row) => row.__label.length), 8);
+  const axisWidth = Math.min(Math.max(longest * 6.5, 80), 190);
 
   return (
     <div>
-      <ul className="space-y-1.5">
-        {rows.map((row, index) => (
-          <li key={rowLabel(row, shape.groupColumns)} className="flex items-center gap-2.5 text-xs">
-            <span
-              dir="auto"
-              className="w-36 shrink-0 truncate text-slate-600 dark:text-slate-400"
-              title={rowLabel(row, shape.groupColumns)}
-            >
-              {rowLabel(row, shape.groupColumns)}
-            </span>
-            <span className="flex-1 h-2.5 bg-slate-100 dark:bg-dark-bg rounded-sm overflow-hidden">
-              <span
-                className={`block h-full rounded-sm ${
-                  index === 0 ? 'bg-[#F2D45C]' : 'bg-slate-300 dark:bg-slate-600'
-                }`}
-                style={{ width: `${Math.max((row[shape.measure] / max) * 100, 1)}%` }}
-              />
-            </span>
-            <span className="w-20 shrink-0 text-right tabular-nums text-slate-600 dark:text-slate-400">
-              {formatNumber(row[shape.measure])}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <ResponsiveContainer width="100%" height={Math.max(data.length * 28 + 16, 140)}>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 48, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={colors.grid} opacity={0.4} />
+          <XAxis type="number" hide />
+          <YAxis
+            dataKey="__label"
+            type="category"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: colors.tick, fontSize: 11 }}
+            width={axisWidth}
+          />
+          <RechartsTooltip
+            cursor={{ fill: 'transparent' }}
+            formatter={(value) => formatNumber(value)}
+            contentStyle={{
+              backgroundColor: colors.tooltipBg,
+              borderColor: colors.tooltipBorder,
+              borderRadius: 8,
+              color: colors.tooltipText,
+            }}
+          />
+          <Bar dataKey={shape.measure} radius={[0, 4, 4, 0]} barSize={14}
+            label={{ position: 'right', fill: colors.tick, fontSize: 11,
+              formatter: (value) => formatNumber(value) }}>
+            {/* The leading bar carries the marker, the rest stay quiet. */}
+            {data.map((row, index) => (
+              <Cell key={row.__label} fill={index === 0 ? MARKER_YELLOW : colors.bar} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
       {hidden > 0 && (
-        <p className="mt-2 text-xs text-slate-500">and {hidden.toLocaleString()} more</p>
+        <p className="mt-1 text-xs text-slate-500">and {hidden.toLocaleString()} more</p>
       )}
     </div>
   );
 }
 
-function Line({ resultData, shape }) {
+function TimeChart({ resultData, shape }) {
+  const colors = chartColors(useIsDark());
   const key = shape.timeColumn;
   const points = resultData.filter((row) => typeof row[shape.measure] === 'number');
-  if (points.length < 2) return <Bars rows={points} shape={shape} hidden={0} />;
+  if (points.length < 2) {
+    return <Bars rows={points} shape={shape} hidden={0} />;
+  }
 
-  const values = points.map((row) => row[shape.measure]);
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const span = max - min || 1;
-  const peak = points.findIndex((row) => row[shape.measure] === max);
-
-  const W = 600;
-  const H = 120;
-  const x = (i) => (i / (points.length - 1)) * (W - 16) + 8;
-  const y = (v) => H - 14 - ((v - min) / span) * (H - 32);
-  const path = points.map((row, i) => `${i ? 'L' : 'M'}${x(i)},${y(row[shape.measure])}`).join(' ');
+  const max = Math.max(...points.map((row) => row[shape.measure]));
 
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-28" role="img"
-        aria-label={`${shape.measure} over ${key}, highest ${formatNumber(max)}`}>
-        <path d={path} fill="none" strokeWidth="2" className="stroke-slate-400 dark:stroke-slate-500" />
-        <circle cx={x(peak)} cy={y(max)} r="4" fill="#F2D45C" />
-        <text
-          x={Math.min(Math.max(x(peak), 30), W - 30)}
-          y={Math.max(y(max) - 9, 11)}
-          textAnchor="middle"
-          className="fill-slate-700 dark:fill-slate-200"
-          fontSize="11"
-        >
-          {formatNumber(max)}
-        </text>
-      </svg>
-      <div className="flex justify-between text-xs text-slate-500">
-        <span>{String(points[0][key])}</span>
-        <span>{String(points[points.length - 1][key])}</span>
-      </div>
-    </div>
+    <ResponsiveContainer width="100%" height={240}>
+      <LineChart data={points} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} opacity={0.4} />
+        <XAxis dataKey={key} tick={{ fill: colors.tick, fontSize: 11 }} />
+        <YAxis tick={{ fill: colors.tick, fontSize: 11 }} width={62}
+          tickFormatter={(value) => formatNumber(value)} />
+        <RechartsTooltip
+          formatter={(value) => formatNumber(value)}
+          contentStyle={{
+            backgroundColor: colors.tooltipBg,
+            borderColor: colors.tooltipBorder,
+            borderRadius: 8,
+            color: colors.tooltipText,
+          }}
+        />
+        <Line
+          type="monotone"
+          dataKey={shape.measure}
+          stroke={colors.bar}
+          strokeWidth={2}
+          // The peak is the only marked point: a dot on every month is noise.
+          dot={(props) =>
+            props.payload[shape.measure] === max ? (
+              <circle key={props.index} cx={props.cx} cy={props.cy} r={5} fill={MARKER_YELLOW} />
+            ) : null
+          }
+          activeDot={{ r: 4 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -171,7 +192,7 @@ function ResultTable({ resultData, shape }) {
 }
 
 export default function AnswerCard({ text, fullText, resultData, resultKind, plan }) {
-  const [showTable, setShowTable] = useState(false);
+  const [showTable, setShowTable] = useState(true);
   const shape = readShape(resultData, resultKind);
 
   if (shape.kind === 'scalar') {
@@ -217,7 +238,7 @@ export default function AnswerCard({ text, fullText, resultData, resultKind, pla
             <p dir="auto" className="text-xs text-slate-500 mb-3">{caption}</p>
           )}
           {shape.kind === 'time' ? (
-            <Line resultData={resultData} shape={shape} />
+            <TimeChart resultData={resultData} shape={shape} />
           ) : (
             <Bars rows={rows} shape={shape} hidden={hidden} />
           )}
