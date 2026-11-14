@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, FileText, CheckCircle2, MessageSquare, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, MessageSquare, AlertCircle } from 'lucide-react';
+import DataFingerprint from './DataFingerprint';
 import DataPreparation from './DataPreparation';
 import ColumnsTable from './ColumnsTable';
 import PreviewTable from './PreviewTable';
@@ -32,25 +33,17 @@ export default function DatasetOverview({
     setTabError(null);
   }, [datasetId]);
 
-  // Columns and preview are fetched the first time their tab is opened, not
-  // on every dataset: most of the time nobody looks, and the demo runs on a
-  // free instance where each request costs a round trip to the other coast.
+  // Columns come with the dataset now, because the header's fingerprint is
+  // drawn from them; the Columns tab reuses the same copy. A failure here is
+  // silent: the fingerprint simply does not render, and the tab reports it
+  // if you open it.
   useEffect(() => {
     if (!datasetId) return undefined;
-    const wantsColumns = activeTab === 'Columns & Types' && !columns;
-    const wantsPreview = activeTab === 'Preview' && !preview;
-    if (!wantsColumns && !wantsPreview) return undefined;
-
     let cancelled = false;
     (async () => {
       try {
-        if (wantsColumns) {
-          const body = await api.getColumns(datasetId);
-          if (!cancelled) setColumns(body.columns);
-        } else {
-          const body = await api.getPreview(datasetId);
-          if (!cancelled) setPreview(body);
-        }
+        const body = await api.getColumns(datasetId);
+        if (!cancelled) setColumns(body.columns);
       } catch (cause) {
         if (!cancelled) {
           setTabError(cause instanceof ApiError ? cause.message : String(cause));
@@ -60,7 +53,28 @@ export default function DatasetOverview({
     return () => {
       cancelled = true;
     };
-  }, [datasetId, activeTab, columns, preview]);
+  }, [datasetId]);
+
+  // The preview is still fetched only when its tab is opened: nobody looks
+  // most of the time, and the demo runs on a free instance where every
+  // request is a round trip to the other coast.
+  useEffect(() => {
+    if (!datasetId || activeTab !== 'Preview' || preview) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const body = await api.getPreview(datasetId);
+        if (!cancelled) setPreview(body);
+      } catch (cause) {
+        if (!cancelled) {
+          setTabError(cause instanceof ApiError ? cause.message : String(cause));
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [datasetId, activeTab, preview]);
 
   if (!dataset) return null;
 
@@ -86,9 +100,7 @@ export default function DatasetOverview({
         </button>
 
         <div className="flex items-center gap-4 min-w-0">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
-              <FileText size={24} />
-            </div>
+            <DataFingerprint columns={columns} size={44} className="shrink-0" />
             <div className="min-w-0">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white truncate">
                 {dataset.name}
