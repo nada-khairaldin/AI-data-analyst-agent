@@ -50,3 +50,65 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-400 dark:bg-slate-600;
 }
+
+/* ---------------------------------------------------------------------------
+   The mark's animations. Pure CSS on the existing SVG rects, no library.
+
+   `transform-box: fill-box` makes transform-origin resolve against each
+   rect's own box, so a bar can scale from its baseline and the highlighter
+   from its left edge. All three bars already sit on y=40, so "center bottom"
+   is the shared baseline.
+--------------------------------------------------------------------------- */
+@keyframes logo-bar-rise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes logo-wipe {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes logo-bar-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(0.55); }
+}
+
+.logo-bar {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.logo-wipe {
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+/* Intro: bars up from the baseline 80ms apart, then the highlighter sweeps
+   in behind the tallest. Ends at 800ms. */
+.logo--intro .logo-bar {
+  animation: logo-bar-rise 320ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.logo--intro .logo-bar--1 { animation-delay: 0ms; }
+.logo--intro .logo-bar--2 { animation-delay: 80ms; }
+.logo--intro .logo-bar--3 { animation-delay: 160ms; }
+.logo--intro .logo-wipe {
+  animation: logo-wipe 380ms cubic-bezier(0.22, 0.61, 0.36, 1) 420ms both;
+}
+
+/* Loading: the bars breathe in sequence; the highlighter stays put, so the
+   mark still reads as itself rather than as a spinner. */
+.logo--loading .logo-bar {
+  animation: logo-bar-breathe 1200ms ease-in-out infinite;
+}
+.logo--loading .logo-bar--1 { animation-delay: 0ms; }
+.logo--loading .logo-bar--2 { animation-delay: 150ms; }
+.logo--loading .logo-bar--3 { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .logo--intro .logo-bar,
+  .logo--intro .logo-wipe,
+  .logo--loading .logo-bar {
+    animation: none;
+  }
+}

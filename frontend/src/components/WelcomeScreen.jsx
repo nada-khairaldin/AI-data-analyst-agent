@@ -68,7 +68,7 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
       <div className="min-h-full flex flex-col px-4 sm:px-6 py-8">
         <div className="max-w-2xl w-full mx-auto my-auto text-center space-y-6">
           <div className="space-y-4">
-            <Logo size={56} className="mx-auto mb-4 text-slate-800 dark:text-slate-100" />
+            <Logo size={56} variant="intro" className="mx-auto mb-4 text-slate-800 dark:text-slate-100" />
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Analyse your data with AI
             </h2>
@@ -114,16 +114,20 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
 
               <div className="flex flex-col items-center justify-center text-center space-y-4 pointer-events-none">
                 <div className="p-4 bg-slate-100 dark:bg-dark-bg rounded-full">
-                  <UploadCloud
-                    size={32}
-                    className={
-                      isUploading
-                        ? 'text-primary animate-bounce'
-                        : isDragging
-                          ? 'text-primary'
-                          : 'text-slate-500 dark:text-slate-400'
-                    }
-                  />
+                  {isUploading ? (
+                    <Logo
+                      size={32}
+                      variant="loading"
+                      className="text-slate-700 dark:text-slate-200"
+                    />
+                  ) : (
+                    <UploadCloud
+                      size={32}
+                      className={
+                        isDragging ? 'text-primary' : 'text-slate-500 dark:text-slate-400'
+                      }
+                    />
+                  )}
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">

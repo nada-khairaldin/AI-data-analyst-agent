@@ -30,6 +30,19 @@ export default function Sidebar({
   onDeleteConversation,
 }) {
   const [expandedId, setExpandedId] = useState(activeDatasetId);
+  // A fast load keeps the skeleton; a slow one is almost always the free
+  // Render instance waking, which is worth saying rather than miming.
+  const [isSlow, setIsSlow] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setIsSlow(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setIsSlow(true), 2500);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
   const [showAllFor, setShowAllFor] = useState({});
 
   useEffect(() => {
@@ -87,7 +100,15 @@ export default function Sidebar({
               YOUR DATASETS
             </div>
 
-            {isLoading && <SidebarSkeleton />}
+            {isLoading &&
+              (isSlow ? (
+                <div className="flex items-center gap-2.5 px-1 py-3">
+                  <Logo size={20} variant="loading" className="shrink-0 text-slate-300" />
+                  <span className="text-sm text-slate-400">Waking the server…</span>
+                </div>
+              ) : (
+                <SidebarSkeleton />
+              ))}
 
             {!isLoading && datasets.length === 0 && (
               <div className="px-1 py-2 text-sm text-slate-400">

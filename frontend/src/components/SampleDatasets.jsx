@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Download, Loader2 } from 'lucide-react';
+import { Download } from 'lucide-react';
+import Logo from './Logo';
 
 // Served from public/, so the path is the URL. Kept deliberately plain: a
 // visual pass comes later and card styling would only be thrown away.
@@ -80,7 +81,7 @@ export default function SampleDatasets({ onFileUpload, isUploading }) {
                   disabled={busy}
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
                 >
-                  {isThisOne && <Loader2 size={14} className="animate-spin" />}
+                  {isThisOne && <Logo size={14} variant="loading" />}
                   {isThisOne ? 'Loading…' : 'Try it'}
                 </button>
 
