@@ -124,6 +124,11 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
   const [condensed, setCondensed] = useState(null);
   const [liveResult, setLiveResult] = useState(null);
   const [tokens, setTokens] = useState('');
+  // Everything received so far, and the finished turn waiting for the reveal
+  // to catch up. See the reveal effect below for why these are needed.
+  const receivedRef = useRef('');
+  const pendingDoneRef = useRef(null);
+  const shownRef = useRef('');
 
   const endRef = useRef(null);
   const isStreaming = stage !== null;
@@ -166,7 +171,64 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, tokens, stage, liveResult]);
 
+  // Why the answer is revealed on a timer rather than painted as it arrives.
+  //
+  // The server streams honestly — one SSE `token` event per chunk the model
+  // emits — but Gemini does not dribble a short answer out. Measured against
+  // the live backend: the explainer starts, then the whole reply lands in two
+  // chunks 20ms apart and `done` follows 20ms later. The entire "stream" is
+  // about 50 milliseconds, so there is nothing to watch; the sentence simply
+  // appears. This paces what has already been received so it can be read as
+  // it lands. It invents no text and waits for none: everything shown has
+  // arrived, and the result table above is painted the moment it arrives,
+  // untouched by this.
+  const CHARS_PER_SECOND = 55;
+  const MAX_REVEAL_MS = 2500;
+
+  useEffect(() => {
+    if (!isStreaming) return undefined;
+
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    let frame;
+    let last = performance.now();
+    const tick = (now) => {
+      const elapsed = now - last;
+      last = now;
+      const full = receivedRef.current;
+
+      if (shownRef.current.length < full.length) {
+        if (reduced) {
+          shownRef.current = full;
+        } else {
+          // A long answer must not crawl, so the rate rises with its length.
+          const rate = Math.max(CHARS_PER_SECOND, (full.length * 1000) / MAX_REVEAL_MS);
+          const step = Math.max(1, Math.round((rate * elapsed) / 1000));
+          shownRef.current = full.slice(0, shownRef.current.length + step);
+        }
+        setTokens(shownRef.current);
+      } else if (pendingDoneRef.current) {
+        // Commit here rather than in an effect keyed on `tokens`: the reveal
+        // usually finishes BEFORE `done` arrives, so `tokens` stops changing,
+        // React bails out of the re-render, and an effect watching it would
+        // never fire again -- the turn would hang with the answer on screen
+        // and the input still disabled.
+        const commit = pendingDoneRef.current;
+        pendingDoneRef.current = null;
+        commit();
+        return;
+      }
+
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [isStreaming]);
+
   const resetTurn = useCallback(() => {
+    receivedRef.current = '';
+    pendingDoneRef.current = null;
+    shownRef.current = '';
     setStages([]);
     setStage(null);
     setCondensed(null);
@@ -198,19 +260,25 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
         } else if (event === 'result') {
           setLiveResult(data);
         } else if (event === 'token') {
-          setTokens((prev) => prev + data.text);
+          receivedRef.current += data.text;
         } else if (event === 'done') {
-          setMessages((prev) => {
-            // Drop the optimistic user row and take the server's pair.
-            const withoutOptimistic = prev.slice(0, -1);
-            return [
-              ...withoutOptimistic,
-              { role: 'user', content: question },
-              data.message,
-            ];
-          });
-          resetTurn();
-          onTurnComplete?.();
+          // Held, not applied: `done` lands ~20ms after the last token, and
+          // applying it here would swap in the finished message before a
+          // single character had been read. commitTurn runs once the reveal
+          // has caught up.
+          pendingDoneRef.current = () => {
+            setMessages((prev) => {
+              // Drop the optimistic user row and take the server's pair.
+              const withoutOptimistic = prev.slice(0, -1);
+              return [
+                ...withoutOptimistic,
+                { role: 'user', content: question },
+                data.message,
+              ];
+            });
+            resetTurn();
+            onTurnComplete?.();
+          };
         } else if (event === 'error') {
           setTurnError(data.message || 'The analysis failed.');
           resetTurn();
