@@ -6,8 +6,6 @@ Upload a CSV, ask questions about it in plain language, and get the answer as a 
 
 The backend runs on a free Render instance that sleeps after 15 minutes idle, so the first request may take about a minute while it wakes. Everything after that is fast.
 
-![The chat answering a question](docs/images/chat-answer.png)
-
 ## What it does
 
 - **Upload a CSV and see what was wrong with it.** Every file is checked for missing values, duplicate rows and unusable columns before any question is allowed; a file that is more than 40% empty is refused with the reason.
@@ -176,12 +174,3 @@ frontend/
 samples/        orders.csv, customers.csv, bad.csv
 docs/           PLAN.md (design), API_CONTRACT.md (every endpoint)
 ```
-
-Deeper detail lives in [docs/PLAN.md](docs/PLAN.md) and [docs/API_CONTRACT.md](docs/API_CONTRACT.md); deployment is in [DEPLOY.md](DEPLOY.md).
-
-## Author
-
-**Nada Khairaldin**
-
-- GitHub: [@nada-khairaldin](https://github.com/nada-khairaldin)
-- LinkedIn: `<add your profile URL>`
