@@ -6,6 +6,7 @@ nests the same conversation object that endpoint 8 returns flat, and endpoint
 """
 
 from app.presenters import (
+    format_short_date,
     chart_title,
     format_bytes,
     format_percent,
@@ -41,6 +42,9 @@ def dataset_detail(dataset) -> dict:
         "missingRate": format_percent(dataset.missing_rate),
         "duplicateRate": format_percent(dataset.duplicate_rate),
         "status": dataset.status,
+        # Only the sidebar uses this, and only when two datasets share a
+        # name; sending it always keeps the shape of the object constant.
+        "uploadedAt": format_short_date(dataset.created_at),
         "conversations": [conversation_summary(c) for c in conversations],
     }
 

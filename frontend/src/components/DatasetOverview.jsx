@@ -160,7 +160,7 @@ export default function DatasetOverview({
                       <div className="text-2xl font-bold text-slate-800 dark:text-white">
                         {value}
                       </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                      <div className="text-xs text-slate-600 dark:text-slate-400">
                         {label}
                       </div>
                     </div>

@@ -44,7 +44,7 @@ export default function PreviewTable({ preview, isLoading }) {
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-dark-bg border-b border-slate-200 dark:border-dark-border">
-            <tr className="text-left text-xs uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <tr className="text-left text-xs text-slate-600 dark:text-slate-400">
               {columns.map((name) => (
                 <th key={name} className="px-4 py-3 font-semibold whitespace-nowrap font-mono normal-case">
                   {name}

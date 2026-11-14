@@ -104,6 +104,24 @@ def quality_label(score) -> str:
 # ---------------------------------------------------------------------------
 
 
+def format_short_date(moment, *, now=None) -> str | None:
+    """``datetime`` -> ``"Nov 12"``, or ``"Nov 12, 2025"`` in another year.
+
+    Only shown where two datasets share a name, so it has to be short enough
+    to sit in a meta line without crowding the counts out.
+    """
+    if moment is None:
+        return None
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+
+    day = f"{moment.strftime('%b')} {moment.day}"
+    return day if moment.year == now.year else f"{day}, {moment.year}"
+
+
 def format_relative(moment, *, now=None) -> str:
     """``datetime`` -> ``"2 hours ago"``, matching the mock's strings exactly.
 

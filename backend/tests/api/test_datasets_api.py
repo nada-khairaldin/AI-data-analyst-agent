@@ -61,6 +61,7 @@ async def test_upload_returns_the_contract_shape(upload):
         "missingRate",
         "duplicateRate",
         "status",
+        "uploadedAt",
         "conversations",
     }
     assert body["name"] == "orders.csv"

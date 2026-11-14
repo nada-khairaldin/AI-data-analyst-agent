@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessagesSkeleton } from './Skeleton';
 import { suggestQuestions } from '../lib/suggestions';
 import { Send, CheckCircle2, ChevronRight, BarChart2, AlertTriangle, Lightbulb } from 'lucide-react';
-import ResultBlock from './ResultBlock';
+import AnswerCard from './AnswerCard';
+import WhatCanIAsk from './WhatCanIAsk';
+import { CAN_ASK_LINE, NOT_YET_LINE, closestAnswerable } from '../lib/capabilities';
 import Logo from './Logo';
 import { api, ApiError } from '../api/client';
 import { streamMessage } from '../api/stream';
@@ -33,9 +35,14 @@ function StageList({ stages, current }) {
   );
 }
 
-function AgentMessage({ message }) {
+function AgentMessage({ message, columns, onPick }) {
   const failed = message.status === 'failed';
   const advisory = message.status === 'needs_clarification' || message.status === 'cannot_answer';
+  const hasResult = message.resultData !== null && message.resultData !== undefined;
+  // Only a refusal gets alternatives; a clarification already asks its own
+  // question and a second list of suggestions would talk over it.
+  const alternatives =
+    message.status === 'cannot_answer' ? closestAnswerable(columns, 2) : [];
 
   return (
     <div className="space-y-4">
@@ -43,31 +50,52 @@ function AgentMessage({ message }) {
       {message.condensedQuestion && (
         <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-100 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg px-3 py-2 max-w-2xl">
           <Lightbulb size={14} className="text-primary shrink-0 mt-0.5" />
-          <span>
+          <span dir="auto">
             <span className="font-medium">Understood as:</span> {message.condensedQuestion}
           </span>
         </div>
       )}
 
-      <div
-        className={`text-[15px] leading-relaxed whitespace-pre-wrap ${
-          failed
-            ? 'text-error'
-            : advisory
-              ? 'text-amber-600 dark:text-amber-400'
-              : 'text-slate-800 dark:text-slate-200'
-        }`}
-      >
-        {failed && <AlertTriangle size={16} className="inline mr-1.5 -mt-0.5" />}
-        {message.content}
-      </div>
+      {hasResult && !failed && !advisory ? (
+        // A saved answer renders the same card as a live one, instantly:
+        // no fullText, so the marker is in place on the first paint.
+        <AnswerCard
+          text={message.content}
+          resultData={message.resultData}
+          resultKind={message.resultKind}
+          plan={message.plan}
+        />
+      ) : (
+        <div
+          dir="auto"
+          className={`text-[15px] leading-relaxed whitespace-pre-wrap ${
+            failed
+              ? 'text-error'
+              : advisory
+                ? 'text-amber-600 dark:text-amber-400'
+                : 'text-slate-800 dark:text-slate-200'
+          }`}
+        >
+          {failed && <AlertTriangle size={16} className="inline mr-1.5 -mt-0.5" />}
+          {message.content}
+        </div>
+      )}
 
-      <ResultBlock
-        resultData={message.resultData}
-        resultKind={message.resultKind}
-        chartPlan={message.chartPlan}
-        chartTitle={message.chartTitle}
-      />
+      {alternatives.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-slate-500">You could ask instead:</p>
+          {alternatives.map((question) => (
+            <button
+              key={question}
+              dir="auto"
+              onClick={() => onPick?.(question)}
+              className="block text-left text-sm text-primary hover:underline"
+            >
+              {question}
+            </button>
+          ))}
+        </div>
+      )}
 
       {message.plan && (
         <details className="group bg-slate-50 dark:bg-dark-elevated border border-slate-200 dark:border-dark-border rounded-lg overflow-hidden max-w-2xl">
@@ -114,6 +142,7 @@ function AgentMessage({ message }) {
 export default function ChatInterface({ dataset, conversation, onTurnComplete }) {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const [columns, setColumns] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [turnError, setTurnError] = useState(null);
@@ -159,9 +188,15 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
     (async () => {
       try {
         const body = await api.getColumns(dataset.id);
-        if (!cancelled) setSuggestions(suggestQuestions(body.columns));
+        if (!cancelled) {
+          setColumns(body.columns);
+          setSuggestions(suggestQuestions(body.columns));
+        }
       } catch {
-        if (!cancelled) setSuggestions([]);
+        if (!cancelled) {
+          setColumns([]);
+          setSuggestions([]);
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -318,10 +353,19 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
           <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
             <Logo size={48} className="text-slate-800 dark:text-slate-100 mb-2" />
             <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200">Start your analysis</h3>
+
+            {/* What the planner can and cannot do, in two lines, before the
+                suggestions rather than after a refusal. */}
+            <div className="max-w-md text-center text-sm space-y-1">
+              <p className="text-slate-600 dark:text-slate-400">{CAN_ASK_LINE}</p>
+              <p className="text-slate-500">{NOT_YET_LINE}</p>
+            </div>
+
             <div className="flex flex-wrap justify-center gap-2 max-w-md">
               {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
+                  dir="auto"
                   onClick={() => setInput(suggestion)}
                   className="px-3 py-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-full text-sm hover:border-primary/50 transition-colors"
                 >
@@ -346,7 +390,11 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
                   : 'max-w-[85%] min-w-0'
               }
             >
-              {msg.role === 'user' ? msg.content : <AgentMessage message={msg} />}
+              {msg.role === 'user' ? (
+                <span dir="auto">{msg.content}</span>
+              ) : (
+                <AgentMessage message={msg} columns={columns} onPick={setInput} />
+              )}
             </div>
           </div>
         ))}
@@ -369,18 +417,21 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
                 <StageList stages={stages} current={stage} />
               </div>
 
-              {/* result arrives BEFORE the first token: the table is the
-                  answer, the sentence is commentary */}
+              {/* The result arrives BEFORE the first token, so the card is
+                  drawn with an empty sentence and fills in as the reveal
+                  runs -- the same card the saved reply will render. */}
               {liveResult && (
-                <ResultBlock
+                <AnswerCard
+                  text={tokens}
+                  fullText={receivedRef.current}
                   resultData={liveResult.resultData}
                   resultKind={liveResult.resultKind}
-                  chartPlan={liveResult.chartPlan}
+                  plan={liveResult.plan}
                 />
               )}
 
-              {tokens && (
-                <div className="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed whitespace-pre-wrap">
+              {!liveResult && tokens && (
+                <div dir="auto" className="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed whitespace-pre-wrap">
                   {tokens}
                   <span className="inline-block w-1.5 h-4 bg-primary/70 ml-0.5 align-middle animate-pulse" />
                 </div>
@@ -403,20 +454,25 @@ export default function ChatInterface({ dataset, conversation, onTurnComplete })
         <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center">
           <input
             type="text"
+            dir="auto"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}
-            placeholder={isStreaming ? 'Analysing…' : 'Ask a question about your data...'}
+            placeholder={isStreaming ? 'Analysing…' : 'Ask a question about your data'}
             className="w-full bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-slate-800 dark:text-white rounded-full py-3.5 pl-6 pr-14 focus:outline-none focus:border-primary/50 transition-colors shadow-sm disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!input.trim() || isStreaming}
-            className="absolute right-2 top-1.5 bottom-1.5 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            className="absolute right-2 top-1.5 bottom-1.5 w-10 h-10 bg-primary hover:bg-primary/90 text-slate-900 rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100"
           >
             <Send size={18} className="ml-1" />
           </button>
         </form>
+
+        <div className="max-w-4xl mx-auto mt-2 flex justify-end">
+          <WhatCanIAsk columns={columns} onPick={setInput} />
+        </div>
       </div>
     </div>
   );

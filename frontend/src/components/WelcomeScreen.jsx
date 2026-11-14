@@ -136,7 +136,7 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={isUploading}
-              className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-slate-900 text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
             >
               Choose a CSV file
             </button>
@@ -154,7 +154,7 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
             <SampleDatasets onFileUpload={accept} isUploading={isUploading} />
           </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-dark-border">
+          <div className="mt-5 pt-4 border-t border-slate-200 dark:border-dark-border">
             <ExampleAnswer />
           </div>
         </div>

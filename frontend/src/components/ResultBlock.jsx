@@ -29,7 +29,7 @@ export default function ResultBlock({ resultData, resultKind, chartPlan, chartTi
   if (resultKind === 'scalar' || !Array.isArray(resultData)) {
     return (
       <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-6 shadow-sm">
-        <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Result</div>
+        <div className="text-xs text-slate-500 mb-2">Result</div>
         <div className="text-3xl font-bold text-slate-800 dark:text-white tabular-nums">
           {formatCell(resultData)}
         </div>

@@ -31,7 +31,7 @@ export default function ColumnsTable({ columns, report, isLoading }) {
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-sm min-w-[640px]">
           <thead className="bg-slate-50 dark:bg-dark-bg border-b border-slate-200 dark:border-dark-border">
-            <tr className="text-left text-xs uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <tr className="text-left text-xs text-slate-600 dark:text-slate-400">
               <th className="px-4 py-3 font-semibold">Column</th>
               <th className="px-4 py-3 font-semibold">Type</th>
               <th className="px-4 py-3 font-semibold">Originally</th>

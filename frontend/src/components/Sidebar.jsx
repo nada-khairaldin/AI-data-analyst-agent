@@ -49,6 +49,15 @@ export default function Sidebar({
     if (activeDatasetId) setExpandedId(activeDatasetId);
   }, [activeDatasetId]);
 
+  // The date is noise on a unique name and the only way to tell two
+  // same-named uploads apart, so it appears exactly where it is needed.
+  const seenNames = new Set();
+  const duplicateNames = new Set();
+  for (const dataset of datasets) {
+    if (seenNames.has(dataset.name)) duplicateNames.add(dataset.name);
+    seenNames.add(dataset.name);
+  }
+
   const handleDatasetClick = (id) => {
     if (expandedId === id) {
       setExpandedId(null);
@@ -97,7 +106,7 @@ export default function Sidebar({
 
           <div className="px-4 pb-4">
             <div className="text-xs font-semibold text-slate-400 tracking-wider mb-3 px-1">
-              YOUR DATASETS
+              Your datasets
             </div>
 
             {isLoading &&
@@ -231,8 +240,10 @@ export default function Sidebar({
                       </div>
                     ) : (
                       <div className="ml-8 text-[11px] text-slate-400 mt-0.5 truncate">
-                        {dataset.rowCount?.toLocaleString()} rows &middot; {dataset.colCount}{' '}
-                        columns
+                        {dataset.rowCount?.toLocaleString()} rows, {dataset.colCount} columns
+                        {duplicateNames.has(dataset.name) && dataset.uploadedAt
+                          ? `, uploaded ${dataset.uploadedAt}`
+                          : ''}
                       </div>
                     )}
                   </div>

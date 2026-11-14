@@ -32,12 +32,16 @@ const kind = (dtype = '') => {
 };
 
 /**
+ * Sorts the dataset's columns into the roles every template needs. Shared so
+ * the starter questions, the "What can I ask?" examples and the fallbacks
+ * offered after a cannot_answer can never describe different capabilities.
+ *
  * @param {Array<{name, dtype, available}>} columns from the columns endpoint
- * @returns {string[]} up to three questions, fewer if the columns cannot
- *   support them. Never throws and never invents a column name.
  */
-export function suggestQuestions(columns) {
-  if (!Array.isArray(columns)) return [];
+export function classifyColumns(columns) {
+  if (!Array.isArray(columns)) {
+    return { numbers: [], texts: [], dates: [], measures: [], groups: [], averageable: null };
+  }
 
   const usable = columns.filter(
     (column) => column?.available && column.name && !DERIVED.test(column.name),
@@ -65,6 +69,17 @@ export function suggestQuestions(columns) {
   // use -- Price next to total quantity, Age next to total spend.
   const averageable = numbers.find((c) => c.name !== measures[0]?.name) || numbers[0];
 
+  return { numbers, texts, dates, measures, groups, averageable };
+}
+
+/**
+ * @returns {string[]} up to three questions, fewer if the columns cannot
+ *   support them. Never throws and never invents a column name.
+ */
+export function suggestQuestions(columns) {
+  if (!Array.isArray(columns)) return [];
+
+  const { numbers, texts, dates, measures, groups, averageable } = classifyColumns(columns);
   const questions = [];
 
   if (groups.length && measures.length) {

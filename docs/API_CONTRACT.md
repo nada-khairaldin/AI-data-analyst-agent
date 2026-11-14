@@ -161,9 +161,16 @@ Response `201` — the object is exactly one element of `MOCK_DATASETS`:
   "missingRate": "2.1%",
   "duplicateRate": "0.4%",
   "status": "ready",
+  "uploadedAt": "Nov 12",
   "conversations": []
 }
 ```
+
+`uploadedAt` — added in phase F. A short date ("Nov 12", or "Nov 12, 2025"
+outside the current year), or `null` for a row with no timestamp. The sidebar
+shows it only where two datasets share a name, which is the one case where
+the name alone cannot tell them apart; it is sent always so the object's
+shape never varies.
 
 Rejected dataset `422` — the fields map 1:1 onto `DatasetRejected.jsx` props,
 which `App.jsx` currently never passes:
