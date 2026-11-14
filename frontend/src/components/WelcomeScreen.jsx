@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, ShieldCheck, Lock, BarChart2, AlertTriangle } from 'lucide-react';
+import { UploadCloud } from 'lucide-react';
 import SampleDatasets from './SampleDatasets';
 import Logo from './Logo';
+import ExampleAnswer from './ExampleAnswer';
 
 // Matches the server's limit. Checking here too turns a 5 MB upload over a
 // slow connection, answered with a 413, into an instant, specific message.
@@ -29,6 +30,7 @@ function rejectionReason(file) {
 export default function WelcomeScreen({ onFileUpload, isUploading }) {
   const [isDragging, setIsDragging] = useState(false);
   const [localError, setLocalError] = useState(null);
+  const inputRef = useRef(null);
   // dragenter/dragleave fire for every child element, so a plain boolean
   // flickers. Counting enters and leaves does not.
   const dragDepth = useRef(0);
@@ -51,129 +53,109 @@ export default function WelcomeScreen({ onFileUpload, isUploading }) {
     dragDepth.current = 0;
     setIsDragging(false);
     if (isUploading) return;
-    const file = event.dataTransfer?.files?.[0];
     if (event.dataTransfer?.files?.length > 1) {
       setLocalError('Please drop one file at a time.');
       return;
     }
-    accept(file);
+    accept(event.dataTransfer?.files?.[0]);
   };
 
   return (
     // `my-auto` rather than `justify-center`: centring a flex child taller
-    // than its scroll container makes the TOP of it unreachable. Adding the
-    // sample list pushed this page past the fold and the heading vanished.
-    // Auto margins centre when there is room and collapse when there is not.
+    // than its scroll container makes the TOP of it unreachable. Auto margins
+    // centre when there is room and collapse when there is not.
     <div className="flex-1 h-full overflow-y-auto bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text-primary">
-      <div className="min-h-full flex flex-col px-4 sm:px-6 py-8">
-        <div className="max-w-2xl w-full mx-auto my-auto text-center space-y-6">
-          <div className="space-y-4">
-            <Logo size={56} variant="intro" className="mx-auto mb-4 text-slate-800 dark:text-slate-100" />
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Analyse your data with AI
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto text-lg leading-relaxed">
-              Upload a CSV file, ask questions in plain language, and get clear
-              answers with charts and insights.
-            </p>
-          </div>
-
-          <div className="max-w-xl mx-auto">
-            <label
-              onDragEnter={(event) => {
-                event.preventDefault();
-                dragDepth.current += 1;
-                if (!isUploading) setIsDragging(true);
-              }}
-              onDragOver={(event) => event.preventDefault()}
-              onDragLeave={(event) => {
-                event.preventDefault();
-                dragDepth.current -= 1;
-                if (dragDepth.current <= 0) setIsDragging(false);
-              }}
-              onDrop={onDrop}
-              className={`block relative border-2 border-dashed rounded-3xl p-8 md:p-10 transition-all cursor-pointer ${
-                isDragging
-                  ? 'border-primary bg-primary/10 dark:bg-primary/15 scale-[1.02]'
-                  : isUploading
-                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                    : 'border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-dark-elevated shadow-sm'
-              }`}
-            >
-              <input
-                type="file"
-                className="hidden"
-                accept=".csv,text/csv"
-                disabled={isUploading}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  event.target.value = ''; // so the same file re-triggers
-                  accept(file);
-                }}
-              />
-
-              <div className="flex flex-col items-center justify-center text-center space-y-4 pointer-events-none">
-                <div className="p-4 bg-slate-100 dark:bg-dark-bg rounded-full">
-                  {isUploading ? (
-                    <Logo
-                      size={32}
-                      variant="loading"
-                      className="text-slate-700 dark:text-slate-200"
-                    />
-                  ) : (
-                    <UploadCloud
-                      size={32}
-                      className={
-                        isDragging ? 'text-primary' : 'text-slate-500 dark:text-slate-400'
-                      }
-                    />
-                  )}
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">
-                    {isUploading
-                      ? 'Uploading…'
-                      : isDragging
-                        ? 'Drop it to upload'
-                        : 'Drag & drop your CSV file here'}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">or click to browse</p>
-                </div>
-                <p className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-dark-bg px-3 py-1 rounded-full">
-                  .csv files only &middot; up to 5 MB
-                </p>
-              </div>
-            </label>
-
-            {localError && (
-              <div className="mt-4 flex items-start gap-2.5 text-sm text-left bg-rose-50 dark:bg-error/10 border border-rose-200 dark:border-error/30 rounded-lg p-3 text-slate-800 dark:text-slate-200">
-                <AlertTriangle
-                  size={16}
-                  className="mt-0.5 shrink-0 text-rose-600 dark:text-error"
-                />
-                <span>{localError}</span>
-              </div>
-            )}
-
-            <div className="mt-6">
-              <SampleDatasets onFileUpload={accept} isUploading={isUploading} />
+      <div className="min-h-full flex flex-col px-4 sm:px-6 py-6">
+        <div className="max-w-xl w-full mx-auto my-auto">
+          <div className="flex items-center gap-3">
+            <Logo size={40} variant="intro" className="shrink-0 text-slate-800 dark:text-slate-100" />
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Ask your spreadsheet a question
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Upload a CSV and get the answer as a table, a chart and a sentence.
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 max-w-3xl mx-auto border-t border-slate-200 dark:border-dark-border">
-            {[
-              [Lock, 'No coding required', 'Just ask your question'],
-              [BarChart2, 'Clear & visual results', 'Tables, charts and insights'],
-              [ShieldCheck, 'Full transparency', 'See the analysis plan'],
-            ].map(([Icon, title, subtitle]) => (
-              <div key={title} className="flex flex-col items-center text-center space-y-1.5">
-                <div className="text-slate-500 dark:text-slate-400">
-                  <Icon size={20} />
-                </div>
-                <h3 className="font-semibold text-slate-700 dark:text-slate-300">{title}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
-              </div>
-            ))}
+          {/* The drop target is a plain div and the picker is a real button.
+              A <button> nested in the old <label> would have fired the label
+              as well and opened the dialog twice; a bare label cannot take
+              keyboard focus. This way both work. */}
+          <div
+            onDragEnter={(event) => {
+              event.preventDefault();
+              dragDepth.current += 1;
+              if (!isUploading) setIsDragging(true);
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              dragDepth.current -= 1;
+              if (dragDepth.current <= 0) setIsDragging(false);
+            }}
+            onDrop={onDrop}
+            className={`mt-5 flex flex-col items-center justify-center gap-2.5 text-center border-2 border-dashed rounded-2xl px-5 py-6 min-h-[180px] transition-colors ${
+              isDragging
+                ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                : 'border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card'
+            }`}
+          >
+            <input
+              ref={inputRef}
+              type="file"
+              className="sr-only"
+              accept=".csv,text/csv"
+              disabled={isUploading}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = ''; // so the same file re-triggers
+                accept(file);
+              }}
+            />
+
+            {isUploading ? (
+              <Logo size={28} variant="loading" className="text-slate-700 dark:text-slate-200" />
+            ) : (
+              <UploadCloud
+                size={26}
+                className={isDragging ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}
+              />
+            )}
+
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              {isUploading
+                ? 'Uploading…'
+                : isDragging
+                  ? 'Drop it to upload'
+                  : 'Drag a CSV here'}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={isUploading}
+              className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
+            >
+              Choose a CSV file
+            </button>
+
+            <p className="text-xs text-slate-500 dark:text-slate-500">.csv, up to 5 MB</p>
+          </div>
+
+          {localError && (
+            <p className="mt-3 text-sm text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-lg px-3 py-2">
+              {localError}
+            </p>
+          )}
+
+          <div className="mt-5">
+            <SampleDatasets onFileUpload={accept} isUploading={isUploading} />
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-dark-border">
+            <ExampleAnswer />
           </div>
         </div>
       </div>

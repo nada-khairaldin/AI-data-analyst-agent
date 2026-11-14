@@ -53,7 +53,7 @@ export default function SampleDatasets({ onFileUpload, isUploading }) {
 
   return (
     <div className="text-left">
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
         Or try a sample dataset
       </h3>
 
@@ -61,30 +61,32 @@ export default function SampleDatasets({ onFileUpload, isUploading }) {
         {SAMPLES.map((sample) => {
           const isThisOne = loadingFile === sample.file;
           return (
-            <li
-              key={sample.file}
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3"
-            >
+            <li key={sample.file} className="flex items-center gap-3 py-2">
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                <div className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                   {sample.name}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">
+                <div className="text-xs text-slate-600 dark:text-slate-400 truncate">
                   {sample.description}
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              {/* Fixed-width slots, so the actions form two straight columns
+                  down the list. The row without a download keeps its empty
+                  slot rather than sliding "Try it" across to the edge. */}
+              <div className="w-[92px] shrink-0">
                 <button
                   type="button"
                   onClick={() => tryIt(sample)}
                   disabled={busy}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
                 >
-                  {isThisOne && <Logo size={14} variant="loading" />}
-                  {isThisOne ? 'Loading…' : 'Try it'}
+                  {isThisOne && <Logo size={13} variant="loading" />}
+                  {isThisOne ? 'Loading' : 'Try it'}
                 </button>
+              </div>
 
+              <div className="w-[94px] shrink-0 flex justify-end">
                 {sample.downloadable !== false && (
                   <a
                     href={url(sample.file)}
@@ -101,9 +103,7 @@ export default function SampleDatasets({ onFileUpload, isUploading }) {
         })}
       </ul>
 
-      {error && (
-        <p className="mt-3 text-sm text-rose-700 dark:text-error">{error}</p>
-      )}
+      {error && <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
     </div>
   );
 }
